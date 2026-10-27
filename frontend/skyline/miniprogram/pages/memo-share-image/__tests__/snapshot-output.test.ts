@@ -321,105 +321,32 @@ describe('memo-share-image snapshot output', () => {
     expect(page.data.shareNickname).toBe('游客')
   })
 
-  it('uses friend ownerNickname on share card when set', async () => {
-    const options = await capturePageOptions()
-    const page = createPageInstance(options)
-    const eventHandler = vi.fn()
-    page.getOpenerEventChannel = vi.fn(() => ({
-      on: eventHandler,
-    }))
-
-    page.bindInitChannel()
-    eventHandler.mock.calls[0][1]({
-      card: createCard({
-        ownerUsername: 'wx_toqph5va',
-        ownerNickname: '玮玮君',
-      }),
-    })
-
-    expect(page.data.shareNickname).toBe('玮玮君')
-  })
-
-  it('locks display-nickname menu for friend card and keeps stored nickname pref when saving other toggles', async () => {
-    vi.resetModules()
-    vi.unstubAllGlobals()
-    const prefs = {
-      shareFontId: 'default' as const,
-      showTags: true,
-      showNickname: false,
-      showBrand: true,
-    }
-    const getStorageSync = vi.fn((key: string) =>
-      key === MEMO_SHARE_IMAGE_PREFS_STORAGE_KEY ? prefs : undefined,
-    )
-    vi.stubGlobal('wx', {
-      env: { USER_DATA_PATH: '/tmp/weimo' },
-      getStorageSync,
-      setStorageSync: vi.fn(),
-      getFileSystemManager: vi.fn(() => ({
-        access: vi.fn((opts) => opts.fail()),
-        copyFile: vi.fn((opts) => opts.success()),
-        unlink: vi.fn(),
-        writeFile: vi.fn((opts) => opts.success()),
-      })),
-      createSelectorQuery: vi.fn(),
-      showToast: vi.fn(),
-      showShareImageMenu: vi.fn(),
-      loadFontFace: vi.fn((opts) => opts.success?.()),
-      downloadFile: vi.fn(() => ({ onProgressUpdate: vi.fn(), abort: vi.fn() })),
-    })
-    let captured: any
-    vi.stubGlobal('Page', (options: any) => {
-      captured = options
-    })
-    await import('../index')
-    const page = createPageInstance(captured)
-    const eventHandler = vi.fn()
-    page.getOpenerEventChannel = vi.fn(() => ({ on: eventHandler }))
-    page.bindInitChannel()
-    eventHandler.mock.calls[0][1]({
-      card: createCard({ ownerUsername: 'bob', ownerNickname: '小吴' }),
-    })
-
-    expect(page.data.shareOptions.showNickname).toBe(true)
-    expect(page.data.shareNicknameUserPrefForFriend).toBe(false)
-    expect(page.data.visibilityMenuItems.find((i: { id: string }) => i.id === 'toggle-nickname')).toEqual(
-      expect.objectContaining({ icon: 'check', disabled: true }),
-    )
-
-    page.applyShareMenuAction('toggle-tags')
-    expect((globalThis as any).wx.setStorageSync).toHaveBeenCalledWith(MEMO_SHARE_IMAGE_PREFS_STORAGE_KEY, {
-      shareFontId: 'default',
-      showTags: false,
-      showNickname: false,
-      showBrand: true,
-      shareLargeText: false,
-      shareLunarDate: false,
-    })
-  })
-
-  it('does not toggle nickname option when sharing a friend card', async () => {
+  it('toggles the nickname option and persists the new pref', async () => {
     const options = await capturePageOptions()
     const page = createPageInstance(options)
     const setStorageSync = (globalThis as any).wx.setStorageSync as ReturnType<typeof vi.fn>
     setStorageSync.mockClear()
     page.data = {
       ...page.data,
-      card: createCard({ ownerUsername: 'bob', ownerNickname: '小吴' }),
+      card: createCard(),
       shareOptions: {
         showTags: true,
         showNickname: true,
         showDate: true,
         showBrand: true,
       },
-      shareNicknameUserPrefForFriend: false,
     }
-    page.syncPopoverMenus()
-
     page.applyShareMenuAction('toggle-nickname')
 
-    expect(page.data.shareOptions.showNickname).toBe(true)
-    expect(setStorageSync).not.toHaveBeenCalled()
+    expect(page.data.shareOptions.showNickname).toBe(false)
+    expect(setStorageSync).toHaveBeenCalledWith(MEMO_SHARE_IMAGE_PREFS_STORAGE_KEY, {
+      shareFontId: 'default',
+      showTags: true,
+      showNickname: false,
+      showBrand: true,
+      shareLargeText: false,
+      shareLunarDate: false,
+    })
   })
 
   it('generates snapshot and opens share menu when sending', async () => {
@@ -449,7 +376,7 @@ describe('memo-share-image snapshot output', () => {
     expect(showShareImageMenu).toHaveBeenCalledWith(expect.objectContaining({
       path: 'wxfile://poster.png',
       needShowEntrance: true,
-      entrancePath: 'pages/index/index',
+      entrancePath: 'pages/memo-reference-detail/index?entry=share&memoId=1',
     }))
     expect(page.data.status).toBe('ready')
 

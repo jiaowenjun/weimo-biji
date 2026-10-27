@@ -10,8 +10,7 @@
     tags="{{item.tags}}"
     reference-preview="{{item.referencePreview}}"
     referenced-by-previews="{{item.referencedByPreviews}}"
-    owner-username="{{item.ownerUsername}}"
-    viewer-role="{{item.ownerUsername ? 'friend' : 'self'}}"
+    viewer-role="self"
     menu-gesture-gate="{{true}}"
     bind:tap="handleCardTap"
     bind:edit="handleCardEdit"
@@ -39,7 +38,6 @@
     tags="{{rootCard.tags}}"
     reference-preview="{{rootCard.referencePreview}}"
     referenced-by-previews="{{rootCard.referencedByPreviews}}"
-    owner-username="{{rootCard.ownerUsername}}"
     show-reference-bar="{{false}}"
     viewer-role="{{rootViewerRole}}"
     menu-gesture-gate="{{true}}"
@@ -69,13 +67,12 @@
         class="memo-reference-relation-panels__panel{{selectedRelationTab === 'reference' ? ' memo-reference-relation-panels__panel--active' : ''}}"
         data-relation-panel="reference"
       >
-        <view wx:if="{{ownReferenceCards.length}}" class="memo-reference-section">
+        <view wx:if="{{referenceCards.length}}" class="memo-reference-section">
           <view class="memo-reference-section__title">
-            <text wx:if="{{owner === 'friend'}}" class="memo-reference-section__title-text">- 引用我的 {{ownReferenceCards.length}} 条笔记 -</text>
-            <text wx:else class="memo-reference-section__title-text">- 引用以下 {{ownReferenceCards.length}} 条笔记 -</text>
+            <text class="memo-reference-section__title-text">- 引用以下 {{referenceCards.length}} 条笔记 -</text>
           </view>
           <memo-card
-            wx:for="{{ownReferenceCards}}"
+            wx:for="{{referenceCards}}"
             wx:key="id"
             memo-id="{{item.id}}"
             created-at-text="{{item.createdAtText}}"
@@ -85,7 +82,6 @@
             tags="{{item.tags}}"
             reference-preview="{{item.referencePreview}}"
             referenced-by-previews="{{item.referencedByPreviews}}"
-            owner-username="{{item.ownerUsername}}"
             viewer-role="self"
             menu-gesture-gate="{{true}}"
             bind:tap="handleCardTap"
@@ -95,34 +91,6 @@
             bind:modifytag="handleCardModifyTag"
             bind:tagadd="handleCardTagAdd"
             bind:tagremove="handleCardTagRemove"
-            bind:referencetap="handleMemoReferenceTap"
-            bind:share="handleCardShare"
-            bind:copy="handleCardCopy"
-            bind:menuchange="handleCardMenuChange"
-            bind:gesturegatechange="handleCardGestureGateChange"
-          />
-        </view>
-
-        <view wx:if="{{friendReferenceCards.length}}" class="memo-reference-section">
-          <view class="memo-reference-section__title">
-            <text class="memo-reference-section__title-text">- 引用{{friendReferenceOwnerLabel}}的 {{friendReferenceCards.length}} 条笔记 -</text>
-          </view>
-          <memo-card
-            wx:for="{{friendReferenceCards}}"
-            wx:key="id"
-            memo-id="{{item.id}}"
-            created-at-text="{{item.createdAtText}}"
-            content="{{item.content}}"
-            content-nodes="{{item.contentNodes}}"
-            render-rich-text="{{item.renderRichText}}"
-            tags="{{item.tags}}"
-            reference-preview="{{item.referencePreview}}"
-            referenced-by-previews="{{item.referencedByPreviews}}"
-            owner-username="{{item.ownerUsername}}"
-            viewer-role="friend"
-            menu-gesture-gate="{{true}}"
-            bind:tap="handleCardTap"
-            bind:quote="handleCardQuote"
             bind:referencetap="handleMemoReferenceTap"
             bind:share="handleCardShare"
             bind:copy="handleCardCopy"
@@ -136,13 +104,12 @@
         class="memo-reference-relation-panels__panel{{selectedRelationTab === 'referencedBy' ? ' memo-reference-relation-panels__panel--active' : ''}}"
         data-relation-panel="referencedBy"
       >
-        <view wx:if="{{ownReferencedByCards.length}}" class="memo-reference-section">
+        <view wx:if="{{referencedByCards.length}}" class="memo-reference-section">
           <view class="memo-reference-section__title">
-            <text wx:if="{{owner === 'friend'}}" class="memo-reference-section__title-text">- 被我的 {{ownReferencedByCards.length}} 条笔记引用 -</text>
-            <text wx:else class="memo-reference-section__title-text">- 被以下 {{ownReferencedByCards.length}} 条笔记引用 -</text>
+            <text class="memo-reference-section__title-text">- 被以下 {{referencedByCards.length}} 条笔记引用 -</text>
           </view>
           <memo-card
-            wx:for="{{ownReferencedByCards}}"
+            wx:for="{{referencedByCards}}"
             wx:key="id"
             memo-id="{{item.id}}"
             created-at-text="{{item.createdAtText}}"
@@ -152,7 +119,6 @@
             tags="{{item.tags}}"
             reference-preview="{{item.referencePreview}}"
             referenced-by-previews="{{item.referencedByPreviews}}"
-            owner-username="{{item.ownerUsername}}"
             viewer-role="self"
             menu-gesture-gate="{{true}}"
             bind:tap="handleCardTap"
@@ -162,34 +128,6 @@
             bind:modifytag="handleCardModifyTag"
             bind:tagadd="handleCardTagAdd"
             bind:tagremove="handleCardTagRemove"
-            bind:referencetap="handleMemoReferenceTap"
-            bind:share="handleCardShare"
-            bind:copy="handleCardCopy"
-            bind:menuchange="handleCardMenuChange"
-            bind:gesturegatechange="handleCardGestureGateChange"
-          />
-        </view>
-
-        <view wx:if="{{friendReferencedByCards.length}}" class="memo-reference-section">
-          <view class="memo-reference-section__title">
-            <text class="memo-reference-section__title-text">- 被{{friendReferencedByOwnerLabel}}的 {{friendReferencedByCards.length}} 条笔记引用 -</text>
-          </view>
-          <memo-card
-            wx:for="{{friendReferencedByCards}}"
-            wx:key="id"
-            memo-id="{{item.id}}"
-            created-at-text="{{item.createdAtText}}"
-            content="{{item.content}}"
-            content-nodes="{{item.contentNodes}}"
-            render-rich-text="{{item.renderRichText}}"
-            tags="{{item.tags}}"
-            reference-preview="{{item.referencePreview}}"
-            referenced-by-previews="{{item.referencedByPreviews}}"
-            owner-username="{{item.ownerUsername}}"
-            viewer-role="friend"
-            menu-gesture-gate="{{true}}"
-            bind:tap="handleCardTap"
-            bind:quote="handleCardQuote"
             bind:referencetap="handleMemoReferenceTap"
             bind:share="handleCardShare"
             bind:copy="handleCardCopy"
@@ -208,13 +146,12 @@
   </view>
 
   <view wx:else class="memo-reference-relation-flat">
-    <view wx:if="{{ownReferenceCards.length}}" class="memo-reference-section">
+    <view wx:if="{{referenceCards.length}}" class="memo-reference-section">
       <view class="memo-reference-section__title">
-        <text wx:if="{{owner === 'friend'}}" class="memo-reference-section__title-text">- 引用我的 {{ownReferenceCards.length}} 条笔记 -</text>
-        <text wx:else class="memo-reference-section__title-text">- 引用以下 {{ownReferenceCards.length}} 条笔记 -</text>
+        <text class="memo-reference-section__title-text">- 引用以下 {{referenceCards.length}} 条笔记 -</text>
       </view>
       <memo-card
-        wx:for="{{ownReferenceCards}}"
+        wx:for="{{referenceCards}}"
         wx:key="id"
         memo-id="{{item.id}}"
         created-at-text="{{item.createdAtText}}"
@@ -224,7 +161,6 @@
         tags="{{item.tags}}"
         reference-preview="{{item.referencePreview}}"
         referenced-by-previews="{{item.referencedByPreviews}}"
-        owner-username="{{item.ownerUsername}}"
         viewer-role="self"
         menu-gesture-gate="{{true}}"
         bind:tap="handleCardTap"
@@ -242,12 +178,12 @@
       />
     </view>
 
-    <view wx:if="{{friendReferenceCards.length}}" class="memo-reference-section">
+    <view wx:if="{{referencedByCards.length}}" class="memo-reference-section">
       <view class="memo-reference-section__title">
-        <text class="memo-reference-section__title-text">- 引用{{friendReferenceOwnerLabel}}的 {{friendReferenceCards.length}} 条笔记 -</text>
+        <text class="memo-reference-section__title-text">- 被以下 {{referencedByCards.length}} 条笔记引用 -</text>
       </view>
       <memo-card
-        wx:for="{{friendReferenceCards}}"
+        wx:for="{{referencedByCards}}"
         wx:key="id"
         memo-id="{{item.id}}"
         created-at-text="{{item.createdAtText}}"
@@ -257,36 +193,6 @@
         tags="{{item.tags}}"
         reference-preview="{{item.referencePreview}}"
         referenced-by-previews="{{item.referencedByPreviews}}"
-        owner-username="{{item.ownerUsername}}"
-        viewer-role="friend"
-        menu-gesture-gate="{{true}}"
-        bind:tap="handleCardTap"
-        bind:quote="handleCardQuote"
-        bind:referencetap="handleMemoReferenceTap"
-        bind:share="handleCardShare"
-        bind:copy="handleCardCopy"
-        bind:menuchange="handleCardMenuChange"
-        bind:gesturegatechange="handleCardGestureGateChange"
-      />
-    </view>
-
-    <view wx:if="{{ownReferencedByCards.length}}" class="memo-reference-section">
-      <view class="memo-reference-section__title">
-        <text wx:if="{{owner === 'friend'}}" class="memo-reference-section__title-text">- 被我的 {{ownReferencedByCards.length}} 条笔记引用 -</text>
-        <text wx:else class="memo-reference-section__title-text">- 被以下 {{ownReferencedByCards.length}} 条笔记引用 -</text>
-      </view>
-      <memo-card
-        wx:for="{{ownReferencedByCards}}"
-        wx:key="id"
-        memo-id="{{item.id}}"
-        created-at-text="{{item.createdAtText}}"
-        content="{{item.content}}"
-        content-nodes="{{item.contentNodes}}"
-        render-rich-text="{{item.renderRichText}}"
-        tags="{{item.tags}}"
-        reference-preview="{{item.referencePreview}}"
-        referenced-by-previews="{{item.referencedByPreviews}}"
-        owner-username="{{item.ownerUsername}}"
         viewer-role="self"
         menu-gesture-gate="{{true}}"
         bind:tap="handleCardTap"
@@ -296,34 +202,6 @@
         bind:modifytag="handleCardModifyTag"
         bind:tagadd="handleCardTagAdd"
         bind:tagremove="handleCardTagRemove"
-        bind:referencetap="handleMemoReferenceTap"
-        bind:share="handleCardShare"
-        bind:copy="handleCardCopy"
-        bind:menuchange="handleCardMenuChange"
-        bind:gesturegatechange="handleCardGestureGateChange"
-      />
-    </view>
-
-    <view wx:if="{{friendReferencedByCards.length}}" class="memo-reference-section">
-      <view class="memo-reference-section__title">
-        <text class="memo-reference-section__title-text">- 被{{friendReferencedByOwnerLabel}}的 {{friendReferencedByCards.length}} 条笔记引用 -</text>
-      </view>
-      <memo-card
-        wx:for="{{friendReferencedByCards}}"
-        wx:key="id"
-        memo-id="{{item.id}}"
-        created-at-text="{{item.createdAtText}}"
-        content="{{item.content}}"
-        content-nodes="{{item.contentNodes}}"
-        render-rich-text="{{item.renderRichText}}"
-        tags="{{item.tags}}"
-        reference-preview="{{item.referencePreview}}"
-        referenced-by-previews="{{item.referencedByPreviews}}"
-        owner-username="{{item.ownerUsername}}"
-        viewer-role="friend"
-        menu-gesture-gate="{{true}}"
-        bind:tap="handleCardTap"
-        bind:quote="handleCardQuote"
         bind:referencetap="handleMemoReferenceTap"
         bind:share="handleCardShare"
         bind:copy="handleCardCopy"

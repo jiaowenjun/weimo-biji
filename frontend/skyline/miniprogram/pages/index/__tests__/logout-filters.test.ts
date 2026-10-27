@@ -42,17 +42,15 @@ describe('index logout filter reset contract', () => {
     expect(onLoad).toContain('this._hadSessionOnLastShow = hasSession()')
   })
 
-  it('clears self and friend filters and returns to self scope on logout reset', () => {
-    const reset = methodSource('resetFiltersAfterLogout', 'applyFriendMemoQuery')
+  it('clears filters and resets scroll on logout reset', () => {
+    const reset = methodSource('resetFiltersAfterLogout', 'applyMemoQuery')
 
-    expect(reset).toContain('stopFriendUnreadPolling')
-    expect(reset).toContain('friendProfiles: []')
     expect(reset).toContain('createEmptyMemoQueryDraft()')
-    expect(reset).toContain("if (this.data.homeMemoScope.kind === 'friend')")
-    expect(reset).toContain('this.switchToSelfScope({ resetScroll: true })')
     expect(reset).toContain(
       'void this.applyMemoQuery(createEmptyMemoQueryDraft(), { resetScroll: true })',
     )
+    expect(reset).not.toContain('stopFriendUnreadPolling')
+    expect(reset).not.toContain('switchToSelfScope')
   })
 
   it('uses shared performLogout and resets filters before relaunching home', () => {

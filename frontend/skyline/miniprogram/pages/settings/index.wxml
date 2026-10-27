@@ -20,18 +20,6 @@
         <text class="iconfont iconfont--chevron-right settings-menu-item__chevron" aria-hidden="true"></text>
       </view>
 
-      <view
-        class="settings-menu-item settings-menu-item--border"
-        hover-class="settings-menu-item--active"
-        hover-stay-time="70"
-        bindtap="handleAddFriendTap"
-      >
-        <view class="settings-icon">
-          <text class="iconfont iconfont--member settings-icon__glyph" aria-hidden="true"></text>
-        </view>
-        <text class="settings-menu-item__label">添加朋友</text>
-        <text class="iconfont iconfont--chevron-right settings-menu-item__chevron" aria-hidden="true"></text>
-      </view>
     </view>
 
     <!-- Group 1: Login (logged out) -->

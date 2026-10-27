@@ -1,4 +1,4 @@
-import { Copy, Quote, Share2, CircleArrowOutUpLeft } from 'lucide-react'
+import { Copy, Quote, CircleArrowOutUpLeft } from 'lucide-react'
 import { createElement } from 'react'
 import type { ActionMenuItem } from 'weimo-ui/components/menu'
 
@@ -34,11 +34,6 @@ export function buildWorkspaceMemoCardMenuItems({
           } satisfies ActionMenuItem,
         ]
       : []),
-    {
-      key: 'share',
-      label: '分享',
-      icon: icon(Share2),
-    },
     {
       key: 'copy',
       label: '复制',

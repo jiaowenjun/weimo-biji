@@ -46,20 +46,6 @@ function WorkspaceMemoDetailSection({
       </p>
       <div className="workspace-memo-detail-dialog__section-cards">
         {items.map((item) => {
-          if (item.kind === 'preview') {
-            return (
-              <RefCard
-                disabled
-                key={item.preview.id}
-                note={{
-                  content: item.preview.displayText,
-                  createdAtText: '',
-                }}
-                tagOptions={tagOptions}
-              />
-            )
-          }
-
           const previews = buildMemoReferencePreviews(
             item.memo,
             referencePreviewResolver,

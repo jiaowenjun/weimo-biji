@@ -206,7 +206,7 @@ describe('memo-reference-detail page contract', () => {
 
     expect(wxml).toContain(`wx:elif="{{rootViewerRole === 'denied'}}"`)
     expect(wxml).toContain('无权限查看此笔记')
-    expect(wxml).toContain('仅笔记作者和其好友可查看')
+    expect(wxml).toContain('仅笔记作者可查看')
     expect(wxml).toContain('返回首页')
   })
 
@@ -223,15 +223,17 @@ describe('memo-reference-detail page contract', () => {
     expect(ts).toContain("options.entry === 'share' ? 'share' : 'in-app'")
   })
 
-  it('share entry resolves viewer role from session and friend summary', () => {
+  it('share entry requires a session and resolves the viewer as self', () => {
     const ts = read('index.ts')
-    expect(ts).toContain("from '../../services/friend'")
-    expect(ts).toContain('friendByUsername')
     expect(ts).toContain("from '../../utils/session'")
-    expect(ts).toContain("ownerUsername === sessionUsername")
-    expect(ts).toContain("? 'self'")
+    expect(ts).toContain('!getSession().user')
+    expect(ts).toContain("rootViewerRole: 'denied'")
+    expect(ts).toContain("rootViewerRole: 'self'")
     expect(ts).toContain("'我的笔记'")
-    expect(ts).toContain('的笔记`')
+    expect(ts).toContain('void this.loadMemoReferenceDetail(memoId)')
+    expect(ts).not.toContain('friendByUsername')
+    expect(ts).not.toContain('loadFriendMemoReferenceDetailData')
+    expect(ts).not.toContain('ownerUsername')
   })
 
   it('share entry sends the user home when the root memo is deleted', () => {
@@ -274,18 +276,19 @@ describe('memo-reference-detail page contract', () => {
     expect(wxml).toContain('<memo-reference-detail-view')
     expect(wxml).toContain('id="memo-reference-detail-view"')
     expect(wxml).toContain('mode="{{mode}}"')
-    expect(wxml).toContain('owner="{{owner}}"')
     expect(wxml).toContain('root-viewer-role="{{rootViewerRole}}"')
     expect(wxml).toContain('root-card="{{rootCard}}"')
     expect(wxml).toContain('reference-cards="{{referenceCards}}"')
-    expect(wxml).toContain('own-reference-cards="{{ownReferenceCards}}"')
-    expect(wxml).toContain('friend-reference-cards="{{friendReferenceCards}}"')
-    expect(wxml).toContain('own-referenced-by-cards="{{ownReferencedByCards}}"')
-    expect(wxml).toContain('friend-referenced-by-cards="{{friendReferencedByCards}}"')
+    expect(wxml).toContain('referenced-by-cards="{{referencedByCards}}"')
     expect(wxml).toContain('selected-relation-tab="{{selectedRelationTab}}"')
     expect(wxml).toContain('tab-render-state="{{tabRenderState}}"')
     expect(wxml).toContain('tab-slider-animated="{{tabSliderAnimated}}"')
     expect(wxml).not.toContain('tabContentSliderAnimated')
+    expect(wxml).not.toContain('owner="{{owner}}"')
+    expect(wxml).not.toContain('own-reference-cards')
+    expect(wxml).not.toContain('friend-reference-cards')
+    expect(wxml).not.toContain('own-referenced-by-cards')
+    expect(wxml).not.toContain('friend-referenced-by-cards')
     expect(wxml).toContain('bind:cardreferencetap="handleMemoReferenceTap"')
     expect(wxml).toContain('bind:relationtabswipe="handleRelationTabSwipe"')
     expect(wxml).toContain('relation-gesture-fill-style="{{relationGestureFillStyle}}"')
@@ -299,12 +302,12 @@ describe('memo-reference-detail page contract', () => {
       'utf8',
     )
 
-    expect(wxml).toContain('- 引用以下 {{ownReferenceCards.length}} 条笔记 -')
-    expect(wxml).toContain('- 引用我的 {{ownReferenceCards.length}} 条笔记 -')
-    expect(wxml).toContain('- 引用{{friendReferenceOwnerLabel}}的 {{friendReferenceCards.length}} 条笔记 -')
-    expect(wxml).toContain('- 被以下 {{ownReferencedByCards.length}} 条笔记引用 -')
-    expect(wxml).toContain('- 被我的 {{ownReferencedByCards.length}} 条笔记引用 -')
-    expect(wxml).toContain('- 被{{friendReferencedByOwnerLabel}}的 {{friendReferencedByCards.length}} 条笔记引用 -')
+    expect(wxml).toContain('- 引用以下 {{referenceCards.length}} 条笔记 -')
+    expect(wxml).toContain('- 被以下 {{referencedByCards.length}} 条笔记引用 -')
+    expect(wxml).not.toContain('friendReferenceCards')
+    expect(wxml).not.toContain('friendReferencedByCards')
+    expect(wxml).not.toContain('ownReferenceCards')
+    expect(wxml).not.toContain('ownReferencedByCards')
   })
 
   it('supports a references-only mode for memo compose', () => {
@@ -314,12 +317,8 @@ describe('memo-reference-detail page contract', () => {
     expect(ts).toContain("type MemoReferenceDetailMode = 'detail' | 'references'")
     expect(ts).toContain('parseMemoRefList(options.memoRefs || options.memoIds)')
     expect(ts).toContain('referenceMemoRefs: MemoRefId[]')
-    expect(ts).toContain('ownReferenceCards: MemoCardItem[]')
-    expect(ts).toContain('friendReferenceCards: MemoCardItem[]')
-    expect(ts).toContain('friendReferenceOwnerLabel: string')
-    expect(ts).toContain('ownReferencedByCards: MemoCardItem[]')
-    expect(ts).toContain('friendReferencedByCards: MemoCardItem[]')
-    expect(ts).toContain('friendReferencedByOwnerLabel: string')
+    expect(ts).toContain('referenceCards: MemoCardItem[]')
+    expect(ts).toContain('referencedByCards: MemoCardItem[]')
     expect(ts).toContain('loadMemoReferenceList: (memoRefs: MemoRefId[]) => Promise<void>')
     expect(ts).toContain("const mode: MemoReferenceDetailMode = options.mode === 'references' ? 'references' : 'detail'")
     expect(ts).toContain("const navTitle = mode === 'references' ? `引用 ${memoRefs.length} 条笔记` : '笔记详情'")
@@ -332,80 +331,21 @@ describe('memo-reference-detail page contract', () => {
     expect(wxml).toContain('bind:cardreferencetap="handleMemoReferenceTap"')
   })
 
-  it('supports friend-owned memo detail without exposing friend refs', () => {
-    const ts = read('index.ts')
-    const wxml = read('index.wxml')
-    const loader = readRoot('utils/memo-reference-detail-loader.ts')
-
-    expect(ts).not.toContain("type MemoReferenceDetailOwner = 'self' | 'friend'")
-    expect(ts).toContain('rootViewerRole')
-    expect(ts).toContain('loadFriendMemoReferenceDetailData')
-    expect(loader).toContain('getFriendMemo')
-    expect(loader).toContain('buildFriendMemoReferenceDetailProjection')
-    expect(loader).toContain('const ownIds = collectMemoReferenceDetailFetchIds(root)')
-    expect(loader).toMatch(/async function loadFriendMemoReferenceDetailData[\s\S]*const previewIds = collectMemoReferencePreviewFetchIds\(root, relationMemos\)/)
-    expect(ts).toContain("const owner: ViewerRole = options.owner === 'friend' ? 'friend' : 'self'")
-    expect(ts).toContain("if (owner === 'friend')")
-    expect(ts).toContain('const friendOwnerUsername = String(options.ownerUsername || \'\').trim()')
-    expect(ts).toContain('void this.loadFriendMemoReferenceDetail(memoId, friendOwnerUsername)')
-    expect(ts).toContain("if (this.data.owner === 'friend')")
-    expect(wxml).toContain('root-viewer-role="{{rootViewerRole}}"')
-    expect(wxml).toContain('friend-reference-cards="{{friendReferenceCards}}"')
-    expect(wxml).not.toContain('action-mode=')
-    expect(wxml).not.toContain('- 我的 {{referencedByCards.length}} 条批注 -')
-  })
-
-  it('passes hydrated friend reference memos into self-owned detail projection', () => {
+  it('loads detail data through the self-owned loader only', () => {
     const ts = read('index.ts')
     const loader = readRoot('utils/memo-reference-detail-loader.ts')
 
     expect(ts).toContain('loadSelfMemoReferenceDetailData')
-    expect(loader).toContain('friendReferenceMemos')
-    expect(loader).toContain('friendReferences.memos')
-    expect(loader).toContain('collectFriendMemoReferencedByRefs')
-    expect(loader).toContain('...collectFriendMemoReferencedByRefs')
-    expect(loader).toContain("referencedByOwnerLabel: '我'")
-    expect(ts).toContain('openFriendMemoReferenceDetail')
-    expect(ts).toContain('event.detail?.ownerUsername')
-    expect(loader).not.toContain(
-      "relation === 'reference' ? friendReferences.previews.get(ref) : undefined",
-    )
-  })
-
-  it('hydrates outgoing friend refs on own relation cards in friend-owned detail', () => {
-    const loader = readRoot('utils/memo-reference-detail-loader.ts')
-    const start = loader.indexOf('export async function loadFriendMemoReferenceDetailData')
-    const end = loader.indexOf('export async function loadMemoReferenceListData', start)
-    expect(start).toBeGreaterThanOrEqual(0)
-    expect(end).toBeGreaterThan(start)
-    const section = loader.slice(start, end)
-
-    expect(section).toContain('const allMemos = [')
-    expect(section).toContain('loadFriendMemoReferences(')
-    expect(section).toContain('collectFriendMemoReferenceRefs(allMemos)')
-    expect(section).toContain('collectFriendMemoReferencedByRefs(allMemos)')
-    expect(section).toContain('resolveReferencePreview: (ref) => friendReferences.previews.get(ref)')
-  })
-
-  it('uses explicit friend usernames when hydrating friend-owned relation data', () => {
-    const loader = readRoot('utils/memo-reference-detail-loader.ts')
-
-    expect(loader).toContain('friendByUsername')
-    expect(loader).toContain('const username = String(friendUsername || \'\').trim()')
-    expect(loader).toContain('getFriendMemo(username, memoId)')
-    expect(loader).toContain('getFriendMemo(parsed.username, parsed.memoId)')
-    expect(loader).not.toMatch(/summary\?\.friend\b/)
-    expect(loader).not.toContain('getFriendMemo(memoId)')
-    expect(loader).not.toContain('getFriendMemo(parsed.memoId)')
-  })
-
-  it('passes explicit owner username when opening friend-owned detail routes', () => {
-    const ts = read('index.ts')
-    const section = methodSource(ts, 'handleMemoReferenceTap', '_getAllCards')
-
-    expect(section).toContain("this.data.owner === 'friend' && this.data.rootCard?.id === memoId")
-    expect(section).toContain("this.data.friendOwnerUsername || '').trim()")
-    expect(section).toContain('openFriendMemoReferenceDetail(memoId, this._navOptions({ ownerUsername }))')
+    expect(ts).not.toContain('loadFriendMemoReferenceDetail(')
+    expect(loader).not.toContain('loadFriendMemoReferenceDetailData')
+    expect(loader).not.toContain('getFriendMemo')
+    expect(loader).not.toContain('buildFriendMemoReferenceDetailProjection')
+    expect(loader).not.toContain('collectFriendMemoReferenceRefs')
+    expect(loader).not.toContain('collectFriendMemoReferencedByRefs')
+    expect(loader).toContain('const directIds = collectMemoReferenceDetailFetchIds(root)')
+    expect(loader).toMatch(/async function loadSelfMemoReferenceDetailData[\s\S]*const previewIds = collectMemoReferencePreviewFetchIds\(root, relationMemos\)/)
+    expect(ts).not.toContain('openFriendMemoReferenceDetail')
+    expect(ts).not.toContain('event.detail?.ownerUsername')
   })
 
   it('routes nested reference taps through _navOptions so share-entry uses cupertino and in-app uses cupertino-inside', () => {
@@ -413,8 +353,8 @@ describe('memo-reference-detail page contract', () => {
     const section = methodSource(ts, 'handleMemoReferenceTap', '_getAllCards')
 
     expect(section).toContain('openMemoReferenceDetail(memoId, this._navOptions())')
-    expect(section).toContain('openFriendMemoReferenceDetail(memoId, this._navOptions({ ownerUsername }))')
     expect(section).not.toContain("routeType: 'cupertino-inside'")
+    expect(ts).not.toContain('openFriendMemoReferenceDetail')
   })
 
   it('refreshes the local rendered cards after editable card actions succeed', () => {
@@ -429,7 +369,7 @@ describe('memo-reference-detail page contract', () => {
     expect(ts).toContain('_setDataWithRelationTab(removeMemoReferenceDetailCard')
     expect(ts).toContain('this.setData(updateMemoReferenceDetailCardTags')
     expect(ts).toContain('loadSelfMemoReferenceDetailData(memoId)')
-    expect(ts).toContain('loadFriendMemoReferenceDetailData(memoId, friendUsername)')
+    expect(ts).not.toContain('loadFriendMemoReferenceDetailData')
   })
 
   it('supports double tap edit for own cards and double tap quote for friend cards', () => {
@@ -457,8 +397,9 @@ describe('memo-reference-detail page contract', () => {
     const removeTag = methodSource(ts, 'handleCardTagRemove', 'handleCardShare')
 
     expect(ts).toContain('_permissionsFor(memoId: number): MemoPermissions')
-    expect(ts).toContain("this.data.owner === 'friend' && this.data.rootCard?.id === memoId")
-    expect(ts).toContain("resolvePermissions(card.ownerUsername ? 'friend' : 'self')")
+    expect(ts).toContain("if (!card) return resolvePermissions('denied')")
+    expect(ts).toContain("return resolvePermissions('self')")
+    expect(ts).not.toContain('ownerUsername')
     expect(ts).toContain('type CardActionsHost')
     expect(ts).toContain('_createCardActionsHost(): CardActionsHost')
     expect(ts).not.toContain('type MemoCardEventHost')
@@ -475,10 +416,9 @@ describe('memo-reference-detail page contract', () => {
       '() => void this._refreshAfterMemoComposeSaved()',
     )
 
-    expect(quote).toContain('const p = this._permissionsFor(memoId)')
-    expect(quote).toContain('if (!p.canQuote) return')
+    expect(quote).toContain('this._permissionsFor(memoId).canQuote')
     expect(quote).toContain('onSaved: () => void this._refreshAfterMemoComposeSaved()')
-    expect(quote).toContain('openQuoteComposeForCard(cards, memoId, this._navOptions({')
+    expect(quote).toContain('openQuoteComposeForCard(this._getAllCards(), memoId, this._navOptions({')
 
     expect(deleteAction).toContain('!this._permissionsFor(memoId).canDelete')
     expect(deleteAction).toContain('confirmDeleteMemo(this._createCardActionsHost(), memoId)')
@@ -502,7 +442,7 @@ describe('memo-reference-detail page contract', () => {
     const copyAction = methodSource(ts, 'handleCardCopy', 'handleCardShare')
 
     expect(wxml).toContain('bind:cardcopy="handleCardCopy"')
-    expect(ts).toContain('handleCardCopy: (event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) => void')
+    expect(ts).toContain('handleCardCopy: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void')
     expect(copyAction).toContain('copyMemoContentForCard(this._getAllCards(), memoId)')
     expect(copyAction).not.toContain('openMemoShareImage')
   })

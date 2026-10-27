@@ -1,10 +1,9 @@
 import type { UserProfile } from '../models/auth'
-import type { FriendProfile } from '../models/friend'
 import type { MemoQueryDraft, MemoRefId } from '../models/memo'
 import { memoShareRichTextNodesContainSearchMark } from './memo-highlight'
 import type { MemoCardItem } from './memo-list-presentation'
 import { renderMemoMarkdownToNodes } from './memo-markdown'
-import { ownMemoIdFromRef, parseFriendMemoRef } from './memo-ref-id'
+import { ownMemoIdFromRef } from './memo-ref-id'
 import { cloneMemoQueryDraft } from './memo-query'
 import { AppRoutes } from './routes'
 
@@ -20,7 +19,6 @@ export const RouteTypes = {
 
 export interface MemoSearchInitPayload {
   draft: MemoQueryDraft
-  targetFriend?: FriendProfile
 }
 
 export type AccountEditSheetMode = 'nickname' | 'login-name' | 'password'
@@ -43,8 +41,6 @@ const MEMO_REFERENCE_DETAIL_PAGE = AppRoutes.memoReferenceDetail
 const MEMO_SEARCH_PAGE = AppRoutes.search
 const MEMO_SHARE_IMAGE_PAGE = AppRoutes.memoShareImage
 const SETTINGS_PAGE = AppRoutes.settings
-const FRIEND_SEARCH_PAGE = AppRoutes.friendSearch
-const NOTIFICATIONS_PAGE = AppRoutes.notifications
 const ACCOUNT_DETAIL_PAGE = AppRoutes.accountDetail
 const ACCOUNT_EDIT_SHEET_PAGE = AppRoutes.accountEditSheet
 
@@ -54,13 +50,6 @@ function normalizeMemoRefList(memoIds: Array<MemoRefId | number>): MemoRefId[] {
   for (const candidate of memoIds) {
     const rawRef = String(candidate ?? '').trim()
     if (!rawRef) continue
-
-    if (parseFriendMemoRef(rawRef)) {
-      if (seen.has(rawRef)) continue
-      seen.add(rawRef)
-      result.push(rawRef)
-      continue
-    }
 
     const ownMemoId = ownMemoIdFromRef(rawRef)
     if (ownMemoId === null) continue
@@ -177,23 +166,6 @@ export function openMemoReferences(memoId: number, options?: { routeType?: strin
   ;(wx.navigateTo as (opt: SkylineNavigateToOption) => void)(navOptions)
 }
 
-export function openFriendMemoReferenceDetail(
-  memoId: number,
-  options?: { routeType?: string; ownerUsername?: string },
-) {
-  const ownerUsername = String(options?.ownerUsername || '').trim()
-  const ownerQuery = ownerUsername ? `&ownerUsername=${encodeURIComponent(ownerUsername)}` : ''
-  const navOptions: SkylineNavigateToOption = {
-    url: `${MEMO_REFERENCE_DETAIL_PAGE}?memoId=${memoId}&owner=friend${ownerQuery}`,
-    routeType: options?.routeType || 'cupertino',
-    routeConfig: {
-      popGestureDirection: 'multi',
-    },
-  }
-
-  ;(wx.navigateTo as (opt: SkylineNavigateToOption) => void)(navOptions)
-}
-
 export function openMemoReferenceList(
   memoIds: Array<MemoRefId | number>,
   options?: { routeType?: string },
@@ -216,13 +188,9 @@ export function openMemoReferenceList(
 export function openMemoSearch(
   query: MemoQueryDraft,
   onApplied: (nextQuery: MemoQueryDraft) => void,
-  options?: { targetFriend?: FriendProfile },
 ) {
   const initialQuery = cloneMemoQueryDraft(query)
   const payload: MemoSearchInitPayload = { draft: initialQuery }
-  if (options?.targetFriend) {
-    payload.targetFriend = options.targetFriend
-  }
 
   const navOptions: SkylineNavigateToOption = {
     url: MEMO_SEARCH_PAGE,
@@ -247,18 +215,6 @@ export function openSettings() {
   const options: SkylineNavigateToOption = {
     url: SETTINGS_PAGE,
     routeType: RouteTypes.upwards,
-  }
-
-  ;(wx.navigateTo as (opt: SkylineNavigateToOption) => void)(options)
-}
-
-export function openFriendSearch() {
-  const options: SkylineNavigateToOption = {
-    url: FRIEND_SEARCH_PAGE,
-    routeType: 'cupertino',
-    routeConfig: {
-      popGestureDirection: 'multi',
-    },
   }
 
   ;(wx.navigateTo as (opt: SkylineNavigateToOption) => void)(options)
@@ -296,15 +252,6 @@ export function openAccountEditSheet(
         }
       ).eventChannel.emit('account-edit-sheet-init', { mode, profile })
     },
-  }
-
-  ;(wx.navigateTo as (opt: SkylineNavigateToOption) => void)(options)
-}
-
-export function openNotifications() {
-  const options: SkylineNavigateToOption = {
-    url: NOTIFICATIONS_PAGE,
-    routeType: RouteTypes.upwards,
   }
 
   ;(wx.navigateTo as (opt: SkylineNavigateToOption) => void)(options)

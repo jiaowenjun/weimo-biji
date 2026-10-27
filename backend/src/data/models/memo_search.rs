@@ -3,7 +3,7 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use serde::{Deserialize, Serialize};
 use time::{Date, Month, OffsetDateTime};
 
-use crate::data::{FriendMemoView, Memo, MemoId, MemoView};
+use crate::data::{Memo, MemoId, MemoView};
 use crate::error::{WeimoError, WeimoResult};
 
 pub const DEFAULT_MEMO_SEARCH_PAGE_SIZE: usize = 20;
@@ -228,43 +228,6 @@ impl MemoSearchRequest {
 #[derive(Debug, Serialize)]
 pub struct MemoSearchPage {
     pub items: Vec<MemoView>,
-    pub next_cursor: Option<String>,
-    pub has_more: bool,
-    pub total_count: usize,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
-pub struct FriendMemoSearchRequest {
-    #[serde(flatten)]
-    pub query: MemoSearchQuery,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub cursor: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_size: Option<usize>,
-}
-
-impl FriendMemoSearchRequest {
-    pub fn validate(&self) -> WeimoResult<()> {
-        self.query.validate()?;
-        if let Some(cursor) = &self.cursor {
-            MemoSearchCursor::decode(cursor)?;
-        }
-        Ok(())
-    }
-
-    pub fn paginate_hits(&self, hits: Vec<MemoSearchHit>) -> WeimoResult<MemoSearchSlice> {
-        MemoSearchRequest {
-            query: self.query.clone(),
-            cursor: self.cursor.clone(),
-            page_size: self.page_size,
-        }
-        .paginate_hits(hits)
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct FriendMemoSearchPage {
-    pub items: Vec<FriendMemoView>,
     pub next_cursor: Option<String>,
     pub has_more: bool,
     pub total_count: usize,
@@ -590,40 +553,6 @@ mod tests {
 
         assert!(matches!(
             query.validate(),
-            Err(WeimoError::InvalidSearchQuery(_))
-        ));
-    }
-
-    #[test]
-    fn test_friend_search_request_deserializes_flat_filters() {
-        let request: FriendMemoSearchRequest = serde_json::from_value(serde_json::json!({
-            "page_size": 8,
-            "tag": "work",
-            "created_at": { "kind": "day", "year": 2026, "month": 5, "day": 1 }
-        }))
-        .expect("friend search request should parse flat filters");
-
-        assert_eq!(request.page_size, Some(8));
-        assert_eq!(request.query.tag.as_deref(), Some("work"));
-        assert_eq!(
-            request.query.created_at,
-            Some(MemoDateFilter::Day {
-                year: 2026,
-                month: 5,
-                day: 1,
-            })
-        );
-    }
-
-    #[test]
-    fn test_friend_search_request_rejects_invalid_date_filter() {
-        let request: FriendMemoSearchRequest = serde_json::from_value(serde_json::json!({
-            "created_at": { "kind": "day", "year": 2026, "month": 2, "day": 30 }
-        }))
-        .expect("serde accepts shape before domain validation");
-
-        assert!(matches!(
-            request.validate(),
             Err(WeimoError::InvalidSearchQuery(_))
         ));
     }

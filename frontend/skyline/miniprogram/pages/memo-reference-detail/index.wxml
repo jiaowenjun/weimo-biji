@@ -40,7 +40,7 @@
 
         <view wx:elif="{{rootViewerRole === 'denied'}}" class="memo-reference-detail__denied">
           <text class="memo-reference-detail__denied-title">无权限查看此笔记</text>
-          <text class="memo-reference-detail__denied-subtitle">仅笔记作者和其好友可查看</text>
+          <text class="memo-reference-detail__denied-subtitle">仅笔记作者可查看</text>
           <view class="memo-reference-detail__denied-action">
             <weimo-button
               variant="solid"
@@ -58,17 +58,10 @@
           wx:else
           id="memo-reference-detail-view"
           mode="{{mode}}"
-          owner="{{owner}}"
           root-viewer-role="{{rootViewerRole}}"
           root-card="{{rootCard}}"
           reference-cards="{{referenceCards}}"
-          own-reference-cards="{{ownReferenceCards}}"
-          friend-reference-cards="{{friendReferenceCards}}"
-          friend-reference-owner-label="{{friendReferenceOwnerLabel}}"
           referenced-by-cards="{{referencedByCards}}"
-          own-referenced-by-cards="{{ownReferencedByCards}}"
-          friend-referenced-by-cards="{{friendReferencedByCards}}"
-          friend-referenced-by-owner-label="{{friendReferencedByOwnerLabel}}"
           selected-relation-tab="{{selectedRelationTab}}"
           tab-render-state="{{tabRenderState}}"
           tab-slider-animated="{{tabSliderAnimated}}"

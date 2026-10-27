@@ -47,14 +47,13 @@ describe('sidebar tag tree friend row contract', () => {
     expect(wxss).not.toContain('tag-tree__friend-avatar')
   })
 
-  it('keeps visible rows limited to actual tags when a friend profile exists', async () => {
+  it('keeps visible rows limited to actual tag nodes', async () => {
     vi.stubGlobal('wx', { nextTick: (callback: () => void) => callback() })
     const options = await captureComponentOptions(() => import('../index'))
     const instance = createComponentInstance(options, {
       nodes: [{ label: '工作', tag: '工作', item_count: 1, children: [] }],
       selectedTag: '',
       expandedTags: [],
-      friendProfile: { username: 'bob', nickname: 'Bob' },
     })
     Object.assign(instance, options.methods)
 
@@ -62,7 +61,7 @@ describe('sidebar tag tree friend row contract', () => {
 
     const rows = instance.data.visibleRows as Array<{ tag: string; label: string }>
     expect(rows.map((row) => row.tag)).toEqual(['工作'])
-    expect(rows).not.toContainEqual(expect.objectContaining({ tag: '__friend__:bob' }))
+    expect(rows).not.toContainEqual(expect.objectContaining({ tag: expect.stringContaining('__friend__') }))
   })
 
   it('hides tag menus when tagMenuEnabled is false', () => {

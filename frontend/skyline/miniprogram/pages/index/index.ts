@@ -1,20 +1,9 @@
-import {
-  friendByUsername,
-  type FriendProfile,
-  type FriendSummary,
-} from '../../models/friend'
 import type { MemoQueryDraft } from '../../models/memo'
 import type { MemoCreatedAtSort } from '../../utils/memo-list-sort-prefs'
 import type { TagTreeMeta } from '../../models/tag'
 import type { WorkspaceStats } from '../../models/workspace'
 import type { SidebarAnimationContext } from '../../components/home-sidebar/index'
 import { getCurrentUser } from '../../services/auth'
-import {
-  getFriendStats,
-  getFriendSummary,
-  getFriendTagTree,
-  getFriendUnreadCount,
-} from '../../services/friend'
 import {
   syncWorkspaceStoreRuntime,
   workspaceStore,
@@ -25,10 +14,7 @@ import { bindMemoList, type MemoListBinding } from '../../store/store-bindings/b
 import type { MemoListEntry } from '../../store/memo-cache-types'
 import { memoListKeyFromQuery } from '../../store/workspace-keys'
 import { hapticTap } from '../../utils/haptic'
-import {
-  resolveFriendHomeNavTitle,
-  resolveHomeNavTitle,
-} from '../../utils/home-nav-title'
+import { resolveHomeNavTitle } from '../../utils/home-nav-title'
 import {
   buildMemoListSearchQuery,
   cloneMemoQueryDraft,
@@ -48,7 +34,6 @@ import {
   openMemoCompose,
   openMemoComposeTagPicker,
   openMemoSearch,
-  openNotifications,
   openSettings,
   reLaunchToHome,
 } from '../../utils/navigation'
@@ -84,10 +69,6 @@ import {
   type MemoRenderListItem,
 } from '../../utils/memo-list-presentation'
 import {
-  createFriendReferencePreviewHydrator,
-  type FriendReferencePreviewHydrator,
-} from '../../utils/friend-reference-preview-hydrator'
-import {
   buildHomeTitleMenuItems,
   isAllTagsTitleMenuAction,
   isGuestAuthTitleMenuAction,
@@ -95,8 +76,6 @@ import {
   isMemoSortOldestFirstTitleMenuAction,
   isParentTagTitleMenuAction,
   isRefreshTitleMenuAction,
-  isViewFriendMemosTitleMenuAction,
-  isViewMyMemosTitleMenuAction,
   runHomePageRefreshActions,
 } from '../../utils/page-refresh'
 import { parentTagPath } from '../../utils/tag-path'
@@ -106,9 +85,6 @@ import {
   INDEX_NAV_CHROME_DELTA_THRESHOLD,
   INDEX_NAV_CHROME_TOP_EPS,
 } from './nav-chrome-state'
-import { createFriendUnreadPoller } from './friend-polling'
-import { friendMemoListLoadStartPatch } from './friend-memo-list'
-import { refreshFriendMemoList, loadMoreFriendMemoList } from './friend-memo-list-ops'
 import { resolveSidebarTarget, shouldAcceptSidebarGesture } from './sidebar-gesture-core'
 import {
   createMemoScopeStrategy,
@@ -129,22 +105,8 @@ const GESTURE_BEGIN = 1
 const GESTURE_ACTIVE = 2
 const GESTURE_END = 3
 const GESTURE_CANCELLED = 4
-type FriendUnreadPoller = ReturnType<typeof createFriendUnreadPoller>
-
-type HomeMemoScope =
-  | { kind: 'self' }
-  | { kind: 'friend'; targetFriend: FriendProfile }
-
 function navBarTitleLeadingIconForSelectedTag(selectedTag: string): '' | 'hashtag' {
   return String(selectedTag || '').trim() ? 'hashtag' : ''
-}
-
-function friendNavTitle(friend: FriendProfile, selectedTag: string, windowWidthPx: number): string {
-  return resolveFriendHomeNavTitle(
-    friend.nickname || friend.username,
-    selectedTag,
-    windowWidthPx,
-  )
 }
 
 function selfNavUserLabel(session: WeimoSessionState): string | null {
@@ -165,40 +127,13 @@ function selfNavTitle(
 
 function buildIndexTitleMenuItems(
   selectedTag: string,
-  scope: HomeMemoScope,
-  friendProfiles: FriendProfile[],
   memoCreatedAtSort: MemoCreatedAtSort,
   isLoggedIn: boolean,
 ): PopoverMenuItem[] {
-  if (scope.kind === 'friend') {
-    return buildHomeTitleMenuItems(selectedTag, {
-      scope: 'friend',
-      memoCreatedAtSort,
-    })
-  }
-
   return buildHomeTitleMenuItems(selectedTag, {
-    scope: 'self',
-    canViewFriendMemos: friendProfiles.some((friend) => !!String(friend.username || '').trim()),
     showGuestAuthAction: !isLoggedIn,
     memoCreatedAtSort,
   })
-}
-
-function resolveSelectedFriendProfile(
-  friendProfiles: FriendProfile[],
-  selectedFriendUsername: string,
-  scope: HomeMemoScope,
-): FriendProfile | null {
-  if (scope.kind === 'friend') {
-    const currentScopeFriend = friendByUsername(friendProfiles, scope.targetFriend.username)
-    if (currentScopeFriend) return currentScopeFriend
-  }
-
-  const selectedFriend = friendByUsername(friendProfiles, selectedFriendUsername)
-  if (selectedFriend) return selectedFriend
-
-  return friendProfiles.length === 1 ? friendProfiles[0]! : null
 }
 
 interface IndexPageData {
@@ -206,11 +141,6 @@ interface IndexPageData {
   sidebarVisible: boolean
   stats: WorkspaceStats | null
   statsLoading: boolean
-  friendProfiles: FriendProfile[]
-  /** 当前选中的好友 username；空字符串表示未选中。它是首页 friend scope 选中态的唯一真相源。 */
-  selectedFriendUsername: string
-  friendUnreadCount: number
-  homeMemoScope: HomeMemoScope
   viewerRole: ViewerRole
   tagTreeNodes: TagTreeMeta[]
   tagTreeUntaggedCount: number
@@ -229,15 +159,6 @@ interface IndexPageData {
   memoQuery: MemoQueryDraft
   memoDateLabel: string
   memoFacetLabel: string
-  friendMemoQuery: MemoQueryDraft
-  friendMemoDateLabel: string
-  friendMemoFacetLabel: string
-  friendStats: WorkspaceStats | null
-  friendStatsLoading: boolean
-  friendTagTreeNodes: TagTreeMeta[]
-  friendTagTreeLoading: boolean
-  friendTagTreeInitialized: boolean
-  friendTagTreeLoadFailed: boolean
   emptyTitle: string
   emptyDescription: string
   emptyActionText: string
@@ -258,8 +179,6 @@ interface IndexPageCustom {
   _memoListBinding: MemoListBinding | null
   _statsBinding: WorkspaceStatsBinding | null
   _tagTreeBinding: TagTreeBinding | null
-  _friendUnreadPoller: FriendUnreadPoller | null
-  _friendReferenceHydrator: FriendReferencePreviewHydrator
   _selfMemoListOnChange: ((entry: MemoListEntry | undefined) => void) | null
   _indexPageScrollView: WechatMiniprogram.ScrollViewContext | null
   _currentListKey: () => string
@@ -274,26 +193,14 @@ interface IndexPageCustom {
   _hadSessionOnLastShow: boolean
   onLoad: (options: Record<string, string | undefined>) => void
   syncUserProfile: () => Promise<void>
-  syncFriendSummary: () => Promise<void>
   createSelfMemoListOnChange: () => (entry: MemoListEntry | undefined) => void
-  startFriendUnreadPolling: () => void
-  stopFriendUnreadPolling: () => void
   syncSidebarStats: () => Promise<void>
   syncTagTree: () => Promise<void>
-  ensureFriendSidebarData: () => Promise<void>
-  refreshFriendSidebarStats: () => Promise<void>
-  refreshFriendTagTree: () => Promise<void>
-  switchToSelfScope: (options?: { resetScroll?: boolean }) => void
-  switchToFriendScope: (friend: FriendProfile) => Promise<void>
   refreshMemoList: () => Promise<void>
   loadMoreMemoList: () => Promise<void>
   cacheIndexPageScrollView: () => void
   resetIndexPageScroll: () => void
   applyMemoQuery: (
-    nextQuery: MemoQueryDraft,
-    options?: { resetScroll?: boolean },
-  ) => Promise<void>
-  applyFriendMemoQuery: (
     nextQuery: MemoQueryDraft,
     options?: { resetScroll?: boolean },
   ) => Promise<void>
@@ -323,7 +230,6 @@ interface IndexPageCustom {
   _sidebarSyncLastTarget: ((open: boolean) => void) | null
   _ensureSidebarCtx: () => boolean
   handleSidebarSettings: () => void
-  handleSidebarNotifications: () => void
   handleSidebarAuth: () => void
   handleSearchTap: () => void
   handleLogout: () => void
@@ -352,7 +258,7 @@ interface IndexPageCustom {
   ) => void
   handleMemoTagAdd: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleMemoTagRemove: (event: WechatMiniprogram.CustomEvent<{ memoId: number; tag: string }>) => void
-  handleMemoShare: (event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername: string }>) => void
+  handleMemoShare: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleMemoCopy: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleCardMenuChange: (event: WechatMiniprogram.CustomEvent<{ active: boolean }>) => void
   onCardMenuActiveChange: (active: boolean) => void
@@ -371,10 +277,6 @@ Page({
     sidebarVisible: false,
     stats: null as WorkspaceStats | null,
     statsLoading: false,
-    friendProfiles: [] as FriendProfile[],
-    selectedFriendUsername: '',
-    friendUnreadCount: 0,
-    homeMemoScope: { kind: 'self' } as HomeMemoScope,
     viewerRole: 'self' as ViewerRole,
     tagTreeNodes: [] as TagTreeMeta[],
     tagTreeUntaggedCount: 0,
@@ -393,15 +295,6 @@ Page({
     memoQuery: createEmptyMemoQueryDraft() as MemoQueryDraft,
     memoDateLabel: '',
     memoFacetLabel: '',
-    friendMemoQuery: createEmptyMemoQueryDraft() as MemoQueryDraft,
-    friendMemoDateLabel: '',
-    friendMemoFacetLabel: '',
-    friendStats: null as WorkspaceStats | null,
-    friendStatsLoading: false,
-    friendTagTreeNodes: [] as TagTreeMeta[],
-    friendTagTreeLoading: false,
-    friendTagTreeInitialized: false,
-    friendTagTreeLoadFailed: false,
     emptyTitle: '还没有笔记',
     emptyDescription: '点击 + 记录你的第一个想法',
     emptyActionText: '',
@@ -414,15 +307,12 @@ Page({
     navBarTitle: resolveHomeNavTitle('', wx.getWindowInfo().windowWidth, selfNavUserLabel(getSession())),
     navBarTitleLeadingIcon: '',
     memoCreatedAtSort: 'desc',
-    titleMenuItems: buildIndexTitleMenuItems('', { kind: 'self' }, [], 'desc', hasSession()),
+    titleMenuItems: buildIndexTitleMenuItems('', 'desc', hasSession()),
   },
 
   _memoListBinding: null as MemoListBinding | null,
   _statsBinding: null as WorkspaceStatsBinding | null,
   _tagTreeBinding: null as TagTreeBinding | null,
-  _friendUnreadPoller: null as FriendUnreadPoller | null,
-  // 不可用 Map/Set/策略实例填 Page 根字段：基础库会做简单值快照，须在 onLoad 首行赋值（见控制台 Free data warning）
-  _friendReferenceHydrator: null as unknown as FriendReferencePreviewHydrator,
   _selfMemoListOnChange: null as ((entry: MemoListEntry | undefined) => void) | null,
   _indexPageScrollView: null as WechatMiniprogram.ScrollViewContext | null,
   _deletingMemoId: null,
@@ -449,7 +339,6 @@ Page({
     return {
       memoCards: this.data.memoCards,
       host: this,
-      friend: this._strategy.getFriend(),
       refreshList: () => this.refreshMemoList(),
     }
   },
@@ -472,54 +361,24 @@ Page({
   },
 
   createSelfMemoListOnChange() {
-    const onChange = makeMemoListOnChange(this, {
-      resolveReferencePreview: (ref) => this._friendReferenceHydrator.resolve(ref),
-    })
+    const onChange = makeMemoListOnChange(this)
     this._selfMemoListOnChange = onChange
 
-    return (entry: MemoListEntry | undefined) => {
-      onChange(entry)
-      if (this.data.homeMemoScope.kind !== 'self' || entry?.status !== 'success') return
-      const memos = entry.pages.flatMap((page) => page.items)
-      void this._friendReferenceHydrator.hydrate(memos)
-    }
+    return onChange
   },
 
   onLoad(_options: Record<string, string | undefined>) {
     console.log('[index] onLoad fired')
-    this._friendReferenceHydrator = createFriendReferencePreviewHydrator({
-      getViewerUsername: () => getSession().user?.username ?? '',
-      onPreviewsUpdated: () => {
-        if (
-          this.data.homeMemoScope.kind === 'self' &&
-          this._selfMemoListOnChange &&
-          this._memoListBinding
-        ) {
-          this._selfMemoListOnChange(this._memoListBinding.selectListEntry())
-        }
-      },
-    })
 
     if (!this._sidebarPageGestureEnabled) {
       this._sidebarPageGestureEnabled = wx.worklet.shared(1)
     }
-    this._friendUnreadPoller = createFriendUnreadPoller({
-      fetchUnread: async () => {
-        if (!hasSession()) return 0
-        const result = await getFriendUnreadCount()
-        return result.unread_count
-      },
-      onUnread: (count) => {
-        this.setData({ friendUnreadCount: count })
-      },
-    })
 
     const w = wx.getWindowInfo().windowWidth
     const capsuleRect = wx.getMenuButtonBoundingClientRect()
     const windowInfo = wx.getWindowInfo()
     this._sidebarPageGestureEnabled.value = 1
     const normalizedInitial = normalizeMemoQueryDraft(createEmptyMemoQueryDraft())
-    const initialScope: HomeMemoScope = { kind: 'self' }
     const effectiveMemoQuery = normalizedInitial
     const navChromeMetrics = resolvePageNavChromeMetrics(windowInfo, {
       top: capsuleRect.top,
@@ -531,14 +390,10 @@ Page({
 
     this.setData(
       {
-        homeMemoScope: initialScope,
         viewerRole: this._selfViewerRole(),
         memoQuery: cloneMemoQueryDraft(effectiveMemoQuery),
         memoDateLabel: formatMemoQueryDateLabel(effectiveMemoQuery),
         memoFacetLabel: formatMemoFacetLabel(effectiveMemoQuery.listFacet),
-        friendMemoQuery: this.data.friendMemoQuery,
-        friendMemoDateLabel: this.data.friendMemoDateLabel,
-        friendMemoFacetLabel: this.data.friendMemoFacetLabel,
         navBarOverlayHeight: navChromeMetrics.overlayHeight,
         navBarStatusMaskHeight: navChromeMetrics.statusMaskHeight,
         navBarTitle: selfNavTitle(normalizedInitial.selectedTag, w, getSession()),
@@ -546,8 +401,6 @@ Page({
         memoCreatedAtSort: initialMemoCreatedAtSort,
         titleMenuItems: buildIndexTitleMenuItems(
           normalizedInitial.selectedTag,
-          initialScope,
-          this.data.friendProfiles,
           initialMemoCreatedAtSort,
           hasSession(),
         ),
@@ -575,7 +428,7 @@ Page({
     })
 
     const getMemoSort = () => this.data.memoCreatedAtSort
-    this._strategy = createMemoScopeStrategy({ kind: 'self' }, getMemoSort)
+    this._strategy = createMemoScopeStrategy(getMemoSort)
 
     const initialKey = this._currentListKey()
     this._memoListBinding = bindMemoList(initialKey, this.createSelfMemoListOnChange())
@@ -606,32 +459,12 @@ Page({
     const w = wx.getWindowInfo().windowWidth
     const currentQuery = this._strategy.getCurrentQuery(this.data)
     const tag = currentQuery.selectedTag
-    const titleMenuItems = buildIndexTitleMenuItems(
-      tag,
-      this.data.homeMemoScope,
-      this.data.friendProfiles,
-      this.data.memoCreatedAtSort,
-      nowHasSession,
-    )
-    const titlePatch = this.data.homeMemoScope.kind === 'friend'
-      ? {
-        navBarTitle: friendNavTitle(
-          this.data.homeMemoScope.targetFriend,
-          tag,
-          w,
-        ),
-        navBarTitleLeadingIcon: '' as const,
-        titleMenuItems,
-      }
-      : {
-        navBarTitle: selfNavTitle(tag, w, getSession()),
-        navBarTitleLeadingIcon: navBarTitleLeadingIconForSelectedTag(tag),
-        titleMenuItems,
-      }
     this.setData({
       session: getSession(),
-      viewerRole: this.data.homeMemoScope.kind === 'friend' ? 'friend' : this._selfViewerRole(),
-      ...titlePatch,
+      viewerRole: this._selfViewerRole(),
+      navBarTitle: selfNavTitle(tag, w, getSession()),
+      navBarTitleLeadingIcon: navBarTitleLeadingIconForSelectedTag(tag),
+      titleMenuItems: buildIndexTitleMenuItems(tag, this.data.memoCreatedAtSort, nowHasSession),
     })
 
     // 异常时序兜底：onReady 已尝试过；这里再补一刀，缓存已就绪则早返回，无副作用
@@ -642,13 +475,11 @@ Page({
     this._modifyingMemoId = null
 
     void this.syncUserProfile()
-    void this.syncFriendSummary()
-    this.startFriendUnreadPolling()
     void workspaceStore.ensureStats()
     void workspaceStore.ensureTagTree()
     if (sessionEnded) {
       this.resetFiltersAfterLogout()
-    } else if (this.data.homeMemoScope.kind === 'self') {
+    } else {
       void workspaceStore.ensureMemoList(
         this._currentListKey(),
         buildMemoListSearchQuery(this.data.memoQuery, this.data.memoCreatedAtSort),
@@ -657,21 +488,16 @@ Page({
     }
   },
 
-  onHide() {
-    this.stopFriendUnreadPolling()
-  },
+  onHide() {},
 
   onUnload() {
-    this.stopFriendUnreadPolling()
     this._statsBinding?.unsubscribe()
     this._tagTreeBinding?.unsubscribe()
     this._memoListBinding?.unsubscribe()
     this._statsBinding = null
     this._tagTreeBinding = null
     this._memoListBinding = null
-    this._friendUnreadPoller = null
     this._selfMemoListOnChange = null
-    this._friendReferenceHydrator.clear()
     this._indexPageScrollView = null
     if (this._enteringCleanupTimer != null) {
       clearTimeout(this._enteringCleanupTimer)
@@ -718,10 +544,7 @@ Page({
       const session = getSession()
       const patch: Partial<IndexPageData> = { session }
       const w = wx.getWindowInfo().windowWidth
-      if (
-        this.data.homeMemoScope.kind === 'self' &&
-        !String(this.data.memoQuery.selectedTag || '').trim()
-      ) {
+      if (!String(this.data.memoQuery.selectedTag || '').trim()) {
         patch.navBarTitle = selfNavTitle('', w, session)
       }
       this.setData(patch)
@@ -730,161 +553,12 @@ Page({
     }
   },
 
-  async syncFriendSummary() {
-    if (!hasSession()) {
-      const patch: Partial<IndexPageData> = {
-        friendProfiles: [],
-        selectedFriendUsername: '',
-        friendUnreadCount: 0,
-      }
-      if (this.data.homeMemoScope.kind === 'self') {
-        patch.titleMenuItems = buildIndexTitleMenuItems(
-          this.data.memoQuery.selectedTag,
-          this.data.homeMemoScope,
-          [],
-          this.data.memoCreatedAtSort,
-          false,
-        )
-      }
-      this.setData(patch)
-      return
-    }
-    try {
-      const summary: FriendSummary = await getFriendSummary()
-      const friendProfiles = summary.friends
-      const selectedFriend = resolveSelectedFriendProfile(
-        friendProfiles,
-        this.data.selectedFriendUsername,
-        this.data.homeMemoScope,
-      )
-      const patch: Partial<IndexPageData> = {
-        friendProfiles,
-        selectedFriendUsername: selectedFriend?.username || '',
-        friendUnreadCount: summary.unread_count,
-      }
-      if (this.data.homeMemoScope.kind === 'friend') {
-        if (selectedFriend) {
-          this._strategy = createMemoScopeStrategy(
-            { kind: 'friend', targetFriend: selectedFriend },
-            () => this.data.memoCreatedAtSort,
-          )
-          patch.homeMemoScope = { kind: 'friend', targetFriend: selectedFriend }
-          patch.viewerRole = 'friend'
-          patch.navBarTitleLeadingIcon = ''
-        } else {
-          this.setData(patch, () => {
-            this.switchToSelfScope()
-          })
-          return
-        }
-      }
-      if (this.data.homeMemoScope.kind === 'self') {
-        patch.titleMenuItems = buildIndexTitleMenuItems(
-          this.data.memoQuery.selectedTag,
-          this.data.homeMemoScope,
-          friendProfiles,
-          this.data.memoCreatedAtSort,
-          true,
-        )
-      } else if (patch.homeMemoScope?.kind === 'self') {
-        patch.titleMenuItems = buildIndexTitleMenuItems(
-          this.data.memoQuery.selectedTag,
-          { kind: 'self' },
-          friendProfiles,
-          this.data.memoCreatedAtSort,
-          true,
-        )
-      } else if (patch.homeMemoScope?.kind === 'friend') {
-        patch.navBarTitle = friendNavTitle(
-          patch.homeMemoScope.targetFriend,
-          this.data.friendMemoQuery.selectedTag,
-          wx.getWindowInfo().windowWidth,
-        )
-        patch.titleMenuItems = buildIndexTitleMenuItems(
-          this.data.friendMemoQuery.selectedTag,
-          patch.homeMemoScope,
-          friendProfiles,
-          this.data.memoCreatedAtSort,
-          true,
-        )
-      }
-      this.setData(patch)
-    } catch {
-      // Social chrome is non-blocking for the memo list.
-    }
-  },
-
-  startFriendUnreadPolling() {
-    if (!hasSession() || !this.data.sidebarVisible) return
-    this._friendUnreadPoller?.start()
-  },
-
-  stopFriendUnreadPolling() {
-    this._friendUnreadPoller?.stop()
-  },
-
   async syncSidebarStats() {
-    if (this.data.homeMemoScope.kind === 'friend') {
-      await this.refreshFriendSidebarStats()
-      return
-    }
     await workspaceStore.refreshStats()
   },
 
   async syncTagTree() {
-    if (this.data.homeMemoScope.kind === 'friend') {
-      await this.refreshFriendTagTree()
-      return
-    }
     await workspaceStore.refreshTagTree()
-  },
-
-  async ensureFriendSidebarData() {
-    if (this.data.homeMemoScope.kind !== 'friend') return
-    await Promise.all([
-      this.refreshFriendSidebarStats(),
-      this.refreshFriendTagTree(),
-    ])
-  },
-
-  async refreshFriendSidebarStats() {
-    if (this.data.homeMemoScope.kind !== 'friend') return
-    this.setData({ friendStatsLoading: true })
-    try {
-      const friend = this.data.homeMemoScope.targetFriend
-      const friendStats = await getFriendStats(friend.username)
-      if (this.data.homeMemoScope.kind !== 'friend') return
-      this.setData({ friendStats, friendStatsLoading: false })
-    } catch {
-      if (this.data.homeMemoScope.kind !== 'friend') return
-      this.setData({ friendStatsLoading: false })
-    }
-  },
-
-  async refreshFriendTagTree() {
-    if (this.data.homeMemoScope.kind !== 'friend') return
-    this.setData({
-      friendTagTreeLoading: true,
-      friendTagTreeLoadFailed: false,
-    })
-    try {
-      const friend = this.data.homeMemoScope.targetFriend
-      const tree = await getFriendTagTree(friend.username)
-      if (this.data.homeMemoScope.kind !== 'friend') return
-      this.setData({
-        friendTagTreeNodes: tree.children,
-        friendTagTreeLoading: false,
-        friendTagTreeInitialized: true,
-        friendTagTreeLoadFailed: false,
-      })
-    } catch {
-      if (this.data.homeMemoScope.kind !== 'friend') return
-      this.setData({
-        friendTagTreeLoading: false,
-        friendTagTreeInitialized: true,
-        friendTagTreeLoadFailed: true,
-      })
-    }
   },
 
   updateEmptyState() {
@@ -892,78 +566,17 @@ Page({
     const currentDateLabel = this._strategy.getCurrentDateLabel(this.data)
 
     this.setData(deriveIndexEmptyState({
-      scopeKind: this.data.homeMemoScope.kind,
+      scopeKind: 'self',
       query: currentQuery,
       dateLabel: currentDateLabel,
     }))
   },
 
   resetFiltersAfterLogout() {
-    this.stopFriendUnreadPolling()
-    this._friendReferenceHydrator.clear()
-    const emptyFriendQuery = createEmptyMemoQueryDraft()
-    this.setData({
-      friendProfiles: [],
-      selectedFriendUsername: '',
-      friendUnreadCount: 0,
-      friendMemoQuery: cloneMemoQueryDraft(emptyFriendQuery),
-      friendMemoDateLabel: '',
-      friendMemoFacetLabel: '',
-    })
-    if (this.data.homeMemoScope.kind === 'friend') {
-      this.switchToSelfScope({ resetScroll: true })
-    }
     void this.applyMemoQuery(createEmptyMemoQueryDraft(), { resetScroll: true })
   },
 
-  async applyFriendMemoQuery(
-    nextQuery: MemoQueryDraft,
-    options: { resetScroll?: boolean } = {},
-  ) {
-    if (this.data.homeMemoScope.kind !== 'friend') return
-    const normalizedQuery = normalizeMemoQueryDraft({
-      ...nextQuery,
-      keyword: '',
-    })
-    if (isSameMemoQueryDraft(this.data.friendMemoQuery, normalizedQuery)) {
-      return
-    }
-
-    const w = wx.getWindowInfo().windowWidth
-    const patch: Partial<IndexPageData> = {
-      friendMemoQuery: cloneMemoQueryDraft(normalizedQuery),
-      friendMemoDateLabel: formatMemoQueryDateLabel(normalizedQuery),
-      friendMemoFacetLabel: formatMemoFacetLabel(normalizedQuery.listFacet),
-      navBarTitle: friendNavTitle(
-        this.data.homeMemoScope.targetFriend,
-        normalizedQuery.selectedTag,
-        w,
-      ),
-      navBarTitleLeadingIcon: '',
-      titleMenuItems: buildIndexTitleMenuItems(
-        normalizedQuery.selectedTag,
-        this.data.homeMemoScope,
-        this.data.friendProfiles,
-        this.data.memoCreatedAtSort,
-        hasSession(),
-      ),
-    }
-
-    this.setData(patch)
-
-    if (options.resetScroll === true) {
-      this.resetIndexPageScroll()
-    }
-
-    this.updateEmptyState()
-    await this.refreshMemoList()
-  },
-
   async applyMemoQuery(nextQuery: MemoQueryDraft, options: { resetScroll?: boolean } = {}) {
-    if (this.data.homeMemoScope.kind === 'friend') {
-      this.switchToSelfScope({ resetScroll: options.resetScroll })
-    }
-
     const normalizedQuery = normalizeMemoQueryDraft(nextQuery)
     if (isSameMemoQueryDraft(this.data.memoQuery, normalizedQuery)) {
       return
@@ -978,8 +591,6 @@ Page({
       navBarTitleLeadingIcon: navBarTitleLeadingIconForSelectedTag(normalizedQuery.selectedTag),
       titleMenuItems: buildIndexTitleMenuItems(
         normalizedQuery.selectedTag,
-        { kind: 'self' },
-        this.data.friendProfiles,
         this.data.memoCreatedAtSort,
         hasSession(),
       ),
@@ -1012,104 +623,11 @@ Page({
     }
   },
 
-  switchToSelfScope(options: { resetScroll?: boolean } = {}) {
-    this._strategy = createMemoScopeStrategy({ kind: 'self' }, () => this.data.memoCreatedAtSort)
-    const w = wx.getWindowInfo().windowWidth
-    const tag = this.data.memoQuery.selectedTag
-    const patch: Partial<IndexPageData> = {
-      homeMemoScope: { kind: 'self' },
-      viewerRole: this._selfViewerRole(),
-      navBarTitle: selfNavTitle(tag, w, getSession()),
-      navBarTitleLeadingIcon: navBarTitleLeadingIconForSelectedTag(tag),
-      titleMenuItems: buildIndexTitleMenuItems(
-        tag,
-        { kind: 'self' },
-        this.data.friendProfiles,
-        this.data.memoCreatedAtSort,
-        hasSession(),
-      ),
-    }
-
-    this.setData(patch)
-    if (options.resetScroll) {
-      this.resetIndexPageScroll()
-    }
-
-    const key = this._currentListKey()
-    if (!this._memoListBinding) {
-      this._memoListBinding = bindMemoList(key, this.createSelfMemoListOnChange())
-    }
-
-    void workspaceStore.ensureMemoList(
-      key,
-      buildMemoListSearchQuery(this.data.memoQuery, this.data.memoCreatedAtSort),
-      PAGE_SIZE,
-    )
-  },
-
-  async switchToFriendScope(friend: FriendProfile) {
-    if (
-      this.data.homeMemoScope.kind === 'friend' &&
-      this.data.homeMemoScope.targetFriend.username === friend.username
-    ) {
-      return
-    }
-
-    this._strategy = createMemoScopeStrategy(
-      { kind: 'friend', targetFriend: friend },
-      () => this.data.memoCreatedAtSort,
-    )
-    this._lastCardTapMemoId = null
-    this._lastCardTapAt = 0
-    this._memoListBinding?.unsubscribe()
-    this._memoListBinding = null
-    this._selfMemoListOnChange = null
-    const w = wx.getWindowInfo().windowWidth
-    this.setData({
-      homeMemoScope: { kind: 'friend', targetFriend: friend },
-      selectedFriendUsername: friend.username,
-      viewerRole: 'friend',
-      navBarTitle: friendNavTitle(
-        friend,
-        this.data.friendMemoQuery.selectedTag,
-        w,
-      ),
-      navBarTitleLeadingIcon: '',
-      titleMenuItems: buildIndexTitleMenuItems(
-        this.data.friendMemoQuery.selectedTag,
-        { kind: 'friend', targetFriend: friend },
-        this.data.friendProfiles,
-        this.data.memoCreatedAtSort,
-        hasSession(),
-      ),
-      friendMemoFacetLabel: formatMemoFacetLabel(this.data.friendMemoQuery.listFacet),
-      memoCards: [],
-      memoRenderCards: [],
-      memoNextCursor: null,
-      memoHasMore: false,
-      memoListInitialized: false,
-      enteringCardMap: null,
-      ...friendMemoListLoadStartPatch(false),
-    })
-    this.resetIndexPageScroll()
-    this.updateEmptyState()
-    void this.ensureFriendSidebarData()
-    await this.refreshMemoList()
-  },
-
   async refreshMemoList() {
-    if (this._strategy.kind === 'friend') {
-      await refreshFriendMemoList(this, this._strategy.getCurrentQuery(this.data), PAGE_SIZE)
-      return
-    }
     await workspaceStore.refreshMemoList(this._currentListKey())
   },
 
   async loadMoreMemoList() {
-    if (this._strategy.kind === 'friend') {
-      await loadMoreFriendMemoList(this, this._strategy.getCurrentQuery(this.data), PAGE_SIZE)
-      return
-    }
     if (
       this.data.memoListRefreshing ||
       this.data.memoListLoadingMore ||
@@ -1126,19 +644,8 @@ Page({
     const tag = this._strategy.getCurrentQuery(this.data).selectedTag
     this.setData({
       memoCreatedAtSort: sort,
-      titleMenuItems: buildIndexTitleMenuItems(
-        tag,
-        this.data.homeMemoScope,
-        this.data.friendProfiles,
-        sort,
-        hasSession(),
-      ),
+      titleMenuItems: buildIndexTitleMenuItems(tag, sort, hasSession()),
     })
-
-    if (this.data.homeMemoScope.kind === 'friend') {
-      await this.refreshMemoList()
-      return
-    }
 
     this._memoListBinding?.unsubscribe()
     const newKey = this._currentListKey()
@@ -1156,20 +663,6 @@ Page({
     this._lastCardTapAt = 0
 
     const id = String(event.detail?.id || '')
-    if (isViewFriendMemosTitleMenuAction(id)) {
-      const friend = resolveSelectedFriendProfile(
-        this.data.friendProfiles,
-        this.data.selectedFriendUsername,
-        this.data.homeMemoScope,
-      )
-      if (!friend || !friend.username) return
-      void this.switchToFriendScope(friend)
-      return
-    }
-    if (isViewMyMemosTitleMenuAction(id)) {
-      this.switchToSelfScope({ resetScroll: true })
-      return
-    }
     if (isGuestAuthTitleMenuAction(id)) {
       void openAuthPage({ allowBack: true })
       return
@@ -1274,26 +767,17 @@ Page({
   },
 
   handleMenuTap() {
-    this.setData({ sidebarVisible: true }, () => {
-      this.startFriendUnreadPolling()
-    })
+    this.setData({ sidebarVisible: true })
   },
 
   handleSidebarClose() {
     this.setData({ sidebarVisible: false })
-    this.stopFriendUnreadPolling()
   },
 
   handleSidebarVisibleChange(event: WechatMiniprogram.CustomEvent<{ visible: boolean }>) {
     const next = !!event.detail?.visible
     if (this.data.sidebarVisible === next) return
-    this.setData({ sidebarVisible: next }, () => {
-      if (next) {
-        this.startFriendUnreadPolling()
-      } else {
-        this.stopFriendUnreadPolling()
-      }
-    })
+    this.setData({ sidebarVisible: next })
   },
 
   /**
@@ -1423,14 +907,7 @@ Page({
 
   handleSidebarSettings() {
     this.setData({ sidebarVisible: false })
-    this.stopFriendUnreadPolling()
     openSettings()
-  },
-
-  handleSidebarNotifications() {
-    this.setData({ sidebarVisible: false })
-    this.stopFriendUnreadPolling()
-    openNotifications()
   },
 
   handleSidebarEditTag(event: WechatMiniprogram.CustomEvent<{ tag: string }>) {
@@ -1511,19 +988,6 @@ Page({
     this._lastCardTapAt = 0
     const currentQuery = this._strategy.getCurrentQuery(this.data)
 
-    if (this.data.homeMemoScope.kind === 'friend') {
-      const friend = this._strategy.getFriend()
-      if (!friend) return
-      openMemoSearch(
-        currentQuery,
-        (nextQuery) => {
-          void this.applyFriendMemoQuery(nextQuery, { resetScroll: true })
-        },
-        { targetFriend: friend },
-      )
-      return
-    }
-
     openMemoSearch(currentQuery, (nextQuery) => {
       void this.applyMemoQuery(nextQuery)
     })
@@ -1537,7 +1001,6 @@ Page({
 
   handleSidebarAuth() {
     this.setData({ sidebarVisible: false })
-    this.stopFriendUnreadPolling()
     void openAuthPage({ allowBack: true })
   },
 
@@ -1547,18 +1010,6 @@ Page({
     const date = String(event.detail?.date || '')
     if (!date) return
     const currentQuery = this._strategy.getCurrentQuery(this.data)
-    if (this.data.homeMemoScope.kind === 'friend') {
-      void this.applyFriendMemoQuery(
-        {
-          ...currentQuery,
-          selectedTag: '',
-          dateMode: 'day',
-          dateValue: date,
-        },
-        { resetScroll: true }
-      )
-      return
-    }
 
     void this.applyMemoQuery(
       {
@@ -1573,19 +1024,6 @@ Page({
   applyCurrentScopeSelectedTag(tag: string) {
     const currentQuery = this._strategy.getCurrentQuery(this.data)
     if (shouldNoOpExactHomeTagReselect(currentQuery.selectedTag, tag)) return
-
-    if (this.data.homeMemoScope.kind === 'friend') {
-      void this.applyFriendMemoQuery(
-        {
-          ...currentQuery,
-          selectedTag: tag,
-          dateMode: 'day',
-          dateValue: '',
-        },
-        { resetScroll: true }
-      )
-      return
-    }
 
     void this.applyMemoQuery(
       {
@@ -1608,11 +1046,6 @@ Page({
     this._lastCardTapMemoId = null
     this._lastCardTapAt = 0
     const currentQuery = this._strategy.getCurrentQuery(this.data)
-    if (this.data.homeMemoScope.kind === 'friend') {
-      if (!hasActiveMemoQuery(currentQuery)) return
-      void this.applyFriendMemoQuery(createEmptyMemoQueryDraft(), { resetScroll: true })
-      return
-    }
     if (!hasActiveMemoQuery(currentQuery)) return
 
     void this.applyMemoQuery(createEmptyMemoQueryDraft(), { resetScroll: true })
@@ -1635,11 +1068,7 @@ Page({
       ...cloneMemoQueryDraft(currentQuery),
       listFacet: facet,
     }
-    if (this.data.homeMemoScope.kind === 'friend') {
-      void this.applyFriendMemoQuery(nextQuery, { resetScroll: true })
-    } else {
-      void this.applyMemoQuery(nextQuery, { resetScroll: true })
-    }
+    void this.applyMemoQuery(nextQuery, { resetScroll: true })
   },
 
   handleClearFacet() {
@@ -1648,11 +1077,7 @@ Page({
       ...cloneMemoQueryDraft(currentQuery),
       listFacet: 'none',
     }
-    if (this.data.homeMemoScope.kind === 'friend') {
-      void this.applyFriendMemoQuery(nextQuery, { resetScroll: true })
-    } else {
-      void this.applyMemoQuery(nextQuery, { resetScroll: true })
-    }
+    void this.applyMemoQuery(nextQuery, { resetScroll: true })
   },
 
   handleSidebarTodayReview(event: WechatMiniprogram.CustomEvent<{ date: string }>) {
@@ -1661,18 +1086,6 @@ Page({
     const date = String(event.detail?.date || '')
     if (!date) return
     const currentQuery = this._strategy.getCurrentQuery(this.data)
-    if (this.data.homeMemoScope.kind === 'friend') {
-      void this.applyFriendMemoQuery(
-        {
-          ...currentQuery,
-          selectedTag: '',
-          dateMode: 'day',
-          dateValue: date,
-        },
-        { resetScroll: true }
-      )
-      return
-    }
 
     void this.applyMemoQuery(
       {
@@ -1697,18 +1110,6 @@ Page({
     this._lastCardTapMemoId = null
     this._lastCardTapAt = 0
     const currentQuery = this._strategy.getCurrentQuery(this.data)
-    if (this.data.homeMemoScope.kind === 'friend') {
-      if (!currentQuery.dateValue) return
-      void this.applyFriendMemoQuery(
-        {
-          ...currentQuery,
-          dateMode: 'day',
-          dateValue: '',
-        },
-        { resetScroll: true }
-      )
-      return
-    }
     if (!currentQuery.dateValue) return
 
     void this.applyMemoQuery({
@@ -1726,17 +1127,6 @@ Page({
     this._lastCardTapMemoId = null
     this._lastCardTapAt = 0
     const currentQuery = this._strategy.getCurrentQuery(this.data)
-    if (this.data.homeMemoScope.kind === 'friend') {
-      if (!currentQuery.selectedTag) return
-      void this.applyFriendMemoQuery(
-        {
-          ...currentQuery,
-          selectedTag: '',
-        },
-        { resetScroll: true }
-      )
-      return
-    }
     if (!currentQuery.selectedTag) return
 
     void this.applyMemoQuery({
@@ -1748,9 +1138,6 @@ Page({
   clearMemoSearch() {
     this._lastCardTapMemoId = null
     this._lastCardTapAt = 0
-    if (this.data.homeMemoScope.kind === 'friend') {
-      return
-    }
     const currentQuery = this._strategy.getCurrentQuery(this.data)
     if (!currentQuery.keyword) return
 
@@ -1763,15 +1150,6 @@ Page({
   handleEmptyAction() {
     const currentQuery = this._strategy.getCurrentQuery(this.data)
     const currentDateLabel = this._strategy.getCurrentDateLabel(this.data)
-
-    if (this.data.homeMemoScope.kind === 'friend') {
-      if (currentQuery.selectedTag) {
-        this.clearSelectedTag()
-      } else if (currentDateLabel) {
-        this.clearMemoDateFilter()
-      }
-      return
-    }
 
     if (currentQuery.keyword) {
       this.clearMemoSearch()
@@ -1786,9 +1164,6 @@ Page({
     hapticTap('light')
     this._lastCardTapMemoId = null
     this._lastCardTapAt = 0
-    if (this.data.homeMemoScope.kind === 'friend') {
-      this.switchToSelfScope({ resetScroll: true })
-    }
 
     const selectedTag = this._strategy.getCurrentQuery(this.data).selectedTag
     const initialTags = selectedTag ? [selectedTag] : []
@@ -1851,11 +1226,11 @@ Page({
     dispatchMemoRemoveTag(this, memoId, tag)
   },
 
-  handleMemoShare(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+  handleMemoShare(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
     resetMemoCardTap(this)
     const memoId = event.detail?.memoId
     if (!memoId) return
-    openMemoShareForCard(this.data.memoCards, memoId, event.detail?.ownerUsername)
+    openMemoShareForCard(this.data.memoCards, memoId)
   },
 
   handleMemoCopy(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {

@@ -5,8 +5,6 @@ import {
   TITLE_MENU_MEMO_SORT_OLDEST_ID,
   TITLE_MENU_MEMO_SORT_SECTION_ID,
   TITLE_REFRESH_MENU_ITEMS,
-  TITLE_MENU_VIEW_FRIEND_MEMOS_ID,
-  TITLE_MENU_VIEW_MY_MEMOS_ID,
   TITLE_MENU_GUEST_AUTH_ID,
   TITLE_MENU_PARENT_TAG_ID,
   buildHomeTitleMenuItems,
@@ -15,8 +13,6 @@ import {
   isGuestAuthTitleMenuAction,
   isParentTagTitleMenuAction,
   isRefreshTitleMenuAction,
-  isViewFriendMemosTitleMenuAction,
-  isViewMyMemosTitleMenuAction,
   runHomePageRefreshActions,
   runSearchPageRefreshActions,
 } from '../page-refresh'
@@ -150,50 +146,31 @@ describe('buildTitleMenuWithOptionalAllTags', () => {
 })
 
 describe('buildHomeTitleMenuItems', () => {
-  it('adds the friend memo list entry before refresh on self home when a friend is available', () => {
+  it('returns sort section and refresh when no tag is selected', () => {
     expect(buildHomeTitleMenuItems('', {
-      scope: 'self',
-      canViewFriendMemos: true,
       memoCreatedAtSort: 'desc',
     })).toEqual([
-      { id: TITLE_MENU_VIEW_FRIEND_MEMOS_ID, label: '查看好友笔记', icon: 'member' },
       ...SORT_ITEMS_DESC,
       ...TITLE_REFRESH_MENU_ITEMS,
     ])
   })
 
-  it('keeps all-tags first and inserts the friend memo list entry before refresh on filtered self home', () => {
+  it('keeps all-tags first on filtered home', () => {
     expect(buildHomeTitleMenuItems('工作/产品', {
-      scope: 'self',
-      canViewFriendMemos: true,
       memoCreatedAtSort: 'desc',
     })).toEqual([
       PARENT_TAG_ITEM,
       { id: TITLE_MENU_ALL_TAGS_ID, label: '查看全部笔记', icon: 'grid-view', dividerBefore: false },
-      {
-        id: TITLE_MENU_VIEW_FRIEND_MEMOS_ID,
-        label: '查看好友笔记',
-        icon: 'member',
-        dividerBefore: false,
-      },
       ...SORT_ITEMS_DESC,
       ...TITLE_REFRESH_MENU_ITEMS,
     ])
   })
 
-  it('does not add parent tag entry for top-level selected tag on self home', () => {
+  it('does not add parent tag entry for top-level selected tag', () => {
     expect(buildHomeTitleMenuItems('工作', {
-      scope: 'self',
-      canViewFriendMemos: true,
       memoCreatedAtSort: 'desc',
     })).toEqual([
       { id: TITLE_MENU_ALL_TAGS_ID, label: '查看全部笔记', icon: 'grid-view' },
-      {
-        id: TITLE_MENU_VIEW_FRIEND_MEMOS_ID,
-        label: '查看好友笔记',
-        icon: 'member',
-        dividerBefore: false,
-      },
       ...SORT_ITEMS_DESC,
       ...TITLE_REFRESH_MENU_ITEMS,
     ])
@@ -201,24 +178,12 @@ describe('buildHomeTitleMenuItems', () => {
 
   it('sort section subtitle follows ascending order when memoCreatedAtSort is asc', () => {
     expect(buildHomeTitleMenuItems('', {
-      scope: 'self',
-      canViewFriendMemos: false,
       memoCreatedAtSort: 'asc',
     })).toEqual([...SORT_ITEMS_ASC, ...TITLE_REFRESH_MENU_ITEMS])
   })
 
-  it('does not expose the friend memo list entry before the friend profile is known', () => {
+  it('adds login/register for guest home', () => {
     expect(buildHomeTitleMenuItems('', {
-      scope: 'self',
-      canViewFriendMemos: false,
-      memoCreatedAtSort: 'desc',
-    })).toEqual([...SORT_ITEMS_DESC, ...TITLE_REFRESH_MENU_ITEMS])
-  })
-
-  it('adds login/register for guest self home', () => {
-    expect(buildHomeTitleMenuItems('', {
-      scope: 'self',
-      canViewFriendMemos: false,
       showGuestAuthAction: true,
       memoCreatedAtSort: 'desc',
     })).toEqual([
@@ -228,10 +193,8 @@ describe('buildHomeTitleMenuItems', () => {
     ])
   })
 
-  it('prepends login/register before tag nav on filtered guest self home', () => {
+  it('prepends login/register before tag nav on filtered guest home', () => {
     expect(buildHomeTitleMenuItems('工作/产品', {
-      scope: 'self',
-      canViewFriendMemos: false,
       showGuestAuthAction: true,
       memoCreatedAtSort: 'desc',
     })).toEqual([
@@ -245,46 +208,13 @@ describe('buildHomeTitleMenuItems', () => {
 
   it('does not add login/register when logged in', () => {
     expect(buildHomeTitleMenuItems('', {
-      scope: 'self',
-      canViewFriendMemos: false,
       showGuestAuthAction: false,
       memoCreatedAtSort: 'desc',
     })).toEqual([...SORT_ITEMS_DESC, ...TITLE_REFRESH_MENU_ITEMS])
   })
 
-  it('adds the self memo list entry before refresh on friend home', () => {
-    expect(buildHomeTitleMenuItems('', {
-      scope: 'friend',
-      memoCreatedAtSort: 'desc',
-    })).toEqual([
-      { id: TITLE_MENU_VIEW_MY_MEMOS_ID, label: '查看我的笔记', icon: 'home' },
-      ...SORT_ITEMS_DESC,
-      ...TITLE_REFRESH_MENU_ITEMS,
-    ])
-  })
-
-  it('prepends parent tag and all-tags before my-memos swap on filtered friend home', () => {
-    expect(buildHomeTitleMenuItems('工作/笔记', {
-      scope: 'friend',
-      memoCreatedAtSort: 'desc',
-    })).toEqual([
-      PARENT_TAG_ITEM,
-      { id: TITLE_MENU_ALL_TAGS_ID, label: '查看全部笔记', icon: 'grid-view', dividerBefore: false },
-      {
-        id: TITLE_MENU_VIEW_MY_MEMOS_ID,
-        label: '查看我的笔记',
-        icon: 'home',
-        dividerBefore: false,
-      },
-      ...SORT_ITEMS_DESC,
-      ...TITLE_REFRESH_MENU_ITEMS,
-    ])
-  })
-
   it('adds parent tag entry for deeply nested selected tag', () => {
     expect(buildHomeTitleMenuItems('a/b/c', {
-      scope: 'self',
-      canViewFriendMemos: false,
       memoCreatedAtSort: 'desc',
     })).toEqual([
       PARENT_TAG_ITEM,
@@ -311,22 +241,10 @@ describe('isParentTagTitleMenuAction', () => {
   })
 })
 
-describe('home title menu scope switch action ids', () => {
-  it('recognizes only the friend memo list switch id', () => {
-    expect(isViewFriendMemosTitleMenuAction(TITLE_MENU_VIEW_FRIEND_MEMOS_ID)).toBe(true)
-    expect(isViewFriendMemosTitleMenuAction(TITLE_MENU_VIEW_MY_MEMOS_ID)).toBe(false)
-    expect(isViewFriendMemosTitleMenuAction('refresh')).toBe(false)
-  })
-
-  it('recognizes only the self memo list switch id', () => {
-    expect(isViewMyMemosTitleMenuAction(TITLE_MENU_VIEW_MY_MEMOS_ID)).toBe(true)
-    expect(isViewMyMemosTitleMenuAction(TITLE_MENU_VIEW_FRIEND_MEMOS_ID)).toBe(false)
-    expect(isViewMyMemosTitleMenuAction('refresh')).toBe(false)
-  })
-
+describe('home title menu action ids', () => {
   it('recognizes only the guest auth menu id', () => {
     expect(isGuestAuthTitleMenuAction(TITLE_MENU_GUEST_AUTH_ID)).toBe(true)
-    expect(isGuestAuthTitleMenuAction(TITLE_MENU_VIEW_MY_MEMOS_ID)).toBe(false)
+    expect(isGuestAuthTitleMenuAction(TITLE_MENU_ALL_TAGS_ID)).toBe(false)
     expect(isGuestAuthTitleMenuAction('refresh')).toBe(false)
   })
 })

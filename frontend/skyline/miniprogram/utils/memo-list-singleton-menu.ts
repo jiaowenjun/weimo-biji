@@ -4,7 +4,6 @@ export type MemoCardPopoverMode = 'card' | 'tag'
 
 export interface MemoCardMenuOpenDetail {
   memoId: number
-  ownerUsername: string
   mode: MemoCardPopoverMode
   tag?: string
   triggerRect: WechatMiniprogram.BoundingClientRectCallbackResult
@@ -20,7 +19,6 @@ export interface MemoListSingletonMenuData {
   cardMenuActive: boolean
   singletonMenuActive: boolean
   singletonMenuMemoId: number
-  singletonMenuOwnerUsername: string
   singletonMenuMode: MemoCardPopoverMode
   singletonMenuTag: string
   singletonMenuAnchorRect: WechatMiniprogram.BoundingClientRectCallbackResult | null
@@ -48,8 +46,8 @@ interface MemoListSingletonMenuHost {
   ) => void
   handleMemoTagAdd: (event: MemoEvent<{ memoId: number }>) => void
   handleMemoTagRemove: (event: MemoEvent<{ memoId: number; tag: string }>) => void
-  handleMemoShare: (event: MemoEvent<{ memoId: number; ownerUsername: string }>) => void
-  handleMemoCopy: (event: MemoEvent<{ memoId: number; ownerUsername: string }>) => void
+  handleMemoShare: (event: MemoEvent<{ memoId: number }>) => void
+  handleMemoCopy: (event: MemoEvent<{ memoId: number }>) => void
 }
 
 const DEFAULT_MENU_ESTIMATED_HEIGHT_PX = 124
@@ -68,7 +66,6 @@ export function createMemoListSingletonMenuData(): MemoListSingletonMenuData {
     cardMenuActive: false,
     singletonMenuActive: false,
     singletonMenuMemoId: 0,
-    singletonMenuOwnerUsername: '',
     singletonMenuMode: 'card',
     singletonMenuTag: '',
     singletonMenuAnchorRect: null,
@@ -102,7 +99,6 @@ export const memoListSingletonMenuMethods = {
     this.setData({
       singletonMenuActive: true,
       singletonMenuMemoId: detail.memoId,
-      singletonMenuOwnerUsername: detail.ownerUsername || '',
       singletonMenuMode: detail.mode,
       singletonMenuTag: detail.tag || '',
       singletonMenuAnchorRect: detail.triggerRect,
@@ -136,7 +132,6 @@ export const memoListSingletonMenuMethods = {
     if (!item || item.disabled) return
 
     const memoId = this.data.singletonMenuMemoId
-    const ownerUsername = this.data.singletonMenuOwnerUsername
 
     if (this.data.singletonMenuMode === 'tag') {
       const tag = this.data.singletonMenuTag
@@ -163,9 +158,9 @@ export const memoListSingletonMenuMethods = {
     } else if (id === 'delete') {
       this.handleMemoDelete(eventOf({ memoId }))
     } else if (id === 'share') {
-      this.handleMemoShare(eventOf({ memoId, ownerUsername }))
+      this.handleMemoShare(eventOf({ memoId }))
     } else if (id === 'copy') {
-      this.handleMemoCopy(eventOf({ memoId, ownerUsername }))
+      this.handleMemoCopy(eventOf({ memoId }))
     }
   },
 }

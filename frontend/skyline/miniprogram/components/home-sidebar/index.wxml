@@ -20,19 +20,6 @@
       </text>
       <text wx:elif="{{userNickname}}" class="sidebar-header__nickname">{{userNickname}}</text>
     </view>
-    <view class="sidebar-header__notification">
-      <weimo-icon-button
-        icon="notification"
-        variant="ghost"
-        tone="neutral"
-        size="md"
-        iconSize="var(--nav-bar-icon-size)"
-        captureTap="{{false}}"
-        ariaLabel="打开通知"
-        bind:tap="handleNotificationsTap"
-      />
-      <view wx:if="{{unreadCount > 0}}" class="sidebar-header__notification-badge"></view>
-    </view>
     <weimo-icon-button
       icon="setting"
       variant="ghost"

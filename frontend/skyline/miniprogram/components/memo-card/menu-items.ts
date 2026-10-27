@@ -27,7 +27,6 @@ const DELETE_ITEM: MemoCardMenuItem = { id: 'delete', label: '删除', danger: t
  *
  * 顺序与分组（组内无分割线，组间有分割线）：
  * - self：编辑、批注（同组）
- * - friend：批注（单独一组）
  * - （可选）查看详情、分享
  * - 删除
  *

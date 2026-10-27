@@ -9,10 +9,8 @@ import {
 } from '../memo-reference-relation-tab'
 
 const emptyCards = {
-  ownReferenceCards: [] as unknown[],
-  friendReferenceCards: [] as unknown[],
-  ownReferencedByCards: [] as unknown[],
-  friendReferencedByCards: [] as unknown[],
+  referenceCards: [] as unknown[],
+  referencedByCards: [] as unknown[],
 }
 
 describe('memo-reference-relation-tab util', () => {
@@ -29,16 +27,16 @@ describe('memo-reference-relation-tab util', () => {
       expect(resolveRelationTabDesired(emptyCards)).toBe('hide')
       expect(resolveRelationTabDesired({
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
+        referenceCards: [{ id: 1 }],
       })).toBe('hide')
       expect(resolveRelationTabDesired({
         ...emptyCards,
-        ownReferencedByCards: [{ id: 1 }],
+        referencedByCards: [{ id: 1 }],
       })).toBe('hide')
       expect(resolveRelationTabDesired({
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
-        ownReferencedByCards: [{ id: 2 }],
+        referenceCards: [{ id: 1 }],
+        referencedByCards: [{ id: 2 }],
       })).toBe('show')
     })
   })
@@ -61,7 +59,7 @@ describe('memo-reference-relation-tab util', () => {
       const prev = createRelationTabState()
       const result = reduceRelationTabOnCardsChange(
         { ...prev, tabRenderState: 'visible' },
-        { ...emptyCards, ownReferenceCards: [{ id: 1 }], ownReferencedByCards: [{ id: 2 }] },
+        { ...emptyCards, referenceCards: [{ id: 1 }], referencedByCards: [{ id: 2 }] },
         'references',
       )
       expect(result.patch).toEqual({ tabRenderState: 'hidden', tabSliderAnimated: false })
@@ -71,8 +69,8 @@ describe('memo-reference-relation-tab util', () => {
       const prev = createRelationTabState()
       const result = reduceRelationTabOnCardsChange(prev, {
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
-        ownReferencedByCards: [{ id: 2 }],
+        referenceCards: [{ id: 1 }],
+        referencedByCards: [{ id: 2 }],
       }, 'detail')
       expect(result.patch).toEqual({ tabRenderState: 'visible' })
     })
@@ -81,7 +79,7 @@ describe('memo-reference-relation-tab util', () => {
       const prev = createRelationTabState()
       const result = reduceRelationTabOnCardsChange(prev, {
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
+        referenceCards: [{ id: 1 }],
       }, 'detail')
       expect(result.patch).toEqual({})
     })
@@ -96,7 +94,7 @@ describe('memo-reference-relation-tab util', () => {
     it('reference tab + reference side empty → auto referencedBy + exiting', () => {
       const result = reduceRelationTabOnCardsChange(visible, {
         ...emptyCards,
-        ownReferencedByCards: [{ id: 2 }],
+        referencedByCards: [{ id: 2 }],
       }, 'detail')
       expect(result.patch).toEqual({
         tabRenderState: 'exiting',
@@ -112,7 +110,7 @@ describe('memo-reference-relation-tab util', () => {
         selectedRelationTab: 'referencedBy',
       }, {
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
+        referenceCards: [{ id: 1 }],
       }, 'detail')
       expect(result.patch).toEqual({
         tabRenderState: 'exiting',
@@ -125,7 +123,7 @@ describe('memo-reference-relation-tab util', () => {
     it('reference tab + referencedBy side empty → exiting without tab switch', () => {
       const result = reduceRelationTabOnCardsChange(visible, {
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
+        referenceCards: [{ id: 1 }],
       }, 'detail')
       expect(result.patch).toEqual({ tabRenderState: 'exiting' })
       expect(result.scheduleExit).toBe(true)
@@ -139,8 +137,8 @@ describe('memo-reference-relation-tab util', () => {
         tabRenderState: 'exiting',
       }, {
         ...emptyCards,
-        ownReferenceCards: [{ id: 1 }],
-        ownReferencedByCards: [{ id: 2 }],
+        referenceCards: [{ id: 1 }],
+        referencedByCards: [{ id: 2 }],
       }, 'detail')
       expect(result.patch).toEqual({ tabRenderState: 'visible' })
       expect(result.cancelExit).toBe(true)

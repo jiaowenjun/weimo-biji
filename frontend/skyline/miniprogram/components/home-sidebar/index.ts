@@ -71,7 +71,6 @@ Component({
     userNickname: { type: String, value: '' },
     stats: { type: Object, value: undefined },
     statsLoading: { type: Boolean, value: false },
-    unreadCount: { type: Number, value: 0 },
     activeDate: { type: String, value: '' },
     tagTreeNodes: { type: Array, value: [] },
     tagTreeUntaggedCount: { type: Number, value: 0 },
@@ -322,8 +321,5 @@ Component({
       this.triggerEvent('settings')
     },
 
-    handleNotificationsTap() {
-      this.triggerEvent('notifications')
-    },
   },
 })

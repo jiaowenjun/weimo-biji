@@ -1,6 +1,5 @@
 mod auth;
 mod cors;
-mod friend;
 mod me;
 mod memo;
 mod state;
@@ -16,7 +15,6 @@ pub use state::AppState;
 
 use auth::auth_router;
 use cors::cors;
-use friend::friend_router;
 use me::me_router;
 use memo::memo_router;
 use tag::tag_router;
@@ -41,7 +39,6 @@ pub fn app_router<U: UserDb + 'static, M: MemoDb + 'static>(state: AppState<U, M
     Router::new()
         .route("/health", get(health))
         .nest("/auth", auth_router(state.clone()))
-        .nest("/friend", friend_router(state.clone()))
         .nest("/me", me_router(state.clone()))
         .nest("/memo", memo_router(state.clone()))
         .nest("/tag", tag_router(state))
@@ -66,10 +63,8 @@ mod tests {
     use super::*;
     use crate::config::ServerConfig;
     use crate::data::{
-        Claims, DataManager, FriendConflictBody, FriendConflictCode, FriendFollowState,
-        FriendRequest, FriendSearchResult, FriendSummary, FriendUnreadCount, JsonSocial, MdDb,
-        MemoCreate, MemoId, MemoRef, MiniAuthResult, MiniToken, MiniWechatCheckResult, Token,
-        UserCreate, UserView,
+        Claims, DataManager, MdDb, MemoCreate, MemoId, MemoRef, MiniAuthResult, MiniToken,
+        MiniWechatCheckResult, Token, UserCreate, UserView,
     };
     use crate::error::{WeimoError, WeimoResult};
     use crate::wechat::{DynWechatAuthClient, WechatAuthClient, WechatSession};
@@ -148,9 +143,7 @@ mod tests {
         let wechat_auth: DynWechatAuthClient = Arc::new(MockWechatAuthClient);
         let storage_dir = tempfile::tempdir().expect("应能创建临时目录");
         let db = MdDb::new(storage_dir.path()).await;
-        let manager = DataManager::new_with_social(db, JsonSocial::in_memory())
-            .await
-            .expect("应能初始化数据管理器");
+        let manager = DataManager::new(db).await.expect("应能初始化数据管理器");
         let config = ServerConfig {
             storage_path: storage_dir.path().display().to_string(),
             bind_host: "127.0.0.1".to_string(),
@@ -447,603 +440,6 @@ mod tests {
                 "service": "biji"
             })
         );
-    }
-
-    #[tokio::test]
-    async fn friend_route_search_request_accept_and_unread_flow() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let search_response = send(
-            &app,
-            build_request(
-                Method::GET,
-                "/friend/search?nickname=Bo",
-                Some(&alice_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(search_response.status(), StatusCode::OK);
-        let search: FriendSearchResult = json_body(search_response).await;
-        assert_eq!(search.items[0].user.username, "bob");
-        assert_eq!(search.items[0].follow_state, FriendFollowState::None);
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        assert_eq!(request_response.status(), StatusCode::OK);
-        let created_request: FriendRequest = json_body(request_response).await;
-
-        let unread_response = send(
-            &app,
-            build_request(
-                Method::GET,
-                "/friend/unread-count",
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        let unread: FriendUnreadCount = json_body(unread_response).await;
-        assert_eq!(unread.unread_count, 1);
-
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-        let bob_summary: FriendSummary = json_body(accept_response).await;
-        assert_eq!(bob_summary.friends.len(), 1);
-        assert!(
-            bob_summary
-                .friends
-                .iter()
-                .any(|friend| friend.username == "alice")
-        );
-    }
-
-    #[tokio::test]
-    async fn friend_route_conflict_returns_stable_code() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let first = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        assert_eq!(first.status(), StatusCode::OK);
-
-        let reverse = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&bob_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "alice" })).unwrap()),
-            ),
-        )
-        .await;
-        assert_eq!(reverse.status(), StatusCode::CONFLICT);
-        let body: FriendConflictBody = json_body(reverse).await;
-        assert_eq!(body.code, FriendConflictCode::PendingExists);
-    }
-
-    #[tokio::test]
-    async fn friend_route_memo_search_and_detail_return_readonly_friend_views() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        let created_request: FriendRequest = json_body(request_response).await;
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-
-        let older_id = create_memo(&app, &bob_token, &[], "older").await;
-        let newer_id = create_memo(&app, &bob_token, &[], "newer").await;
-        let annotation_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/memo",
-                Some(&alice_token),
-                None,
-                Some(
-                    serde_json::to_vec(&json!({
-                        "content": "annotation",
-                        "tags": [],
-                        "refs": [format!("bob/{newer_id}")]
-                    }))
-                    .unwrap(),
-                ),
-            ),
-        )
-        .await;
-        assert_eq!(annotation_response.status(), StatusCode::OK);
-        let annotation_id: MemoId = json_body(annotation_response).await;
-
-        let search_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/bob/memos/search",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "page_size": 8 })).unwrap()),
-            ),
-        )
-        .await;
-        assert_eq!(search_response.status(), StatusCode::OK);
-        let search_json: serde_json::Value = json_body(search_response).await;
-        assert_eq!(search_json["total_count"], 2);
-        assert_eq!(search_json["items"][0]["id"], newer_id);
-        assert_eq!(search_json["items"][0]["content"], "newer");
-        assert_eq!(search_json["items"][1]["id"], older_id);
-
-        let detail_response = send(
-            &app,
-            build_request(
-                Method::GET,
-                &format!("/friend/bob/memos/{newer_id}"),
-                Some(&alice_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(detail_response.status(), StatusCode::OK);
-        let detail_json: serde_json::Value = json_body(detail_response).await;
-        assert_eq!(detail_json["id"], newer_id);
-        assert_eq!(detail_json["content"], "newer");
-        assert!(detail_json.get("refs").is_none());
-        assert_eq!(
-            detail_json["referenced_by"],
-            serde_json::json!([annotation_id.to_string()])
-        );
-    }
-
-    #[tokio::test]
-    async fn friend_route_stats_and_tag_meta_return_target_friend_sidebar_data() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        let created_request: FriendRequest = json_body(request_response).await;
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-
-        create_memo(&app, &alice_token, &["self"], "Alice memo").await;
-        create_memo(&app, &bob_token, &["friend"], "Bob memo").await;
-
-        let stats_response = send(
-            &app,
-            build_request(
-                Method::GET,
-                "/friend/bob/stats",
-                Some(&alice_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(stats_response.status(), StatusCode::OK);
-        let stats_json: serde_json::Value = json_body(stats_response).await;
-        assert_eq!(stats_json["note_count"], 1);
-        assert_eq!(stats_json["tag_count"], 1);
-
-        let tag_response = send(
-            &app,
-            build_request(
-                Method::GET,
-                "/friend/bob/tag/meta",
-                Some(&alice_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(tag_response.status(), StatusCode::OK);
-        let tag_json: serde_json::Value = json_body(tag_response).await;
-        assert_eq!(tag_json["item_count"], 1);
-        assert_eq!(tag_json["children"][0]["label"], "friend");
-    }
-
-    #[tokio::test]
-    async fn friend_route_stats_without_friend_returns_stable_code() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        let alice_token = login_user(&app, "alice").await;
-
-        let response = send(
-            &app,
-            build_request(
-                Method::GET,
-                "/friend/bob/stats",
-                Some(&alice_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-
-        assert_eq!(response.status(), StatusCode::CONFLICT);
-        let body: serde_json::Value = json_body(response).await;
-        assert_eq!(body["code"], "NO_FRIENDS_YET");
-        assert_eq!(body["message"], "你还没有添加好友");
-    }
-
-    #[tokio::test]
-    async fn friend_route_stats_for_non_friend_returns_stable_code() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        register_user(&app, "carol", "Carol").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        let created_request: FriendRequest = json_body(request_response).await;
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-
-        let response = send(
-            &app,
-            build_request(
-                Method::GET,
-                "/friend/carol/stats",
-                Some(&alice_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-
-        assert_eq!(response.status(), StatusCode::CONFLICT);
-        let body: serde_json::Value = json_body(response).await;
-        assert_eq!(body["code"], "NOT_YOUR_FRIEND");
-        assert_eq!(body["message"], "该用户不是你的好友");
-    }
-
-    #[tokio::test]
-    async fn friend_route_memo_search_accepts_tag_filter() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        let created_request: FriendRequest = json_body(request_response).await;
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-
-        let work_id = create_memo(&app, &bob_token, &["work/rust"], "Bob work").await;
-        create_memo(&app, &bob_token, &["life"], "Bob life").await;
-
-        let search_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/bob/memos/search",
-                Some(&alice_token),
-                None,
-                Some(
-                    serde_json::to_vec(&json!({
-                        "page_size": 8,
-                        "tag": "work"
-                    }))
-                    .unwrap(),
-                ),
-            ),
-        )
-        .await;
-
-        assert_eq!(search_response.status(), StatusCode::OK);
-        let search_json: serde_json::Value = json_body(search_response).await;
-        assert_eq!(search_json["total_count"], 1);
-        assert_eq!(search_json["items"][0]["id"], work_id);
-    }
-
-    #[tokio::test]
-    async fn friend_route_memo_search_returns_visible_refs_to_caller_memos() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        let created_request: FriendRequest = json_body(request_response).await;
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-
-        let alice_memo_id = create_memo(&app, &alice_token, &[], "Alice original").await;
-        let bob_private_id = create_memo(&app, &bob_token, &[], "Bob private").await;
-        let bob_annotation_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/memo",
-                Some(&bob_token),
-                None,
-                Some(
-                    serde_json::to_vec(&json!({
-                        "content": "Bob annotation",
-                        "tags": [],
-                        "refs": [format!("alice/{alice_memo_id}"), bob_private_id.to_string()]
-                    }))
-                    .unwrap(),
-                ),
-            ),
-        )
-        .await;
-        assert_eq!(bob_annotation_response.status(), StatusCode::OK);
-        let bob_annotation_id: MemoId = json_body(bob_annotation_response).await;
-
-        let search_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/bob/memos/search",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "page_size": 8 })).unwrap()),
-            ),
-        )
-        .await;
-        assert_eq!(search_response.status(), StatusCode::OK);
-        let search_json: serde_json::Value = json_body(search_response).await;
-        let item = search_json["items"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|item| item["id"] == bob_annotation_id)
-            .unwrap();
-
-        assert_eq!(item["refs"], serde_json::json!([alice_memo_id.to_string()]));
-    }
-
-    #[tokio::test]
-    async fn friend_route_memo_search_without_friend_returns_stable_code() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        let alice_token = login_user(&app, "alice").await;
-
-        let response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/bob/memos/search",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({})).unwrap()),
-            ),
-        )
-        .await;
-
-        assert_eq!(response.status(), StatusCode::CONFLICT);
-        let body: serde_json::Value = json_body(response).await;
-        assert_eq!(body["code"], "NO_FRIENDS_YET");
-        assert_eq!(body["message"], "你还没有添加好友");
-    }
-
-    #[tokio::test]
-    async fn friend_route_memo_search_for_non_friend_returns_stable_code() {
-        let TestApp {
-            app,
-            storage_dir: _storage_dir,
-        } = setup_test_app().await;
-        register_user(&app, "alice", "Alice").await;
-        register_user(&app, "bob", "Bob").await;
-        register_user(&app, "carol", "Carol").await;
-        let alice_token = login_user(&app, "alice").await;
-        let bob_token = login_user(&app, "bob").await;
-
-        let request_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/request",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({ "to_username": "bob" })).unwrap()),
-            ),
-        )
-        .await;
-        let created_request: FriendRequest = json_body(request_response).await;
-        let accept_response = send(
-            &app,
-            build_request(
-                Method::POST,
-                &format!("/friend/requests/{}/accept", created_request.id),
-                Some(&bob_token),
-                None,
-                None,
-            ),
-        )
-        .await;
-        assert_eq!(accept_response.status(), StatusCode::OK);
-
-        let response = send(
-            &app,
-            build_request(
-                Method::POST,
-                "/friend/carol/memos/search",
-                Some(&alice_token),
-                None,
-                Some(serde_json::to_vec(&json!({})).unwrap()),
-            ),
-        )
-        .await;
-
-        assert_eq!(response.status(), StatusCode::CONFLICT);
-        let body: serde_json::Value = json_body(response).await;
-        assert_eq!(body["code"], "NOT_YOUR_FRIEND");
-        assert_eq!(body["message"], "该用户不是你的好友");
     }
 
     async fn batch_get_memos(
@@ -1680,7 +1076,7 @@ mod tests {
                     serde_json::to_vec(&MemoCreate {
                         content: "B".to_string(),
                         tags: vec!["work".to_string()],
-                        refs: vec![MemoRef::Own(memo_a)],
+                        refs: vec![MemoRef(memo_a)],
                     })
                     .expect("创建带 refs 的 memo 请求应能序列化"),
                 ),
@@ -1726,7 +1122,7 @@ mod tests {
                     serde_json::to_vec(&MemoCreate {
                         content: "B".to_string(),
                         tags: vec!["work/ref".to_string()],
-                        refs: vec![MemoRef::Own(memo_a)],
+                        refs: vec![MemoRef(memo_a)],
                     })
                     .expect("创建带 refs 的 memo 请求应能序列化"),
                 ),
@@ -1772,7 +1168,7 @@ mod tests {
                     serde_json::to_vec(&MemoCreate {
                         content: "bad refs".to_string(),
                         tags: vec!["work".to_string()],
-                        refs: vec![MemoRef::Own(999)],
+                        refs: vec![MemoRef(999)],
                     })
                     .expect("非法 refs 的创建请求应能序列化"),
                 ),

@@ -29,22 +29,6 @@ const SELF = makePermissions('self', {
   doubleTapPreferred: 'edit',
 })
 
-const FRIEND = makePermissions('friend', {
-  canView: true,
-  canEdit: false,
-  canDelete: false,
-  canModifyTag: false,
-  canRemoveTag: false,
-  canAddTag: false,
-  canQuote: true,
-  canShare: true,
-  canCopy: true,
-  canSeeDetailEntry: true,
-  quoteMode: 'friend',
-  menuActions: ['quote', 'share', 'copy', 'memoDetail'],
-  doubleTapPreferred: 'quote',
-})
-
 const VISITOR = makePermissions('visitor', {
   canView: true,
   canEdit: true,
@@ -81,8 +65,6 @@ export function resolvePermissions(role: ViewerRole): MemoPermissions {
   switch (role) {
     case 'self':
       return SELF
-    case 'friend':
-      return FRIEND
     case 'visitor':
       return VISITOR
     case 'denied':

@@ -3,7 +3,6 @@ import {
   formatTagPathForNavTitle,
   HOME_NAV_TITLE_DEFAULT,
   HOME_NAV_TITLE_VISITOR,
-  resolveFriendHomeNavTitle,
   resolveHomeNavTitle,
   resolveSearchNavTitle,
   homeNavTitleBudget,
@@ -100,45 +99,11 @@ describe('resolveHomeNavTitle', () => {
   })
 })
 
-describe('resolveFriendHomeNavTitle', () => {
-  it('无选中标签时只显示好友昵称', () => {
-    expect(resolveFriendHomeNavTitle('小吴', '', 430)).toBe('小吴')
-  })
-
-  it('有选中标签时显示 好友昵称·标签路径', () => {
-    expect(resolveFriendHomeNavTitle('小吴', '文学/红楼梦', 430)).toBe('小吴·文学/红楼梦')
-  })
-
-  it('长标签使用与首页标签标题一致的路径缩略规则', () => {
-    const out = resolveFriendHomeNavTitle(
-      '小吴',
-      '世界与中国文学/中国古代文学/清代/红楼梦',
-      430,
-    )
-
-    expect(out).toBe('小吴·.../红楼梦')
-  })
-})
-
 describe('resolveSearchNavTitle', () => {
   it('与 resolveHomeNavTitle 一致', () => {
     expect(resolveSearchNavTitle('', 430)).toBe(resolveHomeNavTitle('', 430))
     expect(resolveSearchNavTitle('文学/红楼梦', 400)).toBe(
       resolveHomeNavTitle('文学/红楼梦', 400),
     )
-  })
-
-  it('有好友展示名时与 resolveFriendHomeNavTitle 一致', () => {
-    expect(resolveSearchNavTitle('', 430, '小吴')).toBe(
-      resolveFriendHomeNavTitle('小吴', '', 430),
-    )
-    expect(resolveSearchNavTitle('文学/红楼梦', 400, '小吴')).toBe(
-      resolveFriendHomeNavTitle('小吴', '文学/红楼梦', 400),
-    )
-  })
-
-  it('忽略仅含空白的好友展示名', () => {
-    expect(resolveSearchNavTitle('', 430, '   ')).toBe(resolveHomeNavTitle('', 430))
-    expect(resolveSearchNavTitle('', 430, null)).toBe(resolveHomeNavTitle('', 430))
   })
 })

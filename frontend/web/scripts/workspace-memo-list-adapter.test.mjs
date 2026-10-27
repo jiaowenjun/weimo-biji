@@ -322,9 +322,9 @@ assert.deepEqual(
   { content: 'alice pending draft', tags: ['self'] },
 )
 assert.deepEqual(
-  getMemoDisplayOverridesForScope(scopedDisplayOverrides, 'friend:bob'),
+  getMemoDisplayOverridesForScope(scopedDisplayOverrides, 'self:bob'),
   {},
-  'a self-workspace draft must not apply to a friend memo with the same numeric id.',
+  'a self-workspace draft must not leak into another workspace scope with the same numeric id.',
 )
 assert.deepEqual(
   removeScopedMemoDisplayOverride(scopedDisplayOverrides, 'self:alice', 42),

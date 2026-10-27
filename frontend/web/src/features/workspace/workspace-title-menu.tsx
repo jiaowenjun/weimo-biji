@@ -1,4 +1,4 @@
-import { ArrowUpDown, Check, Grid2X2, Home, LogIn, RefreshCw, Undo2, Users } from 'lucide-react'
+import { ArrowUpDown, Check, Grid2X2, LogIn, RefreshCw, Undo2 } from 'lucide-react'
 import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
 import { ActionMenu, type ActionMenuItem } from 'weimo-ui/components/menu'
 
@@ -6,15 +6,9 @@ import type { MemoSearchQuery } from './workspace-types'
 
 type MemoCreatedAtSort = NonNullable<MemoSearchQuery['created_at_sort']>
 
-export type WorkspaceHomeMemoScope = 'self' | 'friend'
-
 type WorkspaceTitleMenuProps = {
-  canViewFriendMemos?: boolean
-  homeMemoScope?: WorkspaceHomeMemoScope
   memoCreatedAtSort?: MemoCreatedAtSort
   onMemoCreatedAtSortChange?: (sort: MemoCreatedAtSort) => void
-  onViewFriendMemos?: () => void
-  onViewMyMemos?: () => void
   onRefresh?: () => void
   selectedTag?: string
   showGuestAuthAction?: boolean
@@ -46,12 +40,8 @@ function parentTagPath(tagPath: string): string | null {
 }
 
 function buildWorkspaceTitleMenuItems({
-  canViewFriendMemos,
-  homeMemoScope = 'self',
   memoCreatedAtSort,
   onMemoCreatedAtSortChange,
-  onViewFriendMemos,
-  onViewMyMemos,
   onRefresh,
   selectedTag,
   showGuestAuthAction,
@@ -60,7 +50,7 @@ function buildWorkspaceTitleMenuItems({
   const sort = memoCreatedAtSort ?? 'desc'
   const items: ActionMenuItem[] = []
 
-  if (homeMemoScope === 'self' && showGuestAuthAction) {
+  if (showGuestAuthAction) {
     items.push({
       key: 'guestAuth',
       icon: <LogIn aria-hidden="true" />,
@@ -81,22 +71,6 @@ function buildWorkspaceTitleMenuItems({
       key: 'allTags',
       icon: <Grid2X2 aria-hidden="true" />,
       label: '查看全部笔记',
-    })
-  }
-
-  if (homeMemoScope === 'friend') {
-    items.push({
-      key: 'viewMyMemos',
-      icon: <Home aria-hidden="true" />,
-      label: '查看我的笔记',
-      onSelect: onViewMyMemos,
-    })
-  } else if (canViewFriendMemos) {
-    items.push({
-      key: 'viewFriendMemos',
-      icon: <Users aria-hidden="true" />,
-      label: '查看好友笔记',
-      onSelect: onViewFriendMemos,
     })
   }
 
@@ -146,23 +120,15 @@ function buildWorkspaceTitleMenuItems({
 }
 
 export function WorkspaceTitleMenu({
-  canViewFriendMemos,
-  homeMemoScope,
   memoCreatedAtSort,
   onMemoCreatedAtSortChange,
-  onViewFriendMemos,
-  onViewMyMemos,
   onRefresh,
   selectedTag,
   showGuestAuthAction,
 }: WorkspaceTitleMenuProps) {
   const items = buildWorkspaceTitleMenuItems({
-    canViewFriendMemos,
-    homeMemoScope,
     memoCreatedAtSort,
     onMemoCreatedAtSortChange,
-    onViewFriendMemos,
-    onViewMyMemos,
     onRefresh,
     selectedTag,
     showGuestAuthAction,

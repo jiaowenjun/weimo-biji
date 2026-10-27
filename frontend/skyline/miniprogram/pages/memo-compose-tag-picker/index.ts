@@ -3,7 +3,7 @@ import { computeCompactNavigationBarLayout } from '../../utils/navigation-bar-la
 import { pruneMemoTagNoneWhenMixed } from '../../utils/tag-none'
 import { type TagPickerDraftSource } from '../../utils/tag-search'
 import { applyNavStatusBarStyle } from '../../utils/theme'
-import { loadTagOptionsFromFriend, loadTagOptionsFromWorkspace } from './tag-options-source'
+import { loadTagOptionsFromWorkspace } from './tag-options-source'
 import { deriveTagPickerViewState, type TagPickerOption } from './view-state'
 
 // 双击同一行的最大间隔（ms）。与系统双击常用阈值一致，避免过宽误触。
@@ -11,8 +11,6 @@ const DOUBLE_TAP_INTERVAL_MS = 300
 
 interface MemoComposeTagPickerPageData {
   mode: MemoComposeTagPickerMode
-  tagTreeScope: 'self' | 'friend'
-  friendUsername: string
   targetTag: string
   selectedTags: string[]
   allowEmptyRemove: boolean
@@ -52,8 +50,6 @@ interface MemoComposeTagPickerPageCustom {
 Page<MemoComposeTagPickerPageData, MemoComposeTagPickerPageCustom>({
   data: {
     mode: 'insert' as MemoComposeTagPickerMode,
-    tagTreeScope: 'self' as 'self' | 'friend',
-    friendUsername: '',
     targetTag: '',
     selectedTags: [] as string[],
     allowEmptyRemove: true,
@@ -111,8 +107,6 @@ Page<MemoComposeTagPickerPageData, MemoComposeTagPickerPageCustom>({
 
     const mode = payload.mode
     const allowEmptyRemove = payload.allowEmptyRemove ?? true
-    const tagTreeScope = payload.tagTreeScope ?? 'self'
-    const friendUsername = tagTreeScope === 'friend' ? String(payload.friendUsername || '').trim() : ''
     const selectedTags = [...payload.selectedTags]
     const viewState = deriveTagPickerViewState({
       mode,
@@ -127,8 +121,6 @@ Page<MemoComposeTagPickerPageData, MemoComposeTagPickerPageCustom>({
 
     this.setData({
       mode,
-      tagTreeScope,
-      friendUsername,
       targetTag: payload.targetTag,
       selectedTags,
       allowEmptyRemove,
@@ -160,13 +152,7 @@ Page<MemoComposeTagPickerPageData, MemoComposeTagPickerPageCustom>({
     this.setData({ loading: true, loadFailed: false })
 
     try {
-      if (this.data.tagTreeScope === 'friend') {
-        const friendUsername = this.data.friendUsername.trim()
-        if (!friendUsername) throw new Error('friend unavailable')
-        this._rawTagOptions = await loadTagOptionsFromFriend(friendUsername)
-      } else {
-        this._rawTagOptions = await loadTagOptionsFromWorkspace(workspaceStore)
-      }
+      this._rawTagOptions = await loadTagOptionsFromWorkspace(workspaceStore)
 
       const viewState = deriveTagPickerViewState({
         mode: this.data.mode,

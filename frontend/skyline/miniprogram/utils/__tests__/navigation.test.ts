@@ -1,17 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserProfile } from '../../models/auth'
 import {
-  openFriendMemoReferenceDetail,
   openAccountDetail,
   openAccountEditSheet,
-  openFriendSearch,
   openMemoCompose,
   openMemoReferenceDetail,
   openMemoReferenceList,
   openMemoReferences,
   openMemoSearch,
   openMemoShareImage,
-  openNotifications,
   openSettings,
 } from '../navigation'
 
@@ -47,35 +44,11 @@ describe('openMemoReferenceDetail', () => {
     })
   })
 
-  it('opens friend memo reference detail with friend mode query', () => {
-    openFriendMemoReferenceDetail(7)
-
-    expect(navigateTo).toHaveBeenCalledWith({
-      url: '/pages/memo-reference-detail/index?memoId=7&owner=friend',
-      routeType: 'cupertino',
-      routeConfig: {
-        popGestureDirection: 'multi',
-      },
-    })
-  })
-
-  it('opens friend memo reference detail with explicit owner username when provided', () => {
-    openFriendMemoReferenceDetail(7, { ownerUsername: 'bob' })
-
-    expect(navigateTo).toHaveBeenCalledWith({
-      url: '/pages/memo-reference-detail/index?memoId=7&owner=friend&ownerUsername=bob',
-      routeType: 'cupertino',
-      routeConfig: {
-        popGestureDirection: 'multi',
-      },
-    })
-  })
-
-  it('opens an unsaved memo references list by mixed memo refs as a custom Cupertino route', () => {
+  it('opens an unsaved memo references list by local memo refs as a custom Cupertino route', () => {
     openMemoReferenceList(['7', 8, 'bob/9'])
 
     expect(navigateTo).toHaveBeenCalledWith({
-      url: '/pages/memo-reference-detail/index?mode=references&memoRefs=7,8,bob%2F9',
+      url: '/pages/memo-reference-detail/index?mode=references&memoRefs=7,8',
       routeType: 'cupertino',
       routeConfig: {
         popGestureDirection: 'multi',
@@ -134,7 +107,7 @@ describe('openMemoSearch', () => {
     ;(globalThis as any).wx = { navigateTo }
   })
 
-  it('emits memo-search-init payload without target friend when no target friend option is provided', () => {
+  it('emits memo-search-init payload with the cloned draft', () => {
     const onApplied = vi.fn()
     openMemoSearch(
       { keyword: 'test', selectedTag: '', dateMode: 'day', dateValue: '' },
@@ -149,24 +122,6 @@ describe('openMemoSearch', () => {
     call.success({ eventChannel: { emit: emitSpy } })
     expect(emitSpy).toHaveBeenCalledWith('memo-search-init', {
       draft: { keyword: 'test', selectedTag: '', dateMode: 'day', dateValue: '' },
-    })
-  })
-
-  it('emits memo-search-init payload with target friend when target friend option is provided', () => {
-    const onApplied = vi.fn()
-    const targetFriend = { username: 'bob', nickname: '小吴' }
-    openMemoSearch(
-      { keyword: '', selectedTag: '日记', dateMode: 'day', dateValue: '' },
-      onApplied,
-      { targetFriend },
-    )
-
-    const call = navigateTo.mock.calls[0][0]
-    const emitSpy = vi.fn()
-    call.success({ eventChannel: { emit: emitSpy } })
-    expect(emitSpy).toHaveBeenCalledWith('memo-search-init', {
-      draft: { keyword: '', selectedTag: '日记', dateMode: 'day', dateValue: '' },
-      targetFriend: { username: 'bob', nickname: '小吴' },
     })
   })
 
@@ -194,7 +149,6 @@ describe('openMemoShareImage', () => {
     const { renderMemoMarkdownToNodes } = await import('../memo-markdown')
     const card = {
       id: 42,
-      ownerUsername: '',
       createdAtText: '2026-01-01',
       content: '# 标题',
       contentNodes: [],
@@ -227,7 +181,6 @@ describe('openMemoShareImage', () => {
     const existingNodes = renderMemoMarkdownToNodes('hi')
     const card = {
       id: 77,
-      ownerUsername: '',
       createdAtText: '2026-01-01',
       content: 'hi',
       contentNodes: existingNodes,
@@ -251,7 +204,6 @@ describe('openMemoShareImage', () => {
     const { renderMemoMarkdownToNodes } = await import('../memo-markdown')
     const card = {
       id: 1,
-      ownerUsername: '',
       createdAtText: '2026-01-01',
       content: '# 标题',
       contentNodes: [
@@ -279,7 +231,7 @@ describe('openMemoShareImage', () => {
   })
 })
 
-describe('openSettings / openNotifications', () => {
+describe('openSettings', () => {
   beforeEach(() => {
     navigateTo.mockReset()
     ;(globalThis as any).wx = { navigateTo }
@@ -300,18 +252,6 @@ describe('openSettings / openNotifications', () => {
     expect(navigateTo).toHaveBeenCalledWith({
       url: '/pages/settings/account-detail/index',
       routeType: 'cupertino',
-    })
-  })
-
-  it('opens friend search from settings with local Cupertino route type', () => {
-    openFriendSearch()
-
-    expect(navigateTo).toHaveBeenCalledWith({
-      url: '/pages/friend-search/index',
-      routeType: 'cupertino',
-      routeConfig: {
-        popGestureDirection: 'multi',
-      },
     })
   })
 
@@ -370,14 +310,5 @@ describe('openSettings / openNotifications', () => {
       url: '/pages/settings/account-edit-sheet/index?mode=password',
       routeType: 'cupertino-inside',
     }))
-  })
-
-  it('opens notifications with local upwards route type', () => {
-    openNotifications()
-
-    expect(navigateTo).toHaveBeenCalledWith({
-      url: '/pages/notifications/index',
-      routeType: 'upwards',
-    })
   })
 })

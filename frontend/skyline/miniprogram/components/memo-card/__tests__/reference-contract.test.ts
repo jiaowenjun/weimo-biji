@@ -33,7 +33,7 @@ describe('memo-card reference bar contract', () => {
     expect(wxml).toContain('catch:tap="handleReferenceTap"')
     expect(ts).toContain("this.triggerEvent('referencetap', {")
     expect(ts).toContain('memoId: this.data.memoId')
-    expect(ts).toContain('ownerUsername: this.data.ownerUsername')
+    expect(ts).not.toContain('ownerUsername')
   })
 
   it('opens the three-dot menu through a non-lifting button handler', () => {
@@ -71,7 +71,7 @@ describe('memo-card reference bar contract', () => {
   it('menu memo-detail triggers same event as reference bar tap', () => {
     expect(ts).toContain("id === 'memo-detail'")
 
-    expect(ts).toContain("this.triggerEvent('referencetap', { memoId, ownerUsername: this.data.ownerUsername })")
+    expect(ts).toContain("this.triggerEvent('referencetap', { memoId })")
   })
 
   it('binds capsule tag full-path title into popover header', () => {
@@ -147,7 +147,6 @@ describe('memo-card referenceDisabled behavior', () => {
     const instance = createComponentInstance(options, {
       memoId: 5,
       referenceDisabled: false,
-      ownerUsername: '',
       referencePreview: { id: '3', displayText: '2026-04-30: hello' },
     }) as any
     Object.assign(instance, options.methods)
@@ -157,7 +156,6 @@ describe('memo-card referenceDisabled behavior', () => {
 
     expect(instance.triggerEvent).toHaveBeenCalledWith('referencetap', {
       memoId: 5,
-      ownerUsername: '',
     })
   })
 })

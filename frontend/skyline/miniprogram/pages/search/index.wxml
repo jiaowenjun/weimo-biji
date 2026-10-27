@@ -86,7 +86,6 @@
               external-popover-mode="{{singletonMenuMode}}"
               selected-tag="{{draft.selectedTag}}"
               viewer-role="{{viewerRole}}"
-              owner-username="{{friend ? friend.username : ''}}"
               bind:tap="handleMemoCardTap"
               bind:edit="handleMemoEdit"
               bind:quote="handleMemoQuote"

@@ -9,7 +9,7 @@ use std::io;
 use tagtree::Error as TagTreeError;
 use thiserror::Error;
 
-use crate::data::{FriendConflictBody, FriendConflictCode, MemoId};
+use crate::data::MemoId;
 
 #[derive(Error, Debug)]
 pub enum WeimoError {
@@ -75,9 +75,6 @@ pub enum WeimoError {
 
     #[error("微信登录失败: {0}")]
     WechatAuthFailed(String),
-
-    #[error("好友操作冲突: {0:?}")]
-    FriendConflict(FriendConflictCode),
 }
 
 pub type WeimoResult<T> = Result<T, WeimoError>;
@@ -92,10 +89,6 @@ impl From<TagTreeError> for WeimoError {
 impl IntoResponse for WeimoError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            WeimoError::FriendConflict(code) => {
-                return (StatusCode::CONFLICT, Json(FriendConflictBody::from(code)))
-                    .into_response();
-            }
             WeimoError::UserAlreadyExists(username) => {
                 (StatusCode::CONFLICT, format!("用户名 {username} 已存在"))
             }

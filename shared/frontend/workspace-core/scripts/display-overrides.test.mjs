@@ -69,7 +69,7 @@ const scopedCleanup = trackScopedDisplayOverrideOperation(
   () => Promise.resolve(1),
 )
 assert.deepEqual(getScopedDisplayOverrides(scopedState, 'self:alice'), { 1: draft })
-assert.deepEqual(getScopedDisplayOverrides(scopedState, 'friend:bob'), {})
+assert.deepEqual(getScopedDisplayOverrides(scopedState, 'self:bob'), {})
 await scopedCleanup
 assert.deepEqual(scopedState, {})
 

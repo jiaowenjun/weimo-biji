@@ -11,8 +11,6 @@ export const TITLE_REFRESH_MENU_ITEMS: PopoverMenuItem[] = [
 /** 标题菜单：有选中标签时在「刷新」之上展示分项，id 与 handler 不变；文案随是否搜索页区分 */
 export const TITLE_MENU_ALL_TAGS_ID = 'allTags'
 export const TITLE_MENU_PARENT_TAG_ID = 'parentTag'
-export const TITLE_MENU_VIEW_FRIEND_MEMOS_ID = 'viewFriendMemos'
-export const TITLE_MENU_VIEW_MY_MEMOS_ID = 'viewMyMemos'
 export const TITLE_MENU_GUEST_AUTH_ID = 'guestAuth'
 export const TITLE_MENU_MEMO_SORT_SECTION_ID = 'memoSortSection'
 export const TITLE_MENU_MEMO_SORT_NEWEST_ID = 'memoSortNewestFirst'
@@ -23,8 +21,6 @@ const MEMO_SORT_COLLAPSE_GROUP = 'memoSort'
 function memoCreatedAtSortSummaryLabel(sort: MemoCreatedAtSort): string {
   return sort === 'desc' ? '从新到旧' : '从旧到新'
 }
-
-type HomeTitleMenuScope = 'self' | 'friend'
 
 function buildOptionalAllTagsTitleMenuItem(
   selectedTag: string,
@@ -110,20 +106,12 @@ export function buildTitleMenuWithOptionalAllTags(
 export function buildHomeTitleMenuItems(
   selectedTag: string,
   options: {
-    scope: HomeTitleMenuScope
-    canViewFriendMemos?: boolean
     showGuestAuthAction?: boolean
     memoCreatedAtSort: MemoCreatedAtSort
   },
 ): PopoverMenuItem[] {
-  const scopeSwitchItem: PopoverMenuItem | null = options.scope === 'friend'
-    ? { id: TITLE_MENU_VIEW_MY_MEMOS_ID, label: '查看我的笔记', icon: 'home' }
-    : options.canViewFriendMemos
-      ? { id: TITLE_MENU_VIEW_FRIEND_MEMOS_ID, label: '查看好友笔记', icon: 'member' }
-      : null
-
   const guestAuthItem: PopoverMenuItem | null =
-    options.scope === 'self' && options.showGuestAuthAction
+    options.showGuestAuthAction
       ? { id: TITLE_MENU_GUEST_AUTH_ID, label: '登录/注册', icon: 'login' }
       : null
 
@@ -140,13 +128,6 @@ export function buildHomeTitleMenuItems(
     )
     navScopeItems.push(...tagNavItems.slice(1))
   }
-  if (scopeSwitchItem) {
-    navScopeItems.push(
-      tagNavItems.length > 0
-        ? { ...scopeSwitchItem, dividerBefore: false }
-        : scopeSwitchItem,
-    )
-  }
 
   return [
     ...navScopeItems,
@@ -161,14 +142,6 @@ export function isAllTagsTitleMenuAction(id: string): boolean {
 
 export function isParentTagTitleMenuAction(id: string): boolean {
   return id === TITLE_MENU_PARENT_TAG_ID
-}
-
-export function isViewFriendMemosTitleMenuAction(id: string): boolean {
-  return id === TITLE_MENU_VIEW_FRIEND_MEMOS_ID
-}
-
-export function isViewMyMemosTitleMenuAction(id: string): boolean {
-  return id === TITLE_MENU_VIEW_MY_MEMOS_ID
 }
 
 export function isGuestAuthTitleMenuAction(id: string): boolean {

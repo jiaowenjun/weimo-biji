@@ -460,7 +460,7 @@ assert.ok(
     appSource.includes('<RefCard') &&
     appSource.includes('note={toCardNote(memo)}') &&
     appSource.includes(
-      "onSave={homeMemoScope.kind === 'self' ? (draft) => handleMemoSave(memo, draft) : undefined}",
+      'onSave={(draft) => handleMemoSave(memo, draft)}',
     ) &&
     appSource.includes('tagOptions={tagOptions}'),
   'demo note list cards must render backend memo data through the internal RefCard component.',
@@ -624,7 +624,7 @@ for (const snippet of [
   )
 }
 
-for (const ariaLabel of ['打开通知', '打开设置']) {
+for (const ariaLabel of ['打开设置']) {
   assertComponentTagWithProps(
     bijiSideBarSource,
     'GhostIconButton',

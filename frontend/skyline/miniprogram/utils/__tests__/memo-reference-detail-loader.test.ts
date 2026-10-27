@@ -1,23 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { FriendSummary } from '../../models/friend'
 import type { Memo } from '../../models/memo'
-import { loadFriendMemoReferenceDetailData, loadMemoReferenceListData } from '../memo-reference-detail-loader'
+import {
+  emptyMemoReferenceDetailData,
+  loadMemoReferenceListData,
+  loadSelfMemoReferenceDetailData,
+} from '../memo-reference-detail-loader'
 
 const ensureMemoDetailMock = vi.fn()
 const ensureMemoDetailsMock = vi.fn()
-const getFriendMemoMock = vi.fn()
-const getFriendSummaryMock = vi.fn()
 
 vi.mock('../../store/store-bindings/workspace-store.instance', () => ({
   workspaceStore: {
     ensureMemoDetail: (memoId: number) => ensureMemoDetailMock(memoId),
     ensureMemoDetails: (memoIds: number[]) => ensureMemoDetailsMock(memoIds),
   },
-}))
-
-vi.mock('../../services/friend', () => ({
-  getFriendMemo: (username: string, memoId: number) => getFriendMemoMock(username, memoId),
-  getFriendSummary: () => getFriendSummaryMock(),
 }))
 
 function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
@@ -34,65 +30,58 @@ function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
   }
 }
 
-function makeFriendSummary(friends = [{
-  username: 'bob',
-  nickname: 'Bob',
-}]): FriendSummary {
-  return {
-    friends,
-    pending_outgoing: [],
-    pending_incoming_count: 0,
-    unread_count: 0,
-  }
-}
-
 describe('memo-reference-detail-loader', () => {
   beforeEach(() => {
     ensureMemoDetailMock.mockReset()
     ensureMemoDetailsMock.mockReset()
-    getFriendMemoMock.mockReset()
-    getFriendSummaryMock.mockReset()
   })
 
-  it('hydrates incoming friend refs for own cards in friend detail', async () => {
+  it('loads the root, relation, and preview memos into a detail projection', async () => {
     const root = makeMemo(7, {
-      content: 'friend memo A',
-      referencedBy: ['3'],
+      content: 'my memo A',
+      refs: ['3'],
     })
-    const myMemo = makeMemo(3, {
+    const quotedMemo = makeMemo(3, {
       content: 'my memo B',
-      refs: ['bob/7'],
-      referencedBy: ['bob/9'],
+      refs: ['5'],
     })
-    const friendNestedMemo = makeMemo(9, {
-      content: 'friend memo C summary',
+    const nestedMemo = makeMemo(5, {
+      content: 'my memo C',
     })
 
-    getFriendSummaryMock.mockResolvedValue(makeFriendSummary())
-    getFriendMemoMock.mockImplementation((username: string, memoId: number) => {
-      if (username !== 'bob') {
-        throw new Error(`unexpected username ${username}`)
-      }
-      if (memoId === 7) return Promise.resolve(root)
-      if (memoId === 9) return Promise.resolve(friendNestedMemo)
-      throw new Error(`unexpected friend memo ${memoId}`)
-    })
+    ensureMemoDetailMock.mockResolvedValue(root)
     ensureMemoDetailsMock.mockImplementation((memoIds: number[]) => {
       if (memoIds.length === 1 && memoIds[0] === 3) {
-        return Promise.resolve([myMemo])
+        return Promise.resolve([quotedMemo])
+      }
+      if (memoIds.length === 1 && memoIds[0] === 5) {
+        return Promise.resolve([nestedMemo])
       }
       return Promise.resolve([])
     })
 
-    const projection = await loadFriendMemoReferenceDetailData(7, 'bob')
+    const projection = await loadSelfMemoReferenceDetailData(7)
 
-    expect(projection.ownReferencedByCards).toHaveLength(1)
-    expect(projection.ownReferencedByCards[0]?.referencedByPreviews[0]?.displayText).toBe(
-      'Bob: friend memo C summary',
-    )
+    expect(ensureMemoDetailMock).toHaveBeenCalledWith(7)
+    expect(projection.rootCard?.id).toBe(7)
+    expect(projection.referenceCards.map((card) => card.id)).toEqual([3])
+    expect(projection.referenceCards[0]?.referencePreview?.displayText).toBe('2026-05-26：my memo C')
   })
 
-  it('builds mixed own/friend reference cards for references-only mode', async () => {
+  it('skips relation and preview fetches for a memo without relations', async () => {
+    const root = makeMemo(7, { content: 'my memo A' })
+
+    ensureMemoDetailMock.mockResolvedValue(root)
+
+    const projection = await loadSelfMemoReferenceDetailData(7)
+
+    expect(ensureMemoDetailsMock).not.toHaveBeenCalled()
+    expect(projection.rootCard?.id).toBe(7)
+    expect(projection.referenceCards).toEqual([])
+    expect(projection.referencedByCards).toEqual([])
+  })
+
+  it('builds reference cards for references-only mode while dropping non-own refs', async () => {
     const ownMemo = makeMemo(3, {
       content: 'my memo B',
       refs: ['5'],
@@ -100,20 +89,7 @@ describe('memo-reference-detail-loader', () => {
     const ownNestedMemo = makeMemo(5, {
       content: 'my memo C',
     })
-    const friendMemo = makeMemo(7, {
-      content: 'friend memo A',
-      refs: ['3'],
-      referencedBy: ['5'],
-    })
 
-    getFriendSummaryMock.mockResolvedValue(makeFriendSummary())
-    getFriendMemoMock.mockImplementation((username: string, memoId: number) => {
-      if (username !== 'bob') {
-        throw new Error(`unexpected username ${username}`)
-      }
-      if (memoId === 7) return Promise.resolve(friendMemo)
-      throw new Error(`unexpected friend memo ${memoId}`)
-    })
     ensureMemoDetailsMock.mockImplementation((memoIds: number[]) => {
       if (memoIds.length === 1 && memoIds[0] === 3) {
         return Promise.resolve([ownMemo])
@@ -126,13 +102,15 @@ describe('memo-reference-detail-loader', () => {
 
     const projection = await loadMemoReferenceListData(['3', 'bob/7'])
 
-    expect(projection.referenceCards.map((card) => `${card.ownerUsername || 'self'}:${card.id}`)).toEqual([
-      'self:3',
-      'bob:7',
-    ])
-    expect(projection.ownReferenceCards.map((card) => card.id)).toEqual([3])
-    expect(projection.friendReferenceCards.map((card) => card.id)).toEqual([7])
-    expect(projection.friendReferenceCards[0]?.referencePreview?.displayText).toBe('我: my memo B')
-    expect(projection.friendReferenceCards[0]?.referencedByPreviews[0]?.displayText).toBe('我: my memo C')
+    expect(projection.referenceCards.map((card) => card.id)).toEqual([3])
+    expect(projection.referenceCards[0]?.referencePreview?.displayText).toBe('2026-05-26：my memo C')
+  })
+
+  it('emptyMemoReferenceDetailData returns the empty projection shape', () => {
+    expect(emptyMemoReferenceDetailData()).toEqual({
+      rootCard: null,
+      referenceCards: [],
+      referencedByCards: [],
+    })
   })
 })

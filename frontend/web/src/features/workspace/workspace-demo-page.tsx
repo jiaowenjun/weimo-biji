@@ -33,11 +33,6 @@ import {
 import {
   clearWorkspaceQueries,
   getWorkspaceQueryScope,
-  useFriendReferencePreviewMap,
-  useFriendSummaryQuery,
-  useFriendMemoListQuery,
-  useFriendTagTreeQuery,
-  useFriendWorkspaceStatsQuery,
   useDeleteMemoMutation,
   useMemoListQuery,
   useTagTreeQuery,
@@ -48,7 +43,7 @@ import {
   resetWorkspaceNavigation,
 } from '@/features/workspace/workspace-navigation-store'
 import { useWorkspacePageNavigation } from '@/features/workspace/use-workspace-page-navigation'
-import type { FriendProfile, Memo } from '@/features/workspace/workspace-types'
+import type { Memo } from '@/features/workspace/workspace-types'
 import { useWorkspaceTagActions } from '@/features/workspace/workspace-tag-actions'
 import { PendingCreateCard } from '@/features/workspace/pending-create-card'
 import { useAuthenticatedMemoCreate } from './use-authenticated-memo-create'
@@ -59,28 +54,6 @@ import { copyMemoContentToClipboard } from './workspace-memo-copy'
 import { runWorkspaceTitleRefreshActions } from './workspace-title-refresh'
 
 const EMPTY_MEMO_CARDS: Memo[] = []
-const EMPTY_FRIEND_PROFILES: FriendProfile[] = []
-
-type HomeMemoScope = { kind: 'self' } | { kind: 'friend'; targetFriend: FriendProfile }
-
-function resolveSelectedFriendProfile(
-  friendProfiles: FriendProfile[],
-  scope: HomeMemoScope,
-) {
-  if (scope.kind === 'friend') {
-    const currentFriend = friendProfiles.find(
-      (friend) => friend.username === scope.targetFriend.username,
-    )
-
-    if (currentFriend) return currentFriend
-  }
-
-  return friendProfiles.find((friend) => friend.username.trim()) ?? null
-}
-
-function friendDisplayName(friend: FriendProfile) {
-  return friend.nickname?.trim() || friend.username
-}
 
 function MemoListSkeleton() {
   return (
@@ -105,17 +78,14 @@ export function WorkspaceDemoPage() {
   const queryClient = useQueryClient()
   const statsQuery = useWorkspaceStatsQuery()
   const tagTreeQuery = useTagTreeQuery()
-  const friendSummaryQuery = useFriendSummaryQuery()
   const { filters: memoFilters, navigation } = useWorkspacePageNavigation()
   const memoListQuery = useMemoListQuery(memoFilters)
   const deleteMemoMutation = useDeleteMemoMutation()
   const updateMemoMutation = useUpdateMemoMutation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [homeMemoScope, setHomeMemoScope] = useState<HomeMemoScope>({ kind: 'self' })
   const memoCreate = useAuthenticatedMemoCreate(navigation.selectedTag)
   const {
     createMemo: createWorkspaceMemo,
-    reset: resetMemoCreate,
   } = memoCreate
   const {
     expandedTags: expandedTagTreeTags,
@@ -132,27 +102,12 @@ export function WorkspaceDemoPage() {
   })
   const [detailMemoId, setDetailMemoId] = useState<number | null>(null)
   const [quoteMemoId, setQuoteMemoId] = useState<number | null>(null)
-  const friendProfiles = friendSummaryQuery.data?.friends ?? EMPTY_FRIEND_PROFILES
-  const selectedFriendUsername = homeMemoScope.kind === 'friend'
-    ? homeMemoScope.targetFriend.username
-    : ''
-  const canViewFriendMemos = homeMemoScope.kind === 'self' &&
-    friendProfiles.some((friend) => friend.username.trim())
-  const friendStatsQuery = useFriendWorkspaceStatsQuery(selectedFriendUsername)
-  const friendTagTreeQuery = useFriendTagTreeQuery(selectedFriendUsername)
-  const friendMemoListQuery = useFriendMemoListQuery(
-    selectedFriendUsername,
-    memoFilters,
-  )
-  const activeStatsQuery = homeMemoScope.kind === 'friend' ? friendStatsQuery : statsQuery
-  const activeTagTreeQuery = homeMemoScope.kind === 'friend' ? friendTagTreeQuery : tagTreeQuery
-  const activeMemoListQuery = homeMemoScope.kind === 'friend' ? friendMemoListQuery : memoListQuery
   const {
     fetchNextPage,
     hasNextPage,
     isFetchNextPageError,
     isFetchingNextPage,
-  } = activeMemoListQuery
+  } = memoListQuery
   const loadMoreSentinelRef = useInfiniteListSentinel({
     hasNextPage,
     isFetchNextPageError,
@@ -160,37 +115,24 @@ export function WorkspaceDemoPage() {
     onLoadMore: fetchNextPage,
   })
 
-  const rawMemoCards = activeMemoListQuery.data?.items ?? EMPTY_MEMO_CARDS
-  const totalMemoCount = activeMemoListQuery.data?.totalCount ?? 0
+  const rawMemoCards = memoListQuery.data?.items ?? EMPTY_MEMO_CARDS
+  const totalMemoCount = memoListQuery.data?.totalCount ?? 0
   const workspaceQueryScope = getWorkspaceQueryScope(user)
-  const activeMemoOwnerScope = homeMemoScope.kind === 'friend'
-    ? `friend:${selectedFriendUsername}`
-    : `self:${workspaceQueryScope}`
   const {
     clear: clearMemoDisplayOverrides,
     displayedMemos: memoCards,
     remove: removeMemoDisplayOverride,
     track: trackMemoDisplayOverride,
-  } = useMemoDisplayOverrides(rawMemoCards, activeMemoOwnerScope)
+  } = useMemoDisplayOverrides(rawMemoCards, `self:${workspaceQueryScope}`)
   const memoById = useMemo(
     () => new Map(memoCards.map((memo) => [memo.id, memo])),
     [memoCards],
   )
   const detailMemo = detailMemoId === null ? null : (memoById.get(detailMemoId) ?? null)
   const quoteMemo = quoteMemoId === null ? null : (memoById.get(quoteMemoId) ?? null)
-  const friendReferenceDetails = useFriendReferencePreviewMap(
-    memoCards,
-    selectedFriendUsername,
-  )
   const memoCacheOwner = useMemo<WorkspaceMemoCacheOwner>(
-    () => homeMemoScope.kind === 'friend'
-      ? {
-          kind: 'friend',
-          scope: workspaceQueryScope,
-          friendUsername: selectedFriendUsername,
-        }
-      : { kind: 'self', scope: workspaceQueryScope },
-    [homeMemoScope.kind, selectedFriendUsername, workspaceQueryScope],
+    () => ({ kind: 'self', scope: workspaceQueryScope }),
+    [workspaceQueryScope],
   )
   const workspaceMemoCacheIndex = useMemo(
     () => createWorkspaceMemoCacheIndex(queryClient, memoCacheOwner, rawMemoCards),
@@ -206,39 +148,37 @@ export function WorkspaceDemoPage() {
           const cachedMemo = workspaceMemoCacheIndex.getMemoById(id)
           return cachedMemo
         },
-        resolveReferenceMemo: (id) => friendReferenceDetails.memos.get(id),
-        resolveReferencePreview: (id) => friendReferenceDetails.previews.get(id),
         summaryCache: workspaceMemoCacheIndex.getSummaryCache(),
       }),
-    [friendReferenceDetails, memoById, workspaceMemoCacheIndex],
+    [memoById, workspaceMemoCacheIndex],
   )
   const memoListHasData = memoCards.length > 0
   const hasVisibleMemoCards = memoListHasData || Boolean(memoCreate.pendingCreate)
 
   const tagOptions = useMemo(
     () => {
-      const treeTagOptions = toTagOptions(activeTagTreeQuery.data)
+      const treeTagOptions = toTagOptions(tagTreeQuery.data)
       const memoTagOptions = memoCards.flatMap((memo) => memo.tags)
 
       return Array.from(new Set([...treeTagOptions, ...memoTagOptions]))
     },
-    [activeTagTreeQuery.data, memoCards],
+    [tagTreeQuery.data, memoCards],
   )
 
   const statItems = useMemo(
-    () => buildSidebarStatItems(activeStatsQuery.data),
-    [activeStatsQuery.data],
+    () => buildSidebarStatItems(statsQuery.data),
+    [statsQuery.data],
   )
   const dailyCounts = useMemo(
     () =>
-      activeStatsQuery.data
-        ? toHeatmapDailyCounts(activeStatsQuery.data.daily_note_count)
+      statsQuery.data
+        ? toHeatmapDailyCounts(statsQuery.data.daily_note_count)
         : [],
-    [activeStatsQuery.data],
+    [statsQuery.data],
   )
   const tagTree = useMemo(
-    () => toSidebarTagTree(activeTagTreeQuery.data),
-    [activeTagTreeQuery.data],
+    () => toSidebarTagTree(tagTreeQuery.data),
+    [tagTreeQuery.data],
   )
 
   const openSidebar = useCallback(() => {
@@ -258,30 +198,16 @@ export function WorkspaceDemoPage() {
   const handleTitleRefresh = useCallback(() => {
     clearMemoDisplayOverrides()
     void runWorkspaceTitleRefreshActions({
-      refreshMemoList: () => activeMemoListQuery.refetch(),
-      refreshReferencePreviews: () => friendReferenceDetails.refetch(),
-      refreshStats: () => activeStatsQuery.refetch(),
-      refreshTagTree: () => activeTagTreeQuery.refetch(),
+      refreshMemoList: () => memoListQuery.refetch(),
+      refreshStats: () => statsQuery.refetch(),
+      refreshTagTree: () => tagTreeQuery.refetch(),
     })
   }, [
-    activeMemoListQuery,
-    activeStatsQuery,
-    activeTagTreeQuery,
     clearMemoDisplayOverrides,
-    friendReferenceDetails,
+    memoListQuery,
+    statsQuery,
+    tagTreeQuery,
   ])
-
-  const handleViewFriendMemos = useCallback(() => {
-    const friend = resolveSelectedFriendProfile(friendProfiles, homeMemoScope)
-    if (!friend) return
-
-    setHomeMemoScope({ kind: 'friend', targetFriend: friend })
-    resetMemoCreate()
-  }, [friendProfiles, homeMemoScope, resetMemoCreate])
-
-  const handleViewMyMemos = useCallback(() => {
-    setHomeMemoScope({ kind: 'self' })
-  }, [])
 
   const handleMemoSave = useCallback((memo: Memo, draft: CardDraft) => {
     const content = draft.content.trim()
@@ -352,11 +278,7 @@ export function WorkspaceDemoPage() {
       <SideBar
         activeDate={navigation.activeDate}
         dailyCounts={dailyCounts}
-        displayName={
-          homeMemoScope.kind === 'friend'
-            ? friendDisplayName(homeMemoScope.targetFriend)
-            : displayName
-        }
+        displayName={displayName}
         expandedTagTreeTags={expandedTagTreeTags}
         onClose={closeSidebar}
         onDeleteTag={handleDeleteTag}
@@ -372,12 +294,12 @@ export function WorkspaceDemoPage() {
         selectedFacet={navigation.selectedFacet}
         selectedTag={navigation.selectedTag}
         statItems={statItems}
-        statsLoadFailed={activeStatsQuery.isError}
-        statsLoading={activeStatsQuery.isPending}
-        tagMenuEnabled={homeMemoScope.kind === 'self'}
-        tagTreeInitialized={activeTagTreeQuery.isFetched}
-        tagTreeLoadFailed={activeTagTreeQuery.isError}
-        tagTreeLoading={activeTagTreeQuery.isPending}
+        statsLoadFailed={statsQuery.isError}
+        statsLoading={statsQuery.isPending}
+        tagMenuEnabled
+        tagTreeInitialized={tagTreeQuery.isFetched}
+        tagTreeLoadFailed={tagTreeQuery.isError}
+        tagTreeLoading={tagTreeQuery.isPending}
         tagTreeNodes={tagTree.nodes}
         tagTreeUntaggedCount={tagTree.untaggedCount}
       />
@@ -432,22 +354,16 @@ export function WorkspaceDemoPage() {
             <GlassIconButton aria-label="搜索">
               <Search />
             </GlassIconButton>
-            {homeMemoScope.kind === 'self' ? (
-              <GlassIconButton
-                aria-label="新建笔记"
-                disabled={Boolean(memoCreate.pendingCreate) || memoCreate.isPending}
-                onClick={memoCreate.start}
-              >
-                <Plus />
-              </GlassIconButton>
-            ) : null}
+            <GlassIconButton
+              aria-label="新建笔记"
+              disabled={Boolean(memoCreate.pendingCreate) || memoCreate.isPending}
+              onClick={memoCreate.start}
+            >
+              <Plus />
+            </GlassIconButton>
             <WorkspaceTitleMenu
-              canViewFriendMemos={canViewFriendMemos}
-              homeMemoScope={homeMemoScope.kind}
               memoCreatedAtSort={navigation.memoCreatedAtSort}
               onMemoCreatedAtSortChange={navigation.setMemoCreatedAtSort}
-              onViewFriendMemos={handleViewFriendMemos}
-              onViewMyMemos={handleViewMyMemos}
               onRefresh={handleTitleRefresh}
               selectedTag={navigation.selectedTag}
             />
@@ -464,17 +380,17 @@ export function WorkspaceDemoPage() {
         <div className="app-shell__layout">
           <div aria-hidden="true" className="app-shell__sidebar-space" />
           <div className="app-shell__content">
-            {activeMemoListQuery.isPending && !hasVisibleMemoCards ? (
+            {memoListQuery.isPending && !hasVisibleMemoCards ? (
               <MemoListSkeleton />
             ) : null}
 
-            {activeMemoListQuery.isError && !hasVisibleMemoCards ? (
+            {memoListQuery.isError && !hasVisibleMemoCards ? (
               <section className="memo-list-state" role="status">
                 <p className="memo-list-state__title">笔记列表加载失败</p>
                 <p className="memo-list-state__body">请稍后重新加载。</p>
                 <Button
                   className="memo-list-state__action"
-                  onClick={() => void activeMemoListQuery.refetch()}
+                  onClick={() => void memoListQuery.refetch()}
                   size="sm"
                   variant="outline"
                 >
@@ -483,8 +399,8 @@ export function WorkspaceDemoPage() {
               </section>
             ) : null}
 
-            {!activeMemoListQuery.isPending &&
-            !activeMemoListQuery.isError &&
+            {!memoListQuery.isPending &&
+            !memoListQuery.isError &&
             !hasVisibleMemoCards ? (
               <section className="memo-list-state" role="status">
                 <p className="memo-list-state__title">暂无笔记</p>
@@ -523,12 +439,11 @@ export function WorkspaceDemoPage() {
                   return (
                     <RefCard
                       key={memo.id}
-                      disabled={homeMemoScope.kind === 'friend'}
                       note={toCardNote(memo)}
                       onCopySelect={() => handleMemoCopy(memo)}
-                      onDelete={homeMemoScope.kind === 'self' ? () => handleMemoDelete(memo) : undefined}
-                      onQuoteSelect={homeMemoScope.kind === 'self' ? () => setQuoteMemoId(memo.id) : undefined}
-                      onSave={homeMemoScope.kind === 'self' ? (draft) => handleMemoSave(memo, draft) : undefined}
+                      onDelete={() => handleMemoDelete(memo)}
+                      onQuoteSelect={() => setQuoteMemoId(memo.id)}
+                      onSave={(draft) => handleMemoSave(memo, draft)}
                       onReferenceClick={() => setDetailMemoId(memo.id)}
                       onTagClick={navigation.selectTag}
                       referencePreview={referencePreviews.referencePreview}

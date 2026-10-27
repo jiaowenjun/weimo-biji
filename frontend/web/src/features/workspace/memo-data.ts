@@ -23,21 +23,15 @@ export interface MemoReferenceSummaryCache {
 
 export interface MemoReferencePreviewResolver {
   getMemoById(id: number): Memo | undefined
-  resolveReferenceMemo?: (id: MemoRefId) => Memo | undefined
-  resolveReferencePreview?: (id: MemoRefId) => MemoReferencePreview | undefined
   summaryCache?: MemoReferenceSummaryCache
 }
 
 export function createMemoReferencePreviewResolver({
   getMemoById,
-  resolveReferenceMemo,
-  resolveReferencePreview,
   summaryCache,
 }: MemoReferencePreviewResolver): MemoReferencePreviewResolver {
   return {
     getMemoById,
-    resolveReferenceMemo,
-    resolveReferencePreview,
     summaryCache,
   }
 }
@@ -201,32 +195,6 @@ export function buildMemoReferenceFallbackText(id: MemoRefId): string {
   return `笔记${id}`
 }
 
-export interface FriendMemoRefParts {
-  username: string
-  memoId: number
-}
-
-function toOwnMemoId(ref: MemoRefId): number | null {
-  if (ref.includes('/')) return null
-
-  const id = Number(ref)
-
-  return Number.isFinite(id) && id > 0 ? id : null
-}
-
-export function parseFriendMemoRef(ref: MemoRefId): FriendMemoRefParts | null {
-  const parts = ref.split('/')
-  if (parts.length !== 2 || !parts[0]) return null
-
-  const memoId = Number(parts[1])
-  if (!Number.isFinite(memoId) || memoId <= 0) return null
-
-  return {
-    username: parts[0],
-    memoId,
-  }
-}
-
 function toReferenceDateText(dateText: string): string {
   return dateText.trim().split(/\s+/)[0] ?? ''
 }
@@ -245,42 +213,18 @@ export function buildMemoReferenceDisplayText(
   return `${dateOnlyText}：${summary}`
 }
 
-export function buildMemoReferenceOwnerSummaryText(
-  ownerLabel: string,
-  content: string,
-  fallbackText: string,
-): string {
-  const label = ownerLabel.trim()
-  const summary = summarizeMemoContent(content)
-  if (!label) return summary || fallbackText
+function toOwnMemoId(ref: MemoRefId): number | null {
+  if (ref.includes('/')) return null
 
-  return `${label}: ${summary || fallbackText}`
-}
+  const id = Number(ref)
 
-export function buildMemoFriendReferencePreview(
-  id: MemoRefId,
-  memo: Memo,
-  ownerLabel: string,
-): MemoReferencePreview {
-  const fallbackText = buildMemoReferenceFallbackText(id)
-
-  return {
-    id,
-    displayText: buildMemoReferenceOwnerSummaryText(
-      ownerLabel,
-      memo.content,
-      fallbackText,
-    ),
-  }
+  return Number.isFinite(id) && id > 0 ? id : null
 }
 
 function buildMemoReferencePreview(
   id: MemoRefId,
   resolver: MemoReferencePreviewResolver,
 ): MemoReferencePreview {
-  const explicitPreview = resolver.resolveReferencePreview?.(id)
-  if (explicitPreview) return explicitPreview
-
   const fallbackText = buildMemoReferenceFallbackText(id)
   const ownId = toOwnMemoId(id)
   if (ownId === null) return { id, displayText: fallbackText }

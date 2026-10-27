@@ -33,13 +33,9 @@ export interface MemoReferencePreview {
   displayText: string
 }
 
-export type MemoReferencePreviewRelation = 'reference' | 'referencedBy'
 
 export interface MemoCardItem {
   id: number
-  ownerUsername: string
-  /** 笔记主人展示昵称（好友笔记等）；分享图等场景优先于 `ownerUsername`。 */
-  ownerNickname?: string
   createdAtText: string
   content: string
   contentNodes: RichTextNode[]
@@ -103,12 +99,6 @@ interface MemoListPresentationOptions {
   setTimeoutImpl?: typeof setTimeout
   clearTimeoutImpl?: typeof clearTimeout
   enteringCleanupMs?: number
-  resolveReferencePreview?: (
-    id: MemoRefId,
-    relation: MemoReferencePreviewRelation,
-  ) => MemoReferencePreview | undefined
-  referenceOwnerLabel?: string
-  referencedByOwnerLabel?: string
   highlightKeyword?: string
 }
 
@@ -116,12 +106,6 @@ interface BuildMemoCardItemOptions {
   exiting?: boolean
   richText?: boolean
   resolveMemoById?: (id: number) => Memo | undefined
-  resolveReferencePreview?: (
-    id: MemoRefId,
-    relation: MemoReferencePreviewRelation,
-  ) => MemoReferencePreview | undefined
-  referenceOwnerLabel?: string
-  referencedByOwnerLabel?: string
 }
 
 function arraysShallowEqual<T>(a: T[], b: T[]): boolean {
@@ -232,53 +216,12 @@ export function buildMemoReferenceDisplayText(dateText: string, content: string)
   return `${dateOnlyText}：${summary}`
 }
 
-export function buildMemoReferenceOwnerSummaryText(
-  ownerLabel: string,
-  content: string,
-  fallbackText: string,
-): string {
-  const label = ownerLabel.trim()
-  const summary = summarizeMemoContent(content)
-  if (!label) return summary || fallbackText
-  return `${label}: ${summary || fallbackText}`
-}
-
 function buildReferencePreview(
   id: MemoRefId,
   memo: Memo | undefined,
-  relation: MemoReferencePreviewRelation,
-  options: Pick<
-    BuildMemoCardItemOptions,
-    'referenceOwnerLabel' | 'referencedByOwnerLabel' | 'resolveReferencePreview'
-  > = {},
 ): MemoReferencePreview {
-  const explicitPreview = options.resolveReferencePreview?.(id, relation)
-  if (explicitPreview) return explicitPreview
-
   const fallbackText = buildMemoReferenceFallbackText(id)
   if (!memo) return { id, displayText: fallbackText }
-
-  if (relation === 'reference' && options.referenceOwnerLabel) {
-    return {
-      id,
-      displayText: buildMemoReferenceOwnerSummaryText(
-        options.referenceOwnerLabel,
-        memo.content,
-        fallbackText,
-      ),
-    }
-  }
-
-  if (relation === 'referencedBy' && options.referencedByOwnerLabel) {
-    return {
-      id,
-      displayText: buildMemoReferenceOwnerSummaryText(
-        options.referencedByOwnerLabel,
-        memo.content,
-        fallbackText,
-      ),
-    }
-  }
 
   const dateText = formatMemoTimestamp(memo.createdAt)
   const displayText = buildMemoReferenceDisplayText(dateText, memo.content)
@@ -309,16 +252,12 @@ export function buildMemoCardItem(
       : buildReferencePreview(
         referenceId,
         referenceOwnId === null ? undefined : resolveMemoById(referenceOwnId),
-        'reference',
-        options,
       )
   const referencedByPreviews = memo.referencedBy.map((id) => {
     const ownId = ownMemoIdFromRef(id)
     return buildReferencePreview(
       id,
       ownId === null ? undefined : resolveMemoById(ownId),
-      'referencedBy',
-      options,
     )
   })
 
@@ -326,7 +265,6 @@ export function buildMemoCardItem(
 
   return {
     id: memo.id,
-    ownerUsername: '',
     createdAtText: formatMemoTimestamp(memo.createdAt),
     content: memo.content,
     contentNodes,
@@ -342,12 +280,7 @@ export function buildMemoCardItem(
 export function createListProjector(
   options: Pick<
     MemoListPresentationOptions,
-    | 'getCachedMemoById'
-    | 'getExitingMemoIds'
-    | 'referenceOwnerLabel'
-    | 'referencedByOwnerLabel'
-    | 'resolveReferencePreview'
-    | 'highlightKeyword'
+    'getCachedMemoById' | 'getExitingMemoIds' | 'highlightKeyword'
   > = {},
 ): (entry: MemoListEntry | undefined) => MemoListProjection {
   const getExitingMemoIds =
@@ -372,16 +305,12 @@ export function createListProjector(
         : buildReferencePreview(
           referenceId,
           referenceOwnId === null ? undefined : resolveMemoById(referenceOwnId),
-          'reference',
-          options,
         )
     const referencedByPreviews = memo.referencedBy.map((id) => {
       const ownId = ownMemoIdFromRef(id)
       return buildReferencePreview(
         id,
         ownId === null ? undefined : resolveMemoById(ownId),
-        'referencedBy',
-        options,
       )
     })
     const referencePreviewKey = buildReferencePreviewKey(referencePreview, referencedByPreviews)
@@ -399,9 +328,6 @@ export function createListProjector(
       exiting,
       richText,
       resolveMemoById,
-      resolveReferencePreview: options.resolveReferencePreview,
-      referenceOwnerLabel: options.referenceOwnerLabel,
-      referencedByOwnerLabel: options.referencedByOwnerLabel,
     })
     if (options.highlightKeyword && card.contentNodes.length > 0) {
       card.contentNodes = applyMemoParagraphSpacingForHighlight(

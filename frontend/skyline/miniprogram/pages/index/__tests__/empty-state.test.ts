@@ -55,35 +55,9 @@ describe('deriveIndexEmptyState', () => {
     })
   })
 
-  it('uses friend-specific empty copy without creation guidance', () => {
-    expect(
-      deriveIndexEmptyState({
-        scopeKind: 'friend',
-        query: { keyword: 'ignored', selectedTag: '旅行' },
-        dateLabel: '今天',
-      }),
-    ).toEqual({
-      emptyTitle: '好友没有 #旅行 相关笔记',
-      emptyDescription: '',
-      emptyActionText: '清除标签筛选',
-    })
-
-    expect(
-      deriveIndexEmptyState({
-        scopeKind: 'friend',
-        query: { keyword: '', selectedTag: '' },
-        dateLabel: '今天',
-      }),
-    ).toEqual({
-      emptyTitle: '今天好友还没有笔记',
-      emptyDescription: '',
-      emptyActionText: '清除日期筛选',
-    })
-  })
-
   it('keeps updateEmptyState as setData glue around the pure derivation', () => {
-    const start = pageTs.indexOf('updateEmptyState()')
-    const end = pageTs.indexOf('async applyFriendMemoQuery', start)
+    const start = pageTs.indexOf('\n  updateEmptyState() {')
+    const end = pageTs.indexOf('\n  resetFiltersAfterLogout() {', start)
     const section = pageTs.slice(start, end)
 
     expect(section).toContain('deriveIndexEmptyState({')

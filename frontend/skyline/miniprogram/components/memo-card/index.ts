@@ -56,7 +56,6 @@ interface OpenCardMenuOptions {
 
 interface MemoCardMenuOpenDetail {
   memoId: number
-  ownerUsername: string
   mode: MemoCardPopoverMode
   tag?: string
   triggerRect: WechatMiniprogram.BoundingClientRectCallbackResult
@@ -82,7 +81,6 @@ Component({
     referenceDisabled: { type: Boolean, value: false },
     menuReadonly: { type: Boolean, value: false },
     viewerRole: { type: String, value: 'self' as ViewerRole },
-    ownerUsername: { type: String, value: '' },
     selectedTag: { type: String, value: '' },
     exiting: { type: Boolean, value: false },
     entering: { type: Boolean, value: false },
@@ -326,7 +324,6 @@ Component({
     handleContentTap() {
       this.triggerEvent('tap', {
         memoId: this.data.memoId,
-        ownerUsername: this.data.ownerUsername,
       })
     },
 
@@ -460,7 +457,6 @@ Component({
           })
           this.triggerEvent('menuopen', {
             memoId: this.data.memoId,
-            ownerUsername: this.data.ownerUsername,
             mode: 'tag',
             tag,
             triggerRect: rect,
@@ -495,7 +491,6 @@ Component({
       if (this.data.referenceDisabled) return
       this.triggerEvent('referencetap', {
         memoId: this.data.memoId,
-        ownerUsername: this.data.ownerUsername,
       })
     },
 
@@ -538,7 +533,6 @@ Component({
           })
           this.triggerEvent('menuopen', {
             memoId: this.data.memoId,
-            ownerUsername: this.data.ownerUsername,
             mode: 'card',
             triggerRect: rect,
             items: menu.items,
@@ -632,13 +626,13 @@ Component({
       } else if (id === 'quote') {
         this.triggerEvent('quote', { memoId })
       } else if (id === 'memo-detail') {
-        this.triggerEvent('referencetap', { memoId, ownerUsername: this.data.ownerUsername })
+        this.triggerEvent('referencetap', { memoId })
       } else if (id === 'delete') {
         this.triggerEvent('delete', { memoId })
       } else if (id === 'share') {
-        this.triggerEvent('share', { memoId, ownerUsername: this.data.ownerUsername })
+        this.triggerEvent('share', { memoId })
       } else if (id === 'copy') {
-        this.triggerEvent('copy', { memoId, ownerUsername: this.data.ownerUsername })
+        this.triggerEvent('copy', { memoId })
       }
     },
 

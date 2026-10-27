@@ -10,9 +10,8 @@
 - memo 创建、读取、批量读取、更新、删除
 - memo 组合搜索：标签、日期、全文、游标分页
 - 标签树元信息查询与标签重命名
-- 一对一好友搜索、申请、通知与同意
 - 用户统计：笔记数、标签数、字数、活跃日期
-- `users.json + social.json + <username>/*.md + .jwt_secret` 存储布局
+- `users.json + <username>/*.md + .jwt_secret` 存储布局
 
 ## 启动
 
@@ -68,7 +67,6 @@ cargo test -p biji
 ```text
 <storage>/
 ├── .jwt_secret
-├── social.json
 ├── users.json
 └── <username>/
     ├── 1.md
@@ -77,7 +75,6 @@ cargo test -p biji
 ```
 
 - 用户数据保存在 `users.json`
-- 好友关系、好友申请与通知保存在 `social.json`
 - 每条 memo 保存为 `<username>/<memo_id>.md`
 - memo 文件使用 Markdown 正文 + YAML FrontMatter：
   - `id`
@@ -143,17 +140,6 @@ cargo test -p biji
 | memo | `DELETE` | `/memo/{id}` | Bearer | 删除单条 memo |
 | 标签 | `GET` | `/tag/meta` | Bearer | 查询标签树元信息 |
 | 标签 | `PUT` | `/tag/{old_tag}` | Bearer | 重命名标签，请求体 `{"new_tag": "..."}` |
-| 好友 | `GET` | `/friend/me` | Bearer | 查询当前好友摘要 |
-| 好友 | `GET` | `/friend/unread-count` | Bearer | 查询未读通知数 |
-| 好友 | `GET` | `/friend/search?nickname=...` | Bearer | 按昵称搜索用户 |
-| 好友 | `POST` | `/friend/request` | Bearer | 发起好友申请，请求体 `{"to_username": "..."}` |
-| 好友 | `GET` | `/friend/notifications` | Bearer | 查询好友通知列表 |
-| 好友 | `POST` | `/friend/notifications/read` | Bearer | 标记好友通知已读 |
-| 好友 | `POST` | `/friend/requests/{id}/accept` | Bearer | 同意好友申请 |
-| 好友 | `GET` | `/friend/{friend_username}/stats` | Bearer | 查询指定好友统计信息 |
-| 好友 | `GET` | `/friend/{friend_username}/tag/meta` | Bearer | 查询指定好友标签树 |
-| 好友 | `POST` | `/friend/{friend_username}/memos/search` | Bearer | 查询指定好友笔记 |
-| 好友 | `GET` | `/friend/{friend_username}/memos/{id}` | Bearer | 查询指定好友笔记详情 |
 
 `POST /memo/search` 支持以下条件：
 
@@ -165,4 +151,3 @@ cargo test -p biji
 
 多个条件按 `AND` 组合，结果按创建时间倒序返回。
 
-好友接口的冲突响应使用 `{ "code": "...", "message": "..." }`，其中 `code` 是稳定的 uppercase snake-case 枚举，例如 `ALREADY_PAIRED`、`TARGET_PAIRED`、`PENDING_EXISTS`、`REQUEST_EXPIRED`。当前策略常量仍限制每个用户最多一个好友，且同一时刻最多参与一个待处理好友申请。好友摘要返回 `friends` 与 `pending_outgoing` 数组；好友笔记、统计和标签树读取必须在路径中指定 `friend_username`。

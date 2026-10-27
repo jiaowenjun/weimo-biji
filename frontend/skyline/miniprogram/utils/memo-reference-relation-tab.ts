@@ -8,10 +8,8 @@ export interface RelationTabState {
 }
 
 export interface RelationTabCards {
-  ownReferenceCards: readonly unknown[]
-  friendReferenceCards: readonly unknown[]
-  ownReferencedByCards: readonly unknown[]
-  friendReferencedByCards: readonly unknown[]
+  referenceCards: readonly unknown[]
+  referencedByCards: readonly unknown[]
 }
 
 export const RELATION_TAB_EXIT_TRANSITION_MS = 260
@@ -25,8 +23,8 @@ export function createRelationTabState(): RelationTabState {
 }
 
 export function resolveRelationTabDesired(cards: RelationTabCards): 'show' | 'hide' {
-  const hasRef = cards.ownReferenceCards.length + cards.friendReferenceCards.length > 0
-  const hasRby = cards.ownReferencedByCards.length + cards.friendReferencedByCards.length > 0
+  const hasRef = cards.referenceCards.length > 0
+  const hasRby = cards.referencedByCards.length > 0
   return hasRef && hasRby ? 'show' : 'hide'
 }
 
@@ -48,8 +46,8 @@ export function reduceRelationTabOnCardsChange(
     return { patch: {} }
   }
 
-  const hasRef = cards.ownReferenceCards.length + cards.friendReferenceCards.length > 0
-  const hasRby = cards.ownReferencedByCards.length + cards.friendReferencedByCards.length > 0
+  const hasRef = cards.referenceCards.length > 0
+  const hasRby = cards.referencedByCards.length > 0
   const desired = hasRef && hasRby ? 'show' : 'hide'
 
   if (desired === 'show' && prev.tabRenderState === 'hidden') {

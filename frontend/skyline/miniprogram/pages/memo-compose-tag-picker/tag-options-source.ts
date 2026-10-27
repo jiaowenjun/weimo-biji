@@ -1,4 +1,3 @@
-import { getFriendTagTree } from '../../services/friend'
 import type { WorkspaceStore } from '../../store/workspace-store'
 import { isTagNoneTreeNodePath } from '../../utils/tag-none'
 import { compareTagPathPinyin } from '../../utils/tag-sort'
@@ -14,11 +13,5 @@ function sortFlatTagPathsNoneLast(paths: string[]): string[] {
 export async function loadTagOptionsFromWorkspace(store: WorkspaceStore): Promise<string[]> {
   await store.ensureTagTree()
   const nodes = store.getState().tagTree.data ?? []
-  return sortFlatTagPathsNoneLast(flattenTagTreeToStrings(nodes))
-}
-
-export async function loadTagOptionsFromFriend(friendUsername: string): Promise<string[]> {
-  const root = await getFriendTagTree(friendUsername)
-  const nodes = root.children ?? []
   return sortFlatTagPathsNoneLast(flattenTagTreeToStrings(nodes))
 }

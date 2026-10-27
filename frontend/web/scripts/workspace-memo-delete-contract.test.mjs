@@ -215,7 +215,7 @@ for (const snippet of [
   'id: memo.id',
   'removeMemoDisplayOverride(memo.id)',
   "window.alert(error instanceof Error ? error.message : '删除笔记失败')",
-  "onDelete={homeMemoScope.kind === 'self' ? () => handleMemoDelete(memo) : undefined}",
+  "onDelete={() => handleMemoDelete(memo)}",
 ]) {
   assert.ok(
     workspacePageSource.includes(snippet),

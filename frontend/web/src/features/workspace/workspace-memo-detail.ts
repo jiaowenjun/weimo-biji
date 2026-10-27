@@ -1,9 +1,7 @@
-import type { MemoReferencePreview, MemoReferencePreviewResolver } from './memo-data'
+import type { MemoReferencePreviewResolver } from './memo-data'
 import type { Memo } from './workspace-types'
 
-export type WorkspaceMemoDetailRelationItem =
-  | { kind: 'memo'; memo: Memo }
-  | { kind: 'preview'; preview: MemoReferencePreview }
+export type WorkspaceMemoDetailRelationItem = { kind: 'memo'; memo: Memo }
 
 export interface WorkspaceMemoDetailProjection {
   rootMemo: Memo
@@ -23,20 +21,7 @@ function orderedItemsByRef(
   for (const ref of refs) {
     if (seenRefs.has(ref)) continue
     seenRefs.add(ref)
-
-    const referenceMemo = resolver.resolveReferenceMemo?.(ref)
-    if (referenceMemo) {
-      items.push({ kind: 'memo', memo: referenceMemo })
-      continue
-    }
-
-    if (ref.includes('/')) {
-      const preview = resolver.resolveReferencePreview?.(ref)
-      if (preview) {
-        items.push({ kind: 'preview', preview })
-      }
-      continue
-    }
+    if (ref.includes('/')) continue
 
     const id = Number(ref)
     if (!Number.isFinite(id) || seen.has(id)) continue

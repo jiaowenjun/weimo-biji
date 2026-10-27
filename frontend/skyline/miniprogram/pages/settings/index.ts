@@ -1,7 +1,7 @@
 import { applyNavStatusBarStyle } from '../../utils/theme'
 import { getSession, hasSession } from '../../utils/session'
 import { performLogout } from '../../utils/logout'
-import { openAccountDetail, openAuthPage, openFriendSearch } from '../../utils/navigation'
+import { openAccountDetail, openAuthPage } from '../../utils/navigation'
 import {
   readMemoCardDoubleTapBehavior,
   writeMemoCardDoubleTapBehavior,
@@ -44,9 +44,6 @@ Page({
     openAccountDetail()
   },
 
-  handleAddFriendTap() {
-    openFriendSearch()
-  },
 
   handleLoginTap() {
     void openAuthPage({ allowBack: true })

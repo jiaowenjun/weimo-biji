@@ -1,11 +1,10 @@
-import type { FriendProfile } from '../../models/friend'
 import type { MemoQueryDraft } from '../../models/memo'
 import { workspaceStore } from '../../store/store-bindings/workspace-store.instance'
 import { bindMemoList, type MemoListBinding } from '../../store/store-bindings/bind-memo-list'
 import type { MemoListEntry } from '../../store/memo-cache-types'
 import { memoListKeyFromQuery } from '../../store/workspace-keys'
 import { formatLocalDateInputValue } from '../../utils/memo-date-filter'
-import { resolveHomeNavTitle, resolveSearchNavTitle } from '../../utils/home-nav-title'
+import { resolveHomeNavTitle } from '../../utils/home-nav-title'
 import {
   buildMemoListSearchQuery,
   cloneMemoQueryDraft,
@@ -21,10 +20,6 @@ import {
   type MemoCardItem,
   type MemoRenderListItem,
 } from '../../utils/memo-list-presentation'
-import {
-  createFriendReferencePreviewHydrator,
-  type FriendReferencePreviewHydrator,
-} from '../../utils/friend-reference-preview-hydrator'
 import {
   openMemoComposeTagPicker,
   type MemoSearchInitPayload,
@@ -70,7 +65,6 @@ import {
   memoListSingletonMenuMethods,
   type PageWithMemoListSingletonMenu,
 } from '../../utils/memo-list-singleton-menu'
-import { refreshFriendMemoList, loadMoreFriendMemoList } from '../index/friend-memo-list-ops'
 import {
   createMemoScopeStrategy,
   type MemoScopeStrategy,
@@ -84,12 +78,6 @@ import {
 
 const PAGE_SIZE = 8
 
-function friendDisplayLabelForSearchNav(friend: FriendProfile | null): string | null {
-  if (!friend) return null
-  const label = String(friend.nickname || friend.username || '').trim()
-  return label.length > 0 ? label : null
-}
-
 function selfUserLabelForSearchNav(): string | null {
   const user = getSession().user
   if (!user) return null
@@ -97,15 +85,7 @@ function selfUserLabelForSearchNav(): string | null {
   return label.length > 0 ? label : null
 }
 
-function resolveSearchNavBarTitle(
-  selectedTag: string,
-  windowWidth: number,
-  targetFriend: FriendProfile | null,
-): string {
-  const friendLabel = friendDisplayLabelForSearchNav(targetFriend)
-  if (friendLabel) {
-    return resolveSearchNavTitle(selectedTag, windowWidth, friendLabel)
-  }
+function resolveSearchNavBarTitle(selectedTag: string, windowWidth: number): string {
   return resolveHomeNavTitle(selectedTag, windowWidth, selfUserLabelForSearchNav())
 }
 
@@ -119,7 +99,6 @@ interface SearchPageData {
   todayValue: string
   keywordFocus: boolean
   keyboardHeight: number
-  targetFriend: FriendProfile | null
   viewerRole: ViewerRole
   memoCards: MemoCardItem[]
   memoRenderCards: MemoRenderListItem[]
@@ -145,7 +124,6 @@ interface SearchPageCustom {
   _eventChannel: WechatMiniprogram.EventChannel | null
   _memoListBinding: MemoListBinding | null
   _strategy: MemoScopeStrategy
-  _friendReferenceHydrator: FriendReferencePreviewHydrator
   _searchMemoListOnChange: ((entry: MemoListEntry | undefined) => void) | null
   _searchResultsScrollView: WechatMiniprogram.ScrollViewContext | null
   _renderTransitionHoldActive?: boolean
@@ -159,17 +137,13 @@ interface SearchPageCustom {
   _navChromeLastScrollTop: number
   _deletingMemoId: number | null
   _modifyingMemoId: number | null
-  _isFriendMode: () => boolean
   _cardActionContext: () => CardActionContext
   _permissionsFor: (memoId: number) => MemoPermissions
   resetRenderTransitionState: () => void
   prepareRenderTransitionState: (holdRender: boolean) => void
   cacheSearchResultsScrollView: () => void
   resetSearchResultsScroll: () => void
-  syncDraft: (
-    nextDraft: MemoQueryDraft,
-    syncOptions?: { navTargetFriendHint?: FriendProfile },
-  ) => void
+  syncDraft: (nextDraft: MemoQueryDraft) => void
   bindDraftMemoList: (
     draft: MemoQueryDraft,
     options?: { holdRender?: boolean },
@@ -202,7 +176,7 @@ interface SearchPageCustom {
   ) => void
   handleMemoTagAdd: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleMemoTagRemove: (event: WechatMiniprogram.CustomEvent<{ memoId: number; tag: string }>) => void
-  handleMemoShare: (event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) => void
+  handleMemoShare: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleMemoCopy: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleMemoTagTap: (event: WechatMiniprogram.CustomEvent<{ tag: string }>) => void
 }
@@ -218,7 +192,6 @@ Page({
     todayValue: '',
     keywordFocus: true,
     keyboardHeight: 0,
-    targetFriend: null as FriendProfile | null,
     viewerRole: 'self' as ViewerRole,
     memoCards: [] as MemoCardItem[],
     memoRenderCards: [] as MemoRenderListItem[],
@@ -244,7 +217,6 @@ Page({
   _eventChannel: null,
   _memoListBinding: null as MemoListBinding | null,
   _strategy: null as unknown as MemoScopeStrategy,
-  _friendReferenceHydrator: null as unknown as FriendReferencePreviewHydrator,
   _searchMemoListOnChange: null as ((entry: MemoListEntry | undefined) => void) | null,
   _searchResultsScrollView: null as WechatMiniprogram.ScrollViewContext | null,
   _renderTransitionHoldActive: false,
@@ -265,15 +237,10 @@ Page({
     )
   },
 
-  _isFriendMode() {
-    return this.data.targetFriend != null
-  },
-
   _cardActionContext(): CardActionContext {
     return {
       memoCards: this.data.memoCards,
       host: this,
-      friend: this.data.targetFriend ?? undefined,
       refreshList: () => this.refreshMemoList(),
     }
   },
@@ -285,19 +252,7 @@ Page({
   },
 
   onLoad() {
-    this._strategy = createMemoScopeStrategy({ kind: 'self' }, () => this.data.memoCreatedAtSort)
-    this._friendReferenceHydrator = createFriendReferencePreviewHydrator({
-      getViewerUsername: () => getSession().user?.username ?? '',
-      onPreviewsUpdated: () => {
-        if (
-          !this._isFriendMode() &&
-          this._searchMemoListOnChange &&
-          this._memoListBinding
-        ) {
-          this._searchMemoListOnChange(this._memoListBinding.selectListEntry())
-        }
-      },
-    })
+    this._strategy = createMemoScopeStrategy(() => this.data.memoCreatedAtSort)
 
     const now = new Date()
     const capsuleRect = wx.getMenuButtonBoundingClientRect()
@@ -317,20 +272,8 @@ Page({
     this._eventChannel = this.getOpenerEventChannel()
     if (this._eventChannel) {
       this._eventChannel.on('memo-search-init', (payload: MemoSearchInitPayload) => {
-        if (payload.targetFriend) {
-          this.setData({ targetFriend: payload.targetFriend, viewerRole: 'friend' })
-          this._strategy = createMemoScopeStrategy(
-            { kind: 'friend', targetFriend: payload.targetFriend },
-            () => this.data.memoCreatedAtSort,
-          )
-        } else {
-          this.setData({ targetFriend: null, viewerRole: 'self' })
-          this._strategy = createMemoScopeStrategy({ kind: 'self' }, () => this.data.memoCreatedAtSort)
-        }
-        this.syncDraft(
-          payload.draft,
-          payload.targetFriend ? { navTargetFriendHint: payload.targetFriend } : {},
-        )
+        this._strategy = createMemoScopeStrategy(() => this.data.memoCreatedAtSort)
+        this.syncDraft(payload.draft)
       })
     }
 
@@ -342,7 +285,7 @@ Page({
     const w = wx.getWindowInfo().windowWidth
     const sort = this.data.memoCreatedAtSort
     this.setData({
-      navBarTitle: resolveSearchNavBarTitle(this.data.draft.selectedTag, w, this.data.targetFriend),
+      navBarTitle: resolveSearchNavBarTitle(this.data.draft.selectedTag, w),
       titleMenuItems: buildTitleMenuWithOptionalAllTags(this.data.draft.selectedTag, true, sort),
     })
     this._modifyingMemoId = null
@@ -356,7 +299,6 @@ Page({
     this._memoListBinding?.unsubscribe()
     this._memoListBinding = null
     this._searchMemoListOnChange = null
-    this._friendReferenceHydrator?.clear()
     this._searchResultsScrollView = null
     if (this._enteringCleanupTimer != null) {
       clearTimeout(this._enteringCleanupTimer)
@@ -410,24 +352,15 @@ Page({
     }
   },
 
-  syncDraft(
-    nextDraft: MemoQueryDraft,
-    syncOptions?: { navTargetFriendHint?: FriendProfile },
-  ) {
+  syncDraft(nextDraft: MemoQueryDraft) {
     const draft = cloneMemoQueryDraft(nextDraft)
     const draftChanged = !isSameMemoQueryDraft(draft, this.data.draft)
-    const shouldResetSearchResultsScroll = this._isFriendMode()
-      ? draftChanged
-      : shouldSearchFromDraft(draft) && draftChanged
-    const holdRender = this._isFriendMode()
-      ? false
-      : shouldHoldSearchRenderTransition({
-          currentDraft: this.data.draft,
-          nextDraft: draft,
-          memoListInitialized: this.data.memoListInitialized,
-        })
-
-    const targetFriendForNavTitle = syncOptions?.navTargetFriendHint ?? this.data.targetFriend
+    const shouldResetSearchResultsScroll = shouldSearchFromDraft(draft) && draftChanged
+    const holdRender = shouldHoldSearchRenderTransition({
+      currentDraft: this.data.draft,
+      nextDraft: draft,
+      memoListInitialized: this.data.memoListInitialized,
+    })
 
     const w = wx.getWindowInfo().windowWidth
     const normalizedDraft = normalizeMemoQueryDraft(draft)
@@ -439,7 +372,7 @@ Page({
       dateLabel: formatMemoQueryDateLabel(draft),
       facetLabel: formatMemoFacetLabel(draft.listFacet),
       hasActiveQuery: hasActiveMemoQuery(draft),
-      navBarTitle: resolveSearchNavBarTitle(draft.selectedTag, w, targetFriendForNavTitle),
+      navBarTitle: resolveSearchNavBarTitle(draft.selectedTag, w),
       titleMenuItems: buildTitleMenuWithOptionalAllTags(
         draft.selectedTag,
         true,
@@ -491,14 +424,6 @@ Page({
     }
 
     const sort = this.data.memoCreatedAtSort
-    if (this._isFriendMode()) {
-      this._memoListBinding?.unsubscribe()
-      this._memoListBinding = null
-      this.prepareRenderTransitionState(options.holdRender === true)
-      await refreshFriendMemoList(this, draft, PAGE_SIZE)
-      return
-    }
-
     this.prepareRenderTransitionState(options.holdRender === true)
 
     const searchQuery = buildMemoListSearchQuery(normalizedDraft, sort)
@@ -510,15 +435,9 @@ Page({
     this._memoListBinding?.unsubscribe()
     const innerOnChange = makeMemoListOnChange(this, {
       highlightKeyword: normalizedDraft.keyword,
-      resolveReferencePreview: (ref) => this._friendReferenceHydrator.resolve(ref),
     })
     this._searchMemoListOnChange = innerOnChange
-    this._memoListBinding = bindMemoList(nextKey, (entry) => {
-      innerOnChange(entry)
-      if (this._isFriendMode() || entry?.status !== 'success') return
-      const memos = entry.pages.flatMap((page) => page.items)
-      void this._friendReferenceHydrator.hydrate(memos)
-    })
+    this._memoListBinding = bindMemoList(nextKey, innerOnChange)
 
     try {
       await workspaceStore.ensureMemoList(
@@ -532,28 +451,6 @@ Page({
   },
 
   updateEmptyState() {
-    if (this._isFriendMode()) {
-      const normalizedDraft = normalizeMemoQueryDraft(this.data.draft)
-      const { keyword } = normalizedDraft
-      const shouldSearch = shouldSearchFromDraft(normalizedDraft)
-
-      let emptyTitle = '输入关键词开始搜索'
-      let emptyDescription = '可结合标签或日期筛选'
-
-      if (shouldSearch) {
-        if (this.data.memoListRefreshing) {
-          emptyTitle = '搜索中'
-          emptyDescription = ''
-        } else {
-          emptyTitle = `没有找到包含「${keyword}」的笔记`
-          emptyDescription = ''
-        }
-      }
-
-      this.setData({ emptyTitle, emptyDescription })
-      return
-    }
-
     const normalizedDraft = normalizeMemoQueryDraft(this.data.draft)
     const { keyword } = normalizedDraft
     const shouldSearch = shouldSearchFromDraft(normalizedDraft)
@@ -580,10 +477,6 @@ Page({
       return
     }
 
-    if (this._isFriendMode()) {
-      await refreshFriendMemoList(this, this.data.draft, PAGE_SIZE)
-      return
-    }
     await workspaceStore.refreshMemoList(this._currentListKey())
   },
 
@@ -673,8 +566,6 @@ Page({
         targetTag: '',
         selectedTags: selectedTagContext ? [selectedTagContext] : [],
         initialDraft: this.data.draft.selectedTag,
-        tagTreeScope: this._isFriendMode() ? 'friend' : undefined,
-        friendUsername: this.data.targetFriend?.username,
       },
       (result) => {
         const nextSelectedTags = Array.isArray(result?.selectedTags)
@@ -779,10 +670,6 @@ Page({
   async loadMoreMemoList() {
     if (!shouldSearchFromDraft(this.data.draft)) return
 
-    if (this._isFriendMode()) {
-      await loadMoreFriendMemoList(this, this.data.draft, PAGE_SIZE)
-      return
-    }
     if (
       this.data.memoListRefreshing ||
       this.data.memoListLoadingMore ||
@@ -851,11 +738,11 @@ Page({
     dispatchMemoRemoveTag(this, memoId, tag)
   },
 
-  handleMemoShare(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+  handleMemoShare(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
     resetMemoCardTap(this)
     const memoId = event.detail?.memoId
     if (!memoId) return
-    openMemoShareForCard(this.data.memoCards, memoId, event.detail?.ownerUsername)
+    openMemoShareForCard(this.data.memoCards, memoId)
   },
 
   handleMemoCopy(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {

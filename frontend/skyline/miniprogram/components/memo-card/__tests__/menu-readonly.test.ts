@@ -104,78 +104,6 @@ describe('memo-card menu readonly state', () => {
     expect(instance.triggerEvent).not.toHaveBeenCalled()
   })
 
-  it('friend viewerRole ignores edit delete menu ids but emits tag taps', async () => {
-    const options = await captureComponentOptions(() => import('../index'))
-    const instance = createComponentInstance(options, {
-      memoId: 7,
-      tags: ['friend'],
-      viewerRole: 'friend',
-      menuActive: true,
-      ownerUsername: 'bob',
-    }) as any
-    Object.assign(instance, options.methods)
-    syncPermissionsAndMenu(options, instance)
-    instance.triggerEvent = vi.fn()
-
-    expect(instance.data.menuItems.map((item: { id: string }) => item.id)).toEqual(['quote', 'share', 'copy'])
-
-    instance.handleTagTap({ detail: { value: 'friend' } })
-    expect(instance.triggerEvent).toHaveBeenNthCalledWith(1, 'tagtap', { tag: 'friend' })
-
-    instance.handleMenuSelect({ detail: { id: 'edit' } })
-    instance.handleMenuSelect({ detail: { id: 'delete' } })
-
-    expect(instance.triggerEvent).toHaveBeenCalledTimes(1)
-    expect(instance.data.menuActive).toBe(true)
-  })
-
-  it('friend viewerRole emits quote detail share and copy actions', async () => {
-    const options = await captureComponentOptions(() => import('../index'))
-    const instance = createComponentInstance(options, {
-      memoId: 7,
-      tags: [],
-      viewerRole: 'friend',
-      showReferenceBar: true,
-      referencePreview: { id: '1', displayText: 'x' },
-      referencedByPreviews: [],
-      menuActive: true,
-      ownerUsername: 'alice',
-    }) as any
-    Object.assign(instance, options.methods)
-    syncPermissionsAndMenu(options, instance)
-
-    instance.triggerEvent = vi.fn()
-
-    expect(instance.data.menuItems.map((item: { id: string }) => item.id)).toEqual([
-      'quote',
-      'memo-detail',
-      'share',
-      'copy',
-    ])
-
-    instance.handleMenuSelect({ detail: { id: 'quote' } })
-    instance.data.menuActive = true
-    instance.handleMenuSelect({ detail: { id: 'memo-detail' } })
-    instance.data.menuActive = true
-    instance.handleMenuSelect({ detail: { id: 'share' } })
-    instance.data.menuActive = true
-    instance.handleMenuSelect({ detail: { id: 'copy' } })
-
-    expect(instance.triggerEvent).toHaveBeenNthCalledWith(2, 'quote', { memoId: 7 })
-    expect(instance.triggerEvent).toHaveBeenNthCalledWith(4, 'referencetap', {
-      memoId: 7,
-      ownerUsername: 'alice',
-    })
-    expect(instance.triggerEvent).toHaveBeenNthCalledWith(6, 'share', {
-      memoId: 7,
-      ownerUsername: 'alice',
-    })
-    expect(instance.triggerEvent).toHaveBeenNthCalledWith(8, 'copy', {
-      memoId: 7,
-      ownerUsername: 'alice',
-    })
-  })
-
   it('denied viewerRole ignores all card menu actions', async () => {
     const options = await captureComponentOptions(() => import('../index'))
     const instance = createComponentInstance(options, {
@@ -184,7 +112,6 @@ describe('memo-card menu readonly state', () => {
       showReferenceBar: true,
       referencePreview: { id: '1', displayText: 'x' },
       menuActive: true,
-      ownerUsername: 'alice',
     }) as any
     Object.assign(instance, options.methods)
     syncPermissionsAndMenu(options, instance)
@@ -343,7 +270,6 @@ describe('memo-card menu readonly state', () => {
       externalMenu: true,
       lifted: false,
       menuActive: false,
-      ownerUsername: 'alice',
     }) as any
     Object.assign(instance, options.methods, {
       createSelectorQuery: vi.fn(() => query),
@@ -359,7 +285,6 @@ describe('memo-card menu readonly state', () => {
       'menuopen',
       expect.objectContaining({
         memoId: 17,
-        ownerUsername: 'alice',
         mode: 'card',
         triggerRect: rect,
         placementPriority: 'down-first',

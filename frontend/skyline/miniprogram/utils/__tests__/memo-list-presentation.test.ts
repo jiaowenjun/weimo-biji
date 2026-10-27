@@ -148,13 +148,13 @@ describe('memo-list-presentation', () => {
     })
   })
 
-  it('uses fallback previews for friend refs without resolving them as own memo ids', () => {
+  it('uses fallback previews for slash refs without resolving them as own memo ids', () => {
     const project = createListProjector({
       getExitingMemoIds: () => new Set<number>(),
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(10, 'B quotes friend memo', {
+      makeMemo(10, 'B quotes slash ref memo', {
         refs: ['bob/7'],
         referencedBy: ['carol/12'],
       }),
@@ -167,55 +167,6 @@ describe('memo-list-presentation', () => {
       referencePreview: { id: 'bob/7', displayText: '笔记bob/7' },
       referencedByPreviews: [{ id: 'carol/12', displayText: '笔记carol/12' }],
     })
-  })
-
-  it('uses injected previews for friend refs when the page has hydrated them', () => {
-    const project = createListProjector({
-      getExitingMemoIds: () => new Set<number>(),
-      resolveReferencePreview: (id) =>
-        id === 'bob/7'
-          ? { id, displayText: 'Bob: Friend memo summary' }
-          : undefined,
-    })
-
-    const result = project(makeEntry([makePage([
-      makeMemo(10, 'B quotes friend memo', {
-        refs: ['bob/7'],
-      }),
-    ])]))
-
-    expect(result.memoCards[0]?.referencePreview).toEqual({
-      id: 'bob/7',
-      displayText: 'Bob: Friend memo summary',
-    })
-  })
-
-  it('uses owner labels for resolved referenced-by previews', () => {
-    const project = createListProjector({
-      getExitingMemoIds: () => new Set<number>(),
-      referencedByOwnerLabel: '我',
-    })
-
-    const result = project(makeEntry([makePage([
-      makeMemo(7, 'Friend memo', { referencedBy: ['3'] }),
-      makeMemo(3, 'My annotation memo'),
-    ])]))
-
-    expect(result.memoCards[0]?.referencedByPreviews[0]?.displayText).toBe('我: My annotation memo')
-  })
-
-  it('uses owner labels for resolved reference previews', () => {
-    const project = createListProjector({
-      getExitingMemoIds: () => new Set<number>(),
-      referenceOwnerLabel: '我',
-    })
-
-    const result = project(makeEntry([makePage([
-      makeMemo(7, 'Friend annotation', { refs: ['3'] }),
-      makeMemo(3, 'My original memo'),
-    ])]))
-
-    expect(result.memoCards[0]?.referencePreview?.displayText).toBe('我: My original memo')
   })
 
   it('truncates long reference preview summaries with ASCII ellipsis', () => {

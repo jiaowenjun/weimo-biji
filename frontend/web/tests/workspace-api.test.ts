@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
   createMemo,
-  getFriendSummary,
   searchMemos,
 } from '@/features/workspace/workspace-api'
 
@@ -67,7 +66,7 @@ describe('Biji workspace API', () => {
     const payload = {
       content: '新笔记',
       tags: ['工作'],
-      refs: ['alice/1'],
+      refs: ['1'],
     }
 
     server.use(
@@ -80,25 +79,6 @@ describe('Biji workspace API', () => {
     await expect(createMemo('access-1', payload)).resolves.toMatchObject({
       data: 42,
       token: 'access-1',
-    })
-  })
-
-  it('rejects an invalid nested friend response', async () => {
-    server.use(
-      http.get(`${API_ORIGIN}/api/friend/me`, () => HttpResponse.json({
-        friends: [{ username: 'alice', nickname: null }],
-        pending_outgoing: [],
-        pending_incoming_count: 0,
-        unread_count: 0,
-      })),
-    )
-
-    await expect(getFriendSummary('access-1')).rejects.toMatchObject({
-      endpoint: '/friend/me',
-      issues: expect.arrayContaining([
-        expect.objectContaining({ path: '$.friends[0].nickname' }),
-      ]),
-      name: 'ApiContractError',
     })
   })
 })

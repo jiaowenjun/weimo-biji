@@ -6,13 +6,11 @@ type SearchPageConfig = {
       draft: MemoQueryDraft
       memoListInitialized: boolean
       navChromeTransparent: boolean
-      friend: null
     }
     setData: (patch: Record<string, unknown>) => void
     updateEmptyState: () => void
     bindDraftMemoList: (draft: MemoQueryDraft, options?: { holdRender?: boolean }) => void
     resetSearchResultsScroll: () => void
-    _isFriendMode: () => boolean
   }, nextDraft: MemoQueryDraft) => void
   resetSearchResultsScroll: (this: {
     data: { navChromeTransparent: boolean }
@@ -64,13 +62,11 @@ describe('search page scroll reset on query change', () => {
           },
           memoListInitialized: true,
           navChromeTransparent: true,
-          friend: null,
         },
         setData: vi.fn(),
         updateEmptyState: vi.fn(),
         bindDraftMemoList: vi.fn(),
         resetSearchResultsScroll,
-        _isFriendMode: () => false,
       },
       {
         keyword: 'milk',
@@ -98,13 +94,11 @@ describe('search page scroll reset on query change', () => {
           },
           memoListInitialized: true,
           navChromeTransparent: true,
-          friend: null,
       },
       setData: vi.fn(),
       updateEmptyState: vi.fn(),
       bindDraftMemoList: vi.fn(),
       resetSearchResultsScroll,
-        _isFriendMode: () => false,
       },
       {
         keyword: '',

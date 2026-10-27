@@ -9,8 +9,6 @@
     "pages/settings/index",
     "pages/settings/account-detail/index",
     "pages/settings/account-edit-sheet/index",
-    "pages/friend-search/index",
-    "pages/notifications/index",
     "pages/memo-share-image/index"
   ],
   "window": {

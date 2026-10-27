@@ -3,6 +3,7 @@ use std::{env, path::Path};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::Uuid;
 
+
 pub mod auth;
 mod config;
 mod data;
@@ -12,7 +13,7 @@ pub mod utils;
 mod wechat;
 
 use config::ServerConfig;
-use data::{Claims, DataManager, JsonSocial, MdDb};
+use data::{Claims, DataManager, MdDb};
 use routers::{AppState, app_router};
 
 #[tokio::main]
@@ -32,12 +33,9 @@ async fn main() {
     Claims::init_secret(jwt_secret);
 
     let state = AppState::new(
-        DataManager::new_with_social(
-            MdDb::new(&config.storage_path).await,
-            JsonSocial::new(Path::new(&config.storage_path).join("social.json")).await,
-        )
-        .await
-        .unwrap(),
+        DataManager::new(MdDb::new(&config.storage_path).await)
+            .await
+            .unwrap(),
         config.clone(),
     );
     tracing::debug!("数据管理器初始化完成");

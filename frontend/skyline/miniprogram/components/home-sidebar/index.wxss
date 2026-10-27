@@ -43,8 +43,7 @@
   flex: none;
 }
 
-/* 游客：避免父级 space-between 在「身份｜通知｜设置」三件事之间撕开大块空隙；
-   改用 flex-start + 通知区 margin-left:auto，把右侧图标整体顶到右边 */
+/* 游客：避免父级 space-between 在「身份｜设置」两件事之间撕开大块空隙 */
 .sidebar-header--guest-auth {
   justify-content: flex-start;
 }
@@ -52,10 +51,6 @@
 .sidebar-header--guest-auth .sidebar-header__identity {
   flex: 0 1 auto;
   justify-content: flex-start;
-}
-
-.sidebar-header--guest-auth .sidebar-header__notification {
-  margin-left: auto;
 }
 
 .sidebar-header__identity {
@@ -86,23 +81,6 @@
   font-weight: 600;
   color: var(--color-brand-strong);
   text-align: left;
-}
-
-.sidebar-header__notification {
-  position: relative;
-  flex: none;
-  margin-left: 12rpx;
-}
-
-.sidebar-header__notification-badge {
-  position: absolute;
-  top: 8rpx;
-  right: 8rpx;
-  width: 14rpx;
-  height: 14rpx;
-  border-radius: 50%;
-  background: var(--color-danger, #e64340);
-  box-shadow: 0 0 0 2rpx var(--color-bg-sidebar-panel);
 }
 
 .sidebar-body {

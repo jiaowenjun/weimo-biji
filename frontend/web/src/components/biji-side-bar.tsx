@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Bell,
   CalendarDays,
   Grid2X2,
   Hash,
@@ -173,13 +172,6 @@ export function BijiSideBar({
       <header className="biji-side-bar__header">
         <div className="biji-side-bar__identity">{displayName}</div>
         <div className="biji-side-bar__header-actions">
-          <GhostIconButton
-            aria-label="打开通知"
-            className="biji-side-bar__header-button"
-            size="sm"
-          >
-            <Bell aria-hidden="true" />
-          </GhostIconButton>
           <GhostIconButton
             aria-label="打开设置"
             className="biji-side-bar__header-button"

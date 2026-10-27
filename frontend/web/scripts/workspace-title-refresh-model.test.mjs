@@ -11,9 +11,6 @@ const { runWorkspaceTitleRefreshActions } = await import(
       calls.push('memo')
       throw new Error('memo crash')
     },
-    refreshReferencePreviews: async () => {
-      calls.push('references')
-    },
     refreshStats: async () => {
       calls.push('stats')
     },
@@ -24,7 +21,7 @@ const { runWorkspaceTitleRefreshActions } = await import(
 
   assert.deepEqual(
     calls,
-    ['memo', 'references', 'stats', 'tagTree'],
+    ['memo', 'stats', 'tagTree'],
     'workspace title refresh must invoke every visible data refresh even when one throws.',
   )
 }
@@ -34,10 +31,6 @@ const { runWorkspaceTitleRefreshActions } = await import(
   await runWorkspaceTitleRefreshActions({
     refreshMemoList: async () => {
       calls.push('memo')
-    },
-    refreshReferencePreviews: async () => {
-      calls.push('references')
-      throw new Error('reference refresh failed')
     },
     refreshStats: async () => {
       calls.push('stats')
@@ -50,7 +43,7 @@ const { runWorkspaceTitleRefreshActions } = await import(
 
   assert.deepEqual(
     calls,
-    ['memo', 'references', 'stats', 'tagTree'],
+    ['memo', 'stats', 'tagTree'],
     'workspace title refresh must swallow async rejection after every action is started.',
   )
 }

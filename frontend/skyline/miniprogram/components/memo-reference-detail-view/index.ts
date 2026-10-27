@@ -54,17 +54,10 @@ function relationTabValue(tab: string): 0 | 1 {
 Component({
   properties: {
     mode: { type: String, value: 'detail' as MemoReferenceDetailMode },
-    owner: { type: String, value: 'self' as ViewerRole },
     rootViewerRole: { type: String, value: 'self' as ViewerRole },
     rootCard: { type: null, value: null as MemoCardItem | null },
     referenceCards: { type: Array, value: [] as MemoCardItem[] },
-    ownReferenceCards: { type: Array, value: [] as MemoCardItem[] },
-    friendReferenceCards: { type: Array, value: [] as MemoCardItem[] },
-    friendReferenceOwnerLabel: { type: String, value: '' },
     referencedByCards: { type: Array, value: [] as MemoCardItem[] },
-    ownReferencedByCards: { type: Array, value: [] as MemoCardItem[] },
-    friendReferencedByCards: { type: Array, value: [] as MemoCardItem[] },
-    friendReferencedByOwnerLabel: { type: String, value: '' },
     selectedRelationTab: { type: String, value: 'reference' as RelationTabKey },
     tabRenderState: { type: String, value: 'hidden' as RelationTabRenderState },
     tabSliderAnimated: { type: Boolean, value: false },
@@ -78,7 +71,7 @@ Component({
   },
 
   observers: {
-    'mode, tabRenderState, selectedRelationTab, ownReferenceCards, friendReferenceCards, ownReferencedByCards, friendReferencedByCards': function () {
+    'mode, tabRenderState, selectedRelationTab, referenceCards, referencedByCards': function () {
       this._syncRelationPanelsRenderState()
     },
     'cardMenuActive': function () {
@@ -328,19 +321,19 @@ Component({
       })
     },
 
-    handleCardTap(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardTap(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('cardtap', event.detail)
     },
 
-    handleCardEdit(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardEdit(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('cardedit', event.detail)
     },
 
-    handleCardQuote(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardQuote(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('cardquote', event.detail)
     },
 
-    handleCardDelete(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardDelete(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('carddelete', event.detail)
     },
 
@@ -350,7 +343,7 @@ Component({
       this.triggerEvent('cardmodifytag', event.detail)
     },
 
-    handleCardTagAdd(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardTagAdd(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('cardtagadd', event.detail)
     },
 
@@ -359,16 +352,16 @@ Component({
     },
 
     handleMemoReferenceTap(
-      event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>,
+      event: WechatMiniprogram.CustomEvent<{ memoId: number }>,
     ) {
       this.triggerEvent('cardreferencetap', event.detail)
     },
 
-    handleCardShare(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardShare(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('cardshare', event.detail)
     },
 
-    handleCardCopy(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+    handleCardCopy(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
       this.triggerEvent('cardcopy', event.detail)
     },
 

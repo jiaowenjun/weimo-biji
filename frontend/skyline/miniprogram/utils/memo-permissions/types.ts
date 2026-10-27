@@ -1,6 +1,6 @@
-export type ViewerRole = 'self' | 'friend' | 'visitor' | 'denied'
+export type ViewerRole = 'self' | 'visitor' | 'denied'
 
-export type QuoteMode = 'self' | 'friend' | 'none'
+export type QuoteMode = 'self' | 'none'
 
 export type DoubleTapTarget = 'edit' | 'quote' | 'preview' | 'none'
 

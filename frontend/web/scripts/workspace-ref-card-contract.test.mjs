@@ -39,11 +39,8 @@ const workspaceMemoDetailSource = readProjectFile(
 )
 
 const {
-  buildMemoFriendReferencePreview,
-  buildMemoReferenceOwnerSummaryText,
   buildMemoReferencePreviews,
   createMemoReferencePreviewResolver,
-  parseFriendMemoRef,
   summarizeMemoContent,
   toCardNote,
 } = await import('../src/features/workspace/memo-data.ts')
@@ -109,7 +106,7 @@ for (const snippet of [
 }
 
 for (const snippet of [
-  "import { Copy, Quote, Share2, CircleArrowOutUpLeft } from 'lucide-react'",
+  "import { Copy, Quote, CircleArrowOutUpLeft } from 'lucide-react'",
   "import { createElement } from 'react'",
   "import type { ActionMenuItem } from 'weimo-ui/components/menu'",
   'type BuildWorkspaceMemoCardMenuItemsOptions = {',
@@ -124,9 +121,6 @@ for (const snippet of [
   "label: '查看详情'",
   'icon: icon(CircleArrowOutUpLeft)',
   'onSelect: onMemoDetailSelect',
-  "key: 'share'",
-  "label: '分享'",
-  'icon: icon(Share2)',
   "key: 'copy'",
   "label: '复制'",
   'icon: icon(Copy)',
@@ -159,7 +153,6 @@ assert.deepEqual(
       label: undefined,
       type: 'separator',
     },
-    { key: 'share', label: '分享', type: undefined },
     { key: 'copy', label: '复制', type: undefined },
   ],
   'default workspace memo card menu must create Skyline self items between built-in edit and delete.',
@@ -174,10 +167,9 @@ assert.deepEqual(
     'quote',
     'workspace-memo-card-secondary-separator',
     'memo-detail',
-    'share',
     'copy',
   ],
-  'workspace memo card menu must insert 查看详情 before share when the reference/detail entry is visible.',
+  'workspace memo card menu must insert 查看详情 before copy when the reference/detail entry is visible.',
 )
 for (const item of menuWithDetail) {
   if (item.key !== 'memo-detail') {
@@ -217,7 +209,6 @@ assert.deepEqual(
   [
     'quote',
     'workspace-memo-card-secondary-separator',
-    'share',
     'copy',
   ],
   'workspace memo card menu must keep Skyline parity: 查看详情 is hidden unless the reference bar is visible.',
@@ -314,9 +305,6 @@ for (const snippet of [
   'aria-label="笔记详情内容"',
   'showReferenceBar={false}',
   'referenceSections.map',
-  "kind === 'preview'",
-  'key={item.preview.id}',
-  'item.preview.displayText',
   'key={item.memo.id}',
   'note={toCardNote(item.memo)}',
   'note={toCardNote(projection.rootMemo)}',
@@ -332,8 +320,8 @@ const detailDialogRefCardRenderCount = (
 ).length
 assert.equal(
   detailDialogRefCardRenderCount,
-  3,
-  'Workspace memo detail dialog must render root, memo relation, and preview relation cards through RefCard.',
+  2,
+  'Workspace memo detail dialog must render root and relation cards through RefCard.',
 )
 assert.ok(
   !workspaceMemoDetailDialogSource.includes("from '@/components/card'") &&
@@ -351,8 +339,7 @@ for (const snippet of [
   'const memoById = new Map',
   'memo.refs',
   'memo.referencedBy',
-  'resolver.resolveReferenceMemo?.(ref)',
-  "kind: 'preview'",
+  'if (ref.includes(\'/\')) continue',
 ]) {
   assert.ok(
     workspaceMemoDetailSource.includes(snippet),
@@ -361,23 +348,9 @@ for (const snippet of [
 }
 
 const detailRoot = makeMemo(1, {
-  refs: ['2', 'friend/4'],
-  referencedBy: ['3', 'friend/5'],
+  refs: ['2'],
+  referencedBy: ['3'],
 })
-const friendPreviewMap = new Map([
-  ['friend/4', { id: 'friend/4', displayText: '琦琦君: 好友引用笔记摘要' }],
-  ['friend/5', { id: 'friend/5', displayText: '琦琦君: 好友被引用笔记摘要' }],
-])
-const friendMemoMap = new Map([
-  [
-    'friend/4',
-    makeMemo(4, {
-      content: '好友引用完整正文',
-      createdAt: '2026-06-19T03:04:00.000Z',
-      tags: ['好友标签'],
-    }),
-  ],
-])
 const detailProjection = buildWorkspaceMemoDetailProjection(
   detailRoot,
   [
@@ -387,8 +360,6 @@ const detailProjection = buildWorkspaceMemoDetailProjection(
   ],
   createMemoReferencePreviewResolver({
     getMemoById: (id) => (id === 2 ? makeMemo(2, { content: 'referenced memo' }) : undefined),
-    resolveReferenceMemo: (id) => friendMemoMap.get(id),
-    resolveReferencePreview: (id) => friendPreviewMap.get(id),
   }),
 )
 assert.equal(
@@ -398,24 +369,19 @@ assert.equal(
 )
 assert.deepEqual(
   detailProjection.referenceItems.map((item) =>
-    item.kind === 'memo' ? toCardNote(item.memo) : item.preview.displayText,
+    item.kind === 'memo' ? toCardNote(item.memo) : item,
   ),
   [
     toCardNote(makeMemo(2, { content: 'referenced memo' })),
-    {
-      content: '好友引用完整正文',
-      createdAtText: '2026-06-19 11:04',
-      tags: ['好友标签'],
-    },
   ],
-  'workspace memo detail projection must preserve root refs order and render hydrated friend refs as full RefCard notes in the 引用 section.',
+  'workspace memo detail projection must preserve root refs order in the 引用 section.',
 )
 assert.deepEqual(
   detailProjection.referencedByItems.map((item) =>
-    item.kind === 'memo' ? item.memo.id : item.preview.displayText,
+    item.kind === 'memo' ? item.memo.id : item,
   ),
-  [3, '琦琦君: 好友被引用笔记摘要'],
-  'workspace memo detail projection must preserve root referencedBy order and keep friend previews in the 被引用 section.',
+  [3],
+  'workspace memo detail projection must preserve root referencedBy order in the 被引用 section.',
 )
 
 for (const snippet of [
@@ -456,16 +422,11 @@ for (const snippet of [
   'export interface MemoReferencePreview',
   'export interface MemoReferencePreviewResolver',
   'export interface MemoReferenceSummaryCache',
-  'resolveReferenceMemo?: (id: MemoRefId) => Memo | undefined',
   'export function summarizeMemoContent',
   'export function buildMemoReferenceFallbackText',
   'export function buildMemoReferenceDisplayText',
-  'export function buildMemoReferenceOwnerSummaryText',
-  'export function parseFriendMemoRef',
-  'export function buildMemoFriendReferencePreview',
   'export function createMemoReferencePreviewResolver',
   'export function buildMemoReferencePreviews',
-  'resolveReferencePreview',
   'const referenceId = memo.refs[0] ?? null',
   'memo.referencedBy.map((id) =>',
 ]) {
@@ -489,8 +450,8 @@ const childMemo = makeMemo(9, {
   createdAt: '2026-06-21T08:15:00.000Z',
 })
 const memo = makeMemo(5, {
-  refs: ['7', 'bob/8'],
-  referencedBy: ['9', 'alice/2'],
+  refs: ['7'],
+  referencedBy: ['9'],
 })
 const previews = buildMemoReferencePreviews(
   memo,
@@ -508,10 +469,6 @@ assert.deepEqual(previews.referencedByPreviews, [
   {
     id: '9',
     displayText: '2026-06-21：这条笔记引用了当前笔记',
-  },
-  {
-    id: 'alice/2',
-    displayText: '笔记alice/2',
   },
 ])
 
@@ -553,75 +510,16 @@ assert.deepEqual(
   'reference preview resolver should reuse memo-id summary cache across cards.',
 )
 
-assert.deepEqual(parseFriendMemoRef('wx_toqph5va/33'), {
-  username: 'wx_toqph5va',
-  memoId: 33,
-})
-assert.equal(parseFriendMemoRef('11'), null)
-assert.equal(parseFriendMemoRef('wx_toqph5va/nope'), null)
-assert.equal(
-  buildMemoReferenceOwnerSummaryText(
-    '珲珲君',
-    '极限准备公开课，到了十二点，想起婚纱照还没修完',
-    '笔记wx_toqph5va/33',
-  ),
-  '珲珲君: 极限准备公开课，到了十二点，想起婚纱照还没修完',
-)
-
-const friendMemo = makeMemo(33, {
-  content: '极限准备公开课，到了十二点，想起婚纱照还没修完',
-})
-assert.deepEqual(
-  buildMemoFriendReferencePreview('wx_toqph5va/33', friendMemo, '珲珲君'),
-  {
-    id: 'wx_toqph5va/33',
-    displayText: '珲珲君: 极限准备公开课，到了十二点，想起婚纱照还没修完',
-  },
-)
-
-const friendPreviewResolver = createMemoReferencePreviewResolver({
-  getMemoById: () => undefined,
-  resolveReferencePreview: (id) =>
-    id === 'wx_toqph5va/33'
-      ? buildMemoFriendReferencePreview(id, friendMemo, '珲珲君')
-      : undefined,
-})
-assert.deepEqual(
-  buildMemoReferencePreviews(
-    makeMemo(8, { refs: ['wx_toqph5va/33'], referencedBy: ['wx_toqph5va/34'] }),
-    friendPreviewResolver,
-  ),
-  {
-    referencePreview: {
-      id: 'wx_toqph5va/33',
-      displayText: '珲珲君: 极限准备公开课，到了十二点，想起婚纱照还没修完',
-    },
-    referencedByPreviews: [
-      {
-        id: 'wx_toqph5va/34',
-        displayText: '笔记wx_toqph5va/34',
-      },
-    ],
-  },
-  'friend reference previews should override the fallback ref text when hydrated.',
-)
-
 for (const snippet of [
   "import { RefCard } from '@/components/ref-card'",
   'buildMemoReferencePreviews',
   'createMemoReferencePreviewResolver',
   'createWorkspaceMemoCacheIndex',
-  'useFriendReferencePreviewMap',
   'const memoById = useMemo(',
   'new Map(memoCards.map((memo) => [memo.id, memo]))',
-  'const friendReferenceDetails = useFriendReferencePreviewMap(',
-  'selectedFriendUsername,',
   'const workspaceMemoCacheIndex = useMemo(',
   'createWorkspaceMemoCacheIndex(queryClient, memoCacheOwner, rawMemoCards)',
   'const referencePreviewResolver = useMemo(',
-  'resolveReferenceMemo: (id) => friendReferenceDetails.memos.get(id)',
-  'resolveReferencePreview: (id) => friendReferenceDetails.previews.get(id)',
-  'refreshReferencePreviews: () => friendReferenceDetails.refetch()',
   'const cachedMemo = workspaceMemoCacheIndex.getMemoById(id)',
   'summaryCache: workspaceMemoCacheIndex.getSummaryCache()',
   'const referencePreviews = buildMemoReferencePreviews(',
@@ -630,9 +528,8 @@ for (const snippet of [
   'referencePreview={referencePreviews.referencePreview}',
   'referencedByPreviews={referencePreviews.referencedByPreviews}',
   'note={toCardNote(memo)}',
-  "disabled={homeMemoScope.kind === 'friend'}",
-  "onDelete={homeMemoScope.kind === 'self' ? () => handleMemoDelete(memo) : undefined}",
-  "onSave={homeMemoScope.kind === 'self' ? (draft) => handleMemoSave(memo, draft) : undefined}",
+  'onDelete={() => handleMemoDelete(memo)}',
+  'onSave={(draft) => handleMemoSave(memo, draft)}',
   'tagOptions={tagOptions}',
 ]) {
   assert.ok(
@@ -661,35 +558,27 @@ for (const snippet of [
   )
 }
 
-for (const snippet of [
-  "import { useQueries",
-  'friendSummary: (scope: string)',
-  'friendMemo: (scope: string, friendUsername: string, memoId: number)',
-  'export function useFriendReferencePreviewMap',
-  'owningFriendUsername: string = \'\'',
-  'const parsed = parseFriendMemoRef(ref)',
-  'username: resolvedRef.username',
-  'refetch()',
-  'queryKey: workspaceQueryKeys.friendSummary(scope)',
-  'queryKey: workspaceQueryKeys.friendMemo(scope, ref.username, ref.memoId)',
-  'buildMemoFriendReferencePreview',
+for (const forbiddenSnippet of [
+  'useFriendReferencePreviewMap',
   'parseFriendMemoRef',
+  'buildMemoFriendReferencePreview',
+  'friendSummary',
+  'friendMemo',
 ]) {
   assert.ok(
-    workspaceQueriesSource.includes(snippet),
-    `workspace queries must hydrate friend reference previews through TanStack Query: ${snippet}`,
+    !workspaceQueriesSource.includes(forbiddenSnippet),
+    `workspace queries must not keep friend reference preview code: ${forbiddenSnippet}`,
   )
 }
 
-for (const snippet of [
-  'export function getFriendSummary',
-  "requestProtectedJson('/friend/me', token, friendSummarySchema)",
-  'export function getFriendMemo',
-  "`/friend/${friendPath(friendUsername)}/memos/${id}`",
+for (const forbiddenSnippet of [
+  'getFriendSummary',
+  '/friend/',
+  'friendSummarySchema',
 ]) {
   assert.ok(
-    workspaceApiSource.includes(snippet),
-    `workspace API must expose Skyline-compatible friend preview endpoints: ${snippet}`,
+    !workspaceApiSource.includes(forbiddenSnippet),
+    `workspace API must not keep friend endpoints: ${forbiddenSnippet}`,
   )
 }
 

@@ -46,24 +46,6 @@ export interface MemoSearchPageDto {
   total_count: number
 }
 
-export interface FriendProfile {
-  username: string
-  nickname: string
-}
-
-export interface PendingOutgoingFriendRequest {
-  id: string
-  to: FriendProfile
-  created_at: string
-}
-
-export interface FriendSummary {
-  friends: FriendProfile[]
-  pending_outgoing: PendingOutgoingFriendRequest[]
-  pending_incoming_count: number
-  unread_count: number
-}
-
 export interface Memo {
   id: number
   createdAt: string

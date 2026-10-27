@@ -1,7 +1,6 @@
 import {
   buildMemoReferenceDisplayText,
   buildMemoReferenceFallbackText,
-  buildMemoReferenceOwnerSummaryText,
   type MemoCardItem,
 } from './memo-list-presentation'
 import type { MemoPermissions } from './memo-permissions'
@@ -129,47 +128,6 @@ export function openQuoteComposeForCard(
     initialRefs: [String(card.id)],
     initialReferencePreview,
   }, normalizedOptions?.onSaved, normalizedOptions?.routeType ? { routeType: normalizedOptions.routeType } : undefined)
-}
-
-export function openFriendQuoteComposeForCard(
-  cards: MemoCardItem[],
-  memoId: number,
-  ownerUsername: string,
-  optionsOrOnSaved?: Parameters<typeof openMemoCompose>[1] | {
-    ownerLabel?: string
-    onSaved?: Parameters<typeof openMemoCompose>[1]
-    routeType?: string
-  },
-): void {
-  const username = ownerUsername.trim()
-  if (!username) return
-  const card = cards.find((c) => c.id === memoId)
-  if (!card) return
-  const refId = `${username}/${card.id}`
-  const options = typeof optionsOrOnSaved === 'function'
-    ? { onSaved: optionsOrOnSaved }
-    : optionsOrOnSaved
-  const fallbackText = buildMemoReferenceFallbackText(refId)
-  const ownerLabel = options?.ownerLabel?.trim()
-  const initialReferencePreview =
-    ownerLabel
-      ? buildMemoReferenceOwnerSummaryText(ownerLabel, card.content, fallbackText)
-      : buildMemoReferenceDisplayText(card.createdAtText, card.content) || fallbackText
-  /** 批注好友笔记：默认打 `批注/{昵称}` 标签（编辑页 `#批注/${昵称}`）；无昵称则不预填 */
-  const initialTags = ownerLabel ? [`批注/${ownerLabel}`] : []
-  const payload: MemoComposeInitPayload = {
-    mode: 'create',
-    initialContent: '',
-    initialTags,
-    initialRefs: [refId],
-    initialReferencePreview,
-  }
-  const navOptions = options?.routeType ? { routeType: options.routeType } : undefined
-  if (options?.onSaved) {
-    openMemoCompose(payload, options.onSaved, navOptions)
-    return
-  }
-  openMemoCompose(payload, undefined, navOptions)
 }
 
 export function confirmDeleteMemo(host: CardActionsHost, memoId: number): void {
@@ -347,17 +305,11 @@ export function runMemoAddTagFromList(host: CardActionsHost, memoId: number, nav
 export function openMemoShareForCard(
   cards: MemoCardItem[],
   memoId: number,
-  ownerUsername?: string,
   navOptions?: { routeType?: string },
 ): void {
   const card = cards.find((c) => c.id === memoId)
   if (!card) return
-  openMemoShareImage({
-    card: {
-      ...card,
-      ownerUsername: String(ownerUsername || card.ownerUsername || ''),
-    },
-  }, navOptions)
+  openMemoShareImage({ card }, navOptions)
 }
 
 export function copyMemoContentForCard(cards: MemoCardItem[], memoId: number): void {
@@ -373,12 +325,12 @@ export function copyMemoContentForCard(cards: MemoCardItem[], memoId: number): v
 
 export interface MemoCardEventHost extends CardActionsHost {
   _strategy: {
-    onCardDoubleTap(ctx: { memoCards: MemoCardItem[]; host: CardActionsHost; friend?: unknown; refreshList: () => Promise<void> }, memoId: number): void
-    onCardQuote(ctx: { memoCards: MemoCardItem[]; host: CardActionsHost; friend?: unknown; refreshList: () => Promise<void> }, memoId: number): void
+    onCardDoubleTap(ctx: { memoCards: MemoCardItem[]; host: CardActionsHost; refreshList: () => Promise<void> }, memoId: number): void
+    onCardQuote(ctx: { memoCards: MemoCardItem[]; host: CardActionsHost; refreshList: () => Promise<void> }, memoId: number): void
     onCardReferenceTap(memoId: number): void
   }
   _permissionsFor(memoId: number): MemoPermissions
-  _cardActionContext(): { memoCards: MemoCardItem[]; host: CardActionsHost; friend?: unknown; refreshList: () => Promise<void> }
+  _cardActionContext(): { memoCards: MemoCardItem[]; host: CardActionsHost; refreshList: () => Promise<void> }
 }
 
 export function dispatchMemoCardTap(host: MemoCardEventHost, memoId: number): void {

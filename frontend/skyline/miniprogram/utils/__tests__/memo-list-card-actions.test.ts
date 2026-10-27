@@ -4,7 +4,6 @@ import {
   resetMemoCardTap,
   shouldSkipLoadMore,
   openEditComposeForCard,
-  openFriendQuoteComposeForCard,
   openQuoteComposeForCard,
   confirmDeleteMemo,
   runMemoModifyTag,
@@ -334,99 +333,6 @@ describe('openQuoteComposeForCard', () => {
   })
 })
 
-describe('openFriendQuoteComposeForCard', () => {
-  it('opens compose for friend quote with cross-user ref and 批注/昵称 tag', () => {
-    openFriendQuoteComposeForCard([
-      {
-        id: 7,
-        createdAtText: '2026-04-30 10:00',
-        content: 'friend memo',
-        contentNodes: [],
-        tags: ['friend'],
-        referenceId: null,
-        referencePreview: null,
-        referencedByPreviews: [],
-        exiting: false,
-        renderRichText: true,
-      },
-    ], 7, 'bob', { ownerLabel: '鲍勃' })
-
-    expect(openMemoCompose).toHaveBeenCalledWith(
-      {
-        mode: 'create',
-        initialContent: '',
-        initialTags: ['批注/鲍勃'],
-        initialRefs: ['bob/7'],
-        initialReferencePreview: '鲍勃: friend memo',
-      },
-      undefined,
-      undefined,
-    )
-  })
-
-  it('opens compose with empty tags when ownerLabel is omitted for friend quote', () => {
-    openFriendQuoteComposeForCard([
-      {
-        id: 7,
-        createdAtText: '2026-04-30 10:00',
-        content: 'friend memo',
-        contentNodes: [],
-        tags: [],
-        referenceId: null,
-        referencePreview: null,
-        referencedByPreviews: [],
-        exiting: false,
-        renderRichText: true,
-      },
-    ], 7, 'bob')
-
-    expect(openMemoCompose).toHaveBeenCalledWith(
-      expect.objectContaining({
-        mode: 'create',
-        initialTags: [],
-        initialRefs: ['bob/7'],
-      }),
-      undefined,
-      undefined,
-    )
-  })
-
-  it('passes a save callback for friend quote compose refreshes', () => {
-    const onSaved = vi.fn()
-    openFriendQuoteComposeForCard([
-      {
-        id: 7,
-        createdAtText: '2026-04-30 10:00',
-        content: 'friend memo',
-        contentNodes: [],
-        tags: ['friend'],
-        referenceId: null,
-        referencePreview: null,
-        referencedByPreviews: [],
-        exiting: false,
-        renderRichText: true,
-      },
-    ], 7, 'bob', { onSaved })
-
-    expect(openMemoCompose).toHaveBeenCalledWith(
-      expect.objectContaining({
-        initialRefs: ['bob/7'],
-        initialTags: [],
-      }),
-      onSaved,
-      undefined,
-    )
-  })
-
-  it('does nothing without an owner username', () => {
-    const cards = hostWithCards([{ id: 7, content: 'friend memo', tags: [] }]).data.memoCards
-
-    openFriendQuoteComposeForCard(cards, 7, ' ')
-
-    expect(openMemoCompose).not.toHaveBeenCalled()
-  })
-})
-
 describe('confirmDeleteMemo', () => {
   it('skips when an inflight delete is already in progress', () => {
     const host = hostWithCards([{ id: 1, content: '', tags: [] }])
@@ -681,7 +587,7 @@ function makeEventHost(role: ViewerRole): MemoCardEventHost {
 
 describe('permission-guarded memo card dispatchers', () => {
   it('dispatchMemoEdit no-ops when canEdit is false and does not require strategy write methods', () => {
-    const host = makeEventHost('friend')
+    const host = makeEventHost('denied')
 
     dispatchMemoEdit(host, 1)
 
@@ -705,7 +611,7 @@ describe('permission-guarded memo card dispatchers', () => {
   })
 
   it('dispatchMemoDelete no-ops when canDelete is false', () => {
-    const host = makeEventHost('friend')
+    const host = makeEventHost('denied')
 
     dispatchMemoDelete(host, 1)
 
@@ -722,7 +628,7 @@ describe('permission-guarded memo card dispatchers', () => {
   })
 
   it('dispatchMemoModifyTag AddTag and RemoveTag no-op when tag permissions are false', () => {
-    const host = makeEventHost('friend')
+    const host = makeEventHost('denied')
 
     dispatchMemoModifyTag(host, 1, 'work')
     dispatchMemoAddTag(host, 1)
@@ -781,37 +687,37 @@ describe('permission-guarded memo card dispatchers', () => {
 
   it('dispatchMemoQuote and reference tap guard strategy calls by permissions', () => {
     const denied = makeEventHost('denied')
-    const friend = makeEventHost('friend')
+    const self = makeEventHost('self')
 
     dispatchMemoQuote(denied, 1)
     dispatchMemoReferenceTap(denied, 1)
-    dispatchMemoQuote(friend, 1)
-    dispatchMemoReferenceTap(friend, 1)
+    dispatchMemoQuote(self, 1)
+    dispatchMemoReferenceTap(self, 1)
 
     expect(denied._strategy.onCardQuote).not.toHaveBeenCalled()
     expect(denied._strategy.onCardReferenceTap).not.toHaveBeenCalled()
-    expect(friend._strategy.onCardQuote).toHaveBeenCalledWith(
-      expect.objectContaining({ memoCards: friend.data.memoCards }),
+    expect(self._strategy.onCardQuote).toHaveBeenCalledWith(
+      expect.objectContaining({ memoCards: self.data.memoCards }),
       1,
     )
-    expect(friend._strategy.onCardReferenceTap).toHaveBeenCalledWith(1)
+    expect(self._strategy.onCardReferenceTap).toHaveBeenCalledWith(1)
   })
 
   it('dispatchMemoCardTap only calls double tap strategy when canView is true', () => {
     const denied = makeEventHost('denied')
-    const friend = makeEventHost('friend')
+    const visitor = makeEventHost('visitor')
 
     denied._lastCardTapMemoId = 1
     denied._lastCardTapAt = Date.now()
-    friend._lastCardTapMemoId = 1
-    friend._lastCardTapAt = Date.now()
+    visitor._lastCardTapMemoId = 1
+    visitor._lastCardTapAt = Date.now()
 
     dispatchMemoCardTap(denied, 1)
-    dispatchMemoCardTap(friend, 1)
+    dispatchMemoCardTap(visitor, 1)
 
     expect(denied._strategy.onCardDoubleTap).not.toHaveBeenCalled()
-    expect(friend._strategy.onCardDoubleTap).toHaveBeenCalledWith(
-      expect.objectContaining({ memoCards: friend.data.memoCards }),
+    expect(visitor._strategy.onCardDoubleTap).toHaveBeenCalledWith(
+      expect.objectContaining({ memoCards: visitor.data.memoCards }),
       1,
     )
   })

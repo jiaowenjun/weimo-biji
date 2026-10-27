@@ -52,14 +52,8 @@ describe('wx-storage helpers', () => {
       path.join(miniprogramRoot, 'store/workspace-storage.ts'),
       'utf8',
     )
-    const friendCacheTs = fs.readFileSync(
-      path.join(miniprogramRoot, 'utils/friend-reference-preview-cache.ts'),
-      'utf8',
-    )
 
     expect(workspaceStorageTs).toContain("from '../utils/wx-storage'")
-    expect(friendCacheTs).toContain("from './wx-storage'")
     expect(workspaceStorageTs).not.toMatch(/type\s+WxStorage|function\s+getWxStorage/)
-    expect(friendCacheTs).not.toMatch(/type\s+WxStorage|function\s+getWxStorage/)
   })
 })

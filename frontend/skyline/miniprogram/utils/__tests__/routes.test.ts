@@ -18,8 +18,6 @@ describe('AppRoutes', () => {
       settings: '/pages/settings/index',
       accountDetail: '/pages/settings/account-detail/index',
       accountEditSheet: '/pages/settings/account-edit-sheet/index',
-      friendSearch: '/pages/friend-search/index',
-      notifications: '/pages/notifications/index',
       memoShareImage: '/pages/memo-share-image/index',
     })
   })
@@ -44,37 +42,15 @@ describe('AppRoutes', () => {
     expect(requestTs).not.toContain("currentPage.route === 'pages/auth/index'")
   })
 
-  it('builds a share entrance path with the card owner when present', () => {
-    expect(buildShareEntrancePath({
-      id: 12,
-      ownerUsername: 'bob',
-    }, {
-      user: { username: 'alice' } as WeimoSessionUser,
-    } as WeimoSessionState)).toBe('pages/memo-reference-detail/index?entry=share&memoId=12&ownerUsername=bob')
+  it('builds a share entrance path from the card memo id', () => {
+    expect(buildShareEntrancePath({ id: 12 })).toBe(
+      'pages/memo-reference-detail/index?entry=share&memoId=12',
+    )
   })
 
-  it('falls back to the session username for own-card shares', () => {
-    expect(buildShareEntrancePath({
-      id: 34,
-      ownerUsername: '',
-    }, {
-      user: { username: 'alice' } as WeimoSessionUser,
-    } as WeimoSessionState)).toBe('pages/memo-reference-detail/index?entry=share&memoId=34&ownerUsername=alice')
-  })
-
-  it('falls back to home when memo id or owner cannot be resolved', () => {
-    expect(buildShareEntrancePath(null, { user: null } as WeimoSessionState)).toBe(AppPagePaths.home)
-    expect(buildShareEntrancePath({
-      id: 0,
-      ownerUsername: 'bob',
-    }, {
-      user: { username: 'alice' } as WeimoSessionUser,
-    } as WeimoSessionState)).toBe(AppPagePaths.home)
-    expect(buildShareEntrancePath({
-      id: 12,
-      ownerUsername: '',
-    }, {
-      user: null,
-    } as WeimoSessionState)).toBe(AppPagePaths.home)
+  it('falls back to home when the memo id cannot be resolved', () => {
+    expect(buildShareEntrancePath(null)).toBe(AppPagePaths.home)
+    expect(buildShareEntrancePath({ id: 0 })).toBe(AppPagePaths.home)
+    expect(buildShareEntrancePath({ id: Number.NaN })).toBe(AppPagePaths.home)
   })
 })

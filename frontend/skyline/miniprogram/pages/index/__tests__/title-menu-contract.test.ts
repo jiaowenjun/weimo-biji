@@ -25,28 +25,27 @@ describe('index page title menu contract', () => {
     const wxml = readFileSync(wxmlPath, 'utf8')
     expect(wxml).toContain('<list-builder')
     expect(wxml).toContain('class="memo-list memo-list-builder--scroll-root"')
-    expect(wxml).toContain(
-      'value="{{homeMemoScope.kind === \'friend\' ? friendMemoDateLabel : memoDateLabel}}"',
-    )
-    expect(wxml).toContain(
-      'selected-tag="{{homeMemoScope.kind === \'friend\' ? friendMemoQuery.selectedTag : memoQuery.selectedTag}}"',
-    )
+    expect(wxml).toContain('list="{{memoRenderCards}}"')
+    expect(wxml).toContain('selected-tag="{{memoQuery.selectedTag}}"')
   })
 
-  it('handles title menu switching between self and friend memo list home scopes', () => {
+  it('handles title menu actions for guest auth, tag navigation, memo sort, and refresh', () => {
     const ts = readFileSync(tsPath, 'utf8')
 
     expect(ts).toContain('buildIndexTitleMenuItems')
-    expect(ts).toContain('isViewFriendMemosTitleMenuAction(id)')
-    expect(ts).toContain('const friend = resolveSelectedFriendProfile(')
-    expect(ts).toContain('this.data.selectedFriendUsername')
-    expect(ts).toContain('void this.switchToFriendScope(friend)')
-    expect(ts).toContain('isViewMyMemosTitleMenuAction(id)')
-    expect(ts).toContain('this.switchToSelfScope({ resetScroll: true })')
     expect(ts).toContain('isGuestAuthTitleMenuAction(id)')
     expect(ts).toContain('void openAuthPage({ allowBack: true })')
     expect(ts).toContain('isParentTagTitleMenuAction(id)')
     expect(ts).toContain('parentTagPath(this._strategy.getCurrentQuery(this.data).selectedTag)')
     expect(ts).toContain('this.applyCurrentScopeSelectedTag(parent)')
+    expect(ts).toContain('isAllTagsTitleMenuAction(id)')
+    expect(ts).toContain('this.clearSelectedTag()')
+    expect(ts).toContain('isMemoSortNewestFirstTitleMenuAction(id)')
+    expect(ts).toContain("void this.applyMemoCreatedAtSortChange('desc')")
+    expect(ts).toContain('isMemoSortOldestFirstTitleMenuAction(id)')
+    expect(ts).toContain("void this.applyMemoCreatedAtSortChange('asc')")
+    expect(ts).toContain('isRefreshTitleMenuAction(id)')
+    expect(ts).not.toContain('switchToFriendScope')
+    expect(ts).not.toContain('switchToSelfScope')
   })
 })

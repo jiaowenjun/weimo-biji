@@ -10,12 +10,12 @@ const wxss = readFileSync(path.join(__dirname, '..', 'index.wxss'), 'utf8')
 const ts = readFileSync(path.join(__dirname, '..', 'index.ts'), 'utf8')
 
 describe('home-sidebar notification contract', () => {
-  it('renders notification button before settings with unread badge', () => {
-    expect(ts).toContain('unreadCount')
-    expect(wxml.indexOf('icon="notification"')).toBeGreaterThan(-1)
-    expect(wxml.indexOf('icon="notification"')).toBeLessThan(wxml.indexOf('icon="setting"'))
-    expect(wxml).toContain('wx:if="{{unreadCount > 0}}"')
-    expect(wxss).toContain('.sidebar-header__notification-badge')
+  it('no longer renders a notification button or unread badge', () => {
+    expect(wxml).not.toContain('icon="notification"')
+    expect(wxml).not.toContain('unreadCount')
+    expect(ts).not.toContain('unreadCount')
+    expect(ts).not.toContain('handleNotificationsTap')
+    expect(wxss).not.toContain('.sidebar-header__notification')
   })
 
   it('does not wire friend selection through the tag tree', () => {
@@ -34,7 +34,6 @@ describe('home-sidebar notification contract', () => {
     expect(wxml).toContain('sidebar-header--guest-auth')
     expect(wxml).toContain('!authenticated && authActionText')
     expect(wxss).toContain('.sidebar-header--guest-auth .sidebar-header__identity')
-    expect(wxss).toContain('.sidebar-header--guest-auth .sidebar-header__notification')
     expect(wxss).toMatch(/\.sidebar-header--guest-auth\s*\{[^}]*justify-content:\s*flex-start/)
   })
 })

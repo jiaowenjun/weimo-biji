@@ -1,7 +1,7 @@
 import type { MemoQueryDraft } from '../../models/memo'
 
 export interface IndexEmptyStateInput {
-  scopeKind: 'self' | 'friend'
+  scopeKind: 'self'
   query: Pick<MemoQueryDraft, 'keyword' | 'selectedTag'>
   dateLabel: string
 }
@@ -14,28 +14,6 @@ export interface IndexEmptyState {
 
 export function deriveIndexEmptyState(input: IndexEmptyStateInput): IndexEmptyState {
   const { query, dateLabel } = input
-
-  if (input.scopeKind === 'friend') {
-    if (query.selectedTag) {
-      return {
-        emptyTitle: `好友没有 #${query.selectedTag} 相关笔记`,
-        emptyDescription: '',
-        emptyActionText: '清除标签筛选',
-      }
-    }
-    if (dateLabel) {
-      return {
-        emptyTitle: `${dateLabel}好友还没有笔记`,
-        emptyDescription: '',
-        emptyActionText: '清除日期筛选',
-      }
-    }
-    return {
-      emptyTitle: '好友还没有笔记',
-      emptyDescription: '',
-      emptyActionText: '',
-    }
-  }
 
   if (query.keyword) {
     return {

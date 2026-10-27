@@ -56,8 +56,6 @@ describe('index page scroll reset contract', () => {
     expect(source).toMatch(
       /async applyMemoQuery\(nextQuery: MemoQueryDraft,\s*options: \{ resetScroll\?: boolean \} = \{\}\)\s*\{[\s\S]*if \(isSameMemoQueryDraft\(this\.data\.memoQuery,\s*normalizedQuery\)\) \{\s*return\s*\}[\s\S]*this\.setData\(\{[\s\S]*memoDateLabel:[\s\S]*\}\)[\s\S]*if \(options\.resetScroll === true\) \{\s*this\.resetIndexPageScroll\(\)\s*\}/s,
     )
-    expect(source).toMatch(
-      /async applyFriendMemoQuery\([\s\S]*if \(isSameMemoQueryDraft\(this\.data\.friendMemoQuery,\s*normalizedQuery\)\) \{[\s\S]*return[\s\S]*\}[\s\S]*this\.setData\(patch\)[\s\S]*if \(options\.resetScroll === true\) \{[\s\S]*this\.resetIndexPageScroll\(\)[\s\S]*\}/s,
-    )
+    expect(source).not.toContain('applyFriendMemoQuery')
   })
 })

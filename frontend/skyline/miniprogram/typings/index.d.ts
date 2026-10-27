@@ -48,8 +48,6 @@ interface MemoComposeTagPickerInitPayload {
   selectedTags: string[]
   initialDraft: string
   allowEmptyRemove?: boolean
-  tagTreeScope?: 'self' | 'friend'
-  friendUsername?: string
 }
 
 interface MemoComposeTagPickerApplyPayload {

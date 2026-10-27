@@ -578,7 +578,7 @@ mod tests {
             ct_utc: OffsetDateTime::parse("2026-01-01T00:00:00Z", &Rfc3339).unwrap(),
             mt_utc: OffsetDateTime::parse("2026-01-02T00:00:00Z", &Rfc3339).unwrap(),
             tags: vec!["t1".to_string()],
-            refs: vec![MemoRef::Own(7), MemoRef::Own(12)],
+            refs: vec![MemoRef(7), MemoRef(12)],
             content: "正文".to_string(),
         };
         let expected = "---\nid: 42\nct: \"2026-01-01T00:00:00Z\"\nmt: \"2026-01-02T00:00:00Z\"\ntags:\n  - t1\nrefs:\n  - \"7\"\n  - \"12\"\n---\n\n正文";
@@ -605,7 +605,7 @@ mod tests {
     fn test_parse_markdown_with_refs() {
         let md = "---\nid: 50\nct: 2026-01-03T00:00:00Z\nmt: 2026-01-03T00:00:00Z\ntags: []\nrefs:\n  - 7\n  - 12\n---\n\n正文";
         let memo = Memo::parse_markdown(md).unwrap();
-        assert_eq!(memo.refs, vec![MemoRef::Own(7), MemoRef::Own(12)]);
+        assert_eq!(memo.refs, vec![MemoRef(7), MemoRef(12)]);
     }
 
     /// 缺 refs 字段：兼容旧文件，refs 默认空
@@ -621,7 +621,7 @@ mod tests {
     fn test_parse_markdown_with_refs_before_tags() {
         let md = "---\nid: 8\nct: 2026-01-03T00:00:00Z\nmt: 2026-01-03T00:00:00Z\nrefs:\n  - 1\n  - 2\ntags:\n  - work/rust\n  - inbox\n---\n\n正文";
         let memo = Memo::parse_markdown(md).unwrap();
-        assert_eq!(memo.refs, vec![MemoRef::Own(1), MemoRef::Own(2)]);
+        assert_eq!(memo.refs, vec![MemoRef(1), MemoRef(2)]);
         assert_eq!(
             memo.tags,
             vec!["work/rust".to_string(), "inbox".to_string()]
@@ -633,7 +633,7 @@ mod tests {
         let md = "---\r\nid: 9\r\nct: 2026-01-03T00:00:00Z\r\nmt: 2026-01-03T00:00:00Z\r\ntags:\r\n  - work/windows\r\nrefs:\r\n  - 3\r\n  - 4\r\n---\r\n\r\n正文";
         let memo = Memo::parse_markdown(md).unwrap();
         assert_eq!(memo.tags, vec!["work/windows".to_string()]);
-        assert_eq!(memo.refs, vec![MemoRef::Own(3), MemoRef::Own(4)]);
+        assert_eq!(memo.refs, vec![MemoRef(3), MemoRef(4)]);
         assert_eq!(memo.content, "正文");
     }
 
@@ -641,7 +641,7 @@ mod tests {
     fn test_parse_markdown_invalid_refs_line_stops_refs_section() {
         let md = "---\nid: 10\nct: 2026-01-03T00:00:00Z\nmt: 2026-01-03T00:00:00Z\nrefs:\n  - 7\n  - nope\n  - 12\ntags:\n  - work/backend\n---\n\n正文";
         let memo = Memo::parse_markdown(md).unwrap();
-        assert_eq!(memo.refs, vec![MemoRef::Own(7)]);
+        assert_eq!(memo.refs, vec![MemoRef(7)]);
         assert_eq!(memo.tags, vec!["work/backend".to_string()]);
     }
 
@@ -650,41 +650,6 @@ mod tests {
         let md = "---\nid: 11\nct: 2026-01-03T00:00:00Z\nmt: 2026-01-03T00:00:00Z\ntags: []\nrefs: stale\n---\n\n正文";
         let memo = Memo::parse_markdown(md).unwrap();
         assert_eq!(memo.refs, Vec::<MemoRef>::new());
-    }
-
-    #[test]
-    fn test_parse_markdown_reads_friend_string_refs() {
-        let md = "---\nid: 2\nct: 2026-01-02T00:00:00Z\nmt: 2026-01-02T00:00:00Z\ntags: []\nrefs:\n  - \"bob/7\"\n---\n\nbody";
-        let memo = Memo::parse_markdown(md).unwrap();
-        assert_eq!(
-            memo.refs,
-            vec![MemoRef::Friend {
-                username: "bob".to_string(),
-                memo_id: 7,
-            }]
-        );
-    }
-
-    #[test]
-    fn test_to_markdown_writes_friend_refs_as_strings() {
-        let memo = Memo {
-            id: 2,
-            ct_utc: OffsetDateTime::parse("2026-01-02T00:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2026-01-02T00:00:00Z", &Rfc3339).unwrap(),
-            tags: vec![],
-            refs: vec![
-                MemoRef::Own(1),
-                MemoRef::Friend {
-                    username: "bob".to_string(),
-                    memo_id: 7,
-                },
-            ],
-            content: "body".to_string(),
-        };
-
-        let md = memo.to_markdown();
-        assert!(md.contains("  - \"1\""));
-        assert!(md.contains("  - bob/7"));
     }
 
     #[test]

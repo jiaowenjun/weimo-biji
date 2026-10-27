@@ -6,12 +6,10 @@ describe('resolveViewerRole', () => {
     expect(resolveViewerRole({
       sessionUsername: 'alice',
       ownerUsername: '',
-      friendUsername: 'alice',
     })).toBe('denied')
     expect(resolveViewerRole({
       sessionUsername: 'alice',
       ownerUsername: '   ',
-      friendUsername: 'alice',
     })).toBe('denied')
   })
 
@@ -19,7 +17,6 @@ describe('resolveViewerRole', () => {
     expect(resolveViewerRole({
       sessionUsername: undefined,
       ownerUsername: 'alice',
-      friendUsername: 'alice',
     })).toBe('denied')
   })
 
@@ -27,36 +24,13 @@ describe('resolveViewerRole', () => {
     expect(resolveViewerRole({
       sessionUsername: 'alice',
       ownerUsername: 'alice',
-      friendUsername: undefined,
     })).toBe('self')
   })
 
-  it('prefers self when session and friend both equal ownerUsername', () => {
-    expect(resolveViewerRole({
-      sessionUsername: 'alice',
-      ownerUsername: 'alice',
-      friendUsername: 'alice',
-    })).toBe('self')
-  })
-
-  it('returns friend when friend username equals ownerUsername and session does not', () => {
+  it('returns denied when owner does not match session', () => {
     expect(resolveViewerRole({
       sessionUsername: 'bob',
       ownerUsername: 'alice',
-      friendUsername: 'alice',
-    })).toBe('friend')
-  })
-
-  it('returns denied when owner matches neither session nor friend', () => {
-    expect(resolveViewerRole({
-      sessionUsername: 'bob',
-      ownerUsername: 'alice',
-      friendUsername: undefined,
-    })).toBe('denied')
-    expect(resolveViewerRole({
-      sessionUsername: 'bob',
-      ownerUsername: 'alice',
-      friendUsername: 'carol',
     })).toBe('denied')
   })
 })

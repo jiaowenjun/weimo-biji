@@ -1,7 +1,6 @@
 import * as z from 'zod/mini'
 
 import type {
-  FriendSummary,
   MemoDto,
   MemoSearchPageDto,
   MemoUtcArray,
@@ -57,22 +56,6 @@ export const memoSearchPageDtoSchema: z.ZodMiniType<MemoSearchPageDto> = z.objec
   next_cursor: z.nullable(z.string()),
   has_more: z.boolean(),
   total_count: nonnegativeIntegerSchema,
-})
-
-const friendProfileSchema = z.object({
-  username: z.string(),
-  nickname: z.string(),
-})
-
-export const friendSummarySchema: z.ZodMiniType<FriendSummary> = z.object({
-  friends: z.array(friendProfileSchema),
-  pending_outgoing: z.array(z.object({
-    id: z.string(),
-    to: friendProfileSchema,
-    created_at: z.string(),
-  })),
-  pending_incoming_count: nonnegativeIntegerSchema,
-  unread_count: nonnegativeIntegerSchema,
 })
 
 export const tagMutationResultSchema = z.string()

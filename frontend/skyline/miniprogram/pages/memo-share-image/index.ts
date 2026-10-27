@@ -53,11 +53,6 @@ interface MemoShareImagePageData {
   navStatusMaskHeight: number
   /** 分享图正文与页脚字级加大 */
   shareLargeText: boolean
-  /**
-   * 好友笔记分享时：写入存储前用户侧的「显示昵称」偏好（本页强制展示昵称，此项不参与 UI）。
-   * 非好友为 `null`。
-   */
-  shareNicknameUserPrefForFriend: boolean | null
 }
 
 interface SnapshotNode {
@@ -129,23 +124,14 @@ const PRINT_FONT_URL =
   'https://weimo.ink/fonts/%E4%BA%AC%E8%8F%AF%E8%80%81%E5%AE%8B%E4%BD%93v3.0.ttf'
 const PRINT_FONT_CACHE_PATH = `${wx.env.USER_DATA_PATH}/JingHuaLaoSong.ttf`
 
-/** 非空 `ownerUsername` 表示他人笔记（好友流等），分享图须展示对方署名且昵称开关锁定。 */
-function isShareCardFromFriend(card: MemoCardItem | null): boolean {
-  return Boolean(card && String(card.ownerUsername || '').trim())
-}
-
 function cloneShareOptions(options: MemoShareImageOptions): MemoShareImageOptions {
   return { ...options }
 }
 
 const SHARE_VISITOR_DISPLAY_NICKNAME = '游客'
 
-/** 分享图署名：好友笔记优先 `ownerNickname`，否则 `ownerUsername`；自建笔记用登录用户昵称/用户名；游客为「游客」。 */
-function resolveShareDisplayNickname(card: MemoCardItem): string {
-  const ownerNick = String(card.ownerNickname || '').trim()
-  if (ownerNick.length > 0) return ownerNick
-  const fromCard = String(card.ownerUsername || '').trim()
-  if (fromCard.length > 0) return fromCard
+/** 分享图署名：自建笔记用登录用户昵称/用户名；游客为「游客」。 */
+function resolveShareDisplayNickname(): string {
   if (!hasSession()) return SHARE_VISITOR_DISPLAY_NICKNAME
   const user = getSession().user
   if (!user) return ''
@@ -172,7 +158,6 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
     navOverlayHeight: 0,
     navStatusMaskHeight: 0,
     shareLargeText: false,
-    shareNicknameUserPrefForFriend: null,
   },
 
   _eventChannel: null,
@@ -213,7 +198,6 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
           status: 'error',
           errorMessage: '笔记数据无效',
           actionDisabled: true,
-          shareNicknameUserPrefForFriend: null,
         })
         return
       }
@@ -230,11 +214,6 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
         : cloneShareOptions(SHARE_IMAGE_OPTIONS)
       const shareLargeText = stored?.shareLargeText ?? false
       const shareLunarDate = stored?.shareLunarDate ?? false
-      const friendShare = isShareCardFromFriend(card)
-      const shareNicknameUserPrefForFriend = friendShare ? shareOptions.showNickname : null
-      const shareOptionsForPage = friendShare
-        ? { ...shareOptions, showNickname: true }
-        : shareOptions
       const needsPrintFont = shareFontId === 'print'
       this.setData(
         {
@@ -244,11 +223,10 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
           errorMessage: '',
           actionDisabled: needsPrintFont,
           shareFontId,
-          shareOptions: shareOptionsForPage,
-          shareNicknameUserPrefForFriend,
+          shareOptions,
           visibilityMenuActive: false,
           visibilityMenuAnchorRect: null,
-          shareNickname: resolveShareDisplayNickname(card),
+          shareNickname: resolveShareDisplayNickname(),
           sharePaperDateText: buildSharePaperDateText(card.createdAtText, shareLunarDate),
           shareLargeText,
           shareLunarDate,
@@ -266,7 +244,6 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
   buildVisibilityMenuItems() {
     const options = this.data.shareOptions
     const printOn = this.data.shareFontId === 'print'
-    const friendShare = isShareCardFromFriend(this.data.card)
     return [
       {
         id: 'toggle-tags',
@@ -277,8 +254,7 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
       {
         id: 'toggle-nickname',
         label: '显示昵称',
-        icon: friendShare || options.showNickname ? 'check' : undefined,
-        disabled: friendShare,
+        icon: options.showNickname ? 'check' : undefined,
         dividerBefore: false,
       },
       {
@@ -500,18 +476,10 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
   },
 
   persistMemoShareImagePrefs() {
-    const friend = isShareCardFromFriend(this.data.card)
-    const prefFriend = this.data.shareNicknameUserPrefForFriend
-    const showNicknamePersisted =
-      friend && prefFriend !== null
-        ? prefFriend
-        : friend
-          ? readMemoShareImagePrefs()?.showNickname ?? true
-          : this.data.shareOptions.showNickname
     writeMemoShareImagePrefs({
       shareFontId: this.data.shareFontId,
       showTags: this.data.shareOptions.showTags,
-      showNickname: showNicknamePersisted,
+      showNickname: this.data.shareOptions.showNickname,
       showBrand: this.data.shareOptions.showBrand,
       shareLargeText: this.data.shareLargeText,
       shareLunarDate: this.data.shareLunarDate,
@@ -620,11 +588,7 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
     if (id === 'toggle-tags') nextOptions.showTags = !current.showTags
     if (id === 'toggle-brand') nextOptions.showBrand = !current.showBrand
     if (id === 'toggle-nickname') {
-      if (isShareCardFromFriend(this.data.card)) return
       nextOptions.showNickname = !current.showNickname
-    }
-    if (isShareCardFromFriend(this.data.card)) {
-      nextOptions.showNickname = true
     }
 
     this.setData(
@@ -660,7 +624,7 @@ Page<MemoShareImagePageData, MemoShareImagePageCustom>({
         const shareOptions: ShareImageMenuOptionWithEntrance = {
           path,
           needShowEntrance: true,
-          entrancePath: buildShareEntrancePath(this.data.card, getSession()),
+          entrancePath: buildShareEntrancePath(this.data.card),
           fail: (err) => {
             const errMsg = String(err.errMsg || '').toLowerCase()
             if (errMsg.includes('cancel')) return

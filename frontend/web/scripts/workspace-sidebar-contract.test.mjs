@@ -104,7 +104,7 @@ for (const snippet of [
 }
 
 for (const snippet of [
-  "import { useQueries, useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'",
+  "import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'",
   "from '@/features/auth/use-auth'",
   'WORKSPACE_CACHE_STALE_TIME_MS',
   'export const WORKSPACE_SIDEBAR_STALE_TIME_MS = WORKSPACE_CACHE_STALE_TIME_MS',
@@ -157,10 +157,10 @@ for (const snippet of [
   'useWorkspaceStatsQuery()',
   'useTagTreeQuery()',
   'useWorkspaceTagActions({',
-  'buildSidebarStatItems(activeStatsQuery.data)',
-  'toHeatmapDailyCounts(activeStatsQuery.data.daily_note_count)',
-  'toSidebarTagTree(activeTagTreeQuery.data)',
-  'toTagOptions(activeTagTreeQuery.data)',
+  'buildSidebarStatItems(statsQuery.data)',
+  'toHeatmapDailyCounts(statsQuery.data.daily_note_count)',
+  'toSidebarTagTree(tagTreeQuery.data)',
+  'toTagOptions(tagTreeQuery.data)',
   'formatTagBreadTag(navigation.selectedTag)',
   'clearWorkspaceQueries(queryClient)',
   'onLogout={handleLogout}',
@@ -181,12 +181,12 @@ for (const snippet of [
   'dailyCounts={dailyCounts}',
   'expandedTagTreeTags={expandedTagTreeTags}',
   'onExpandedTagTreeTagsChange={setExpandedTagTreeTags}',
-  'tagMenuEnabled={homeMemoScope.kind === \'self\'}',
-  'statsLoading={activeStatsQuery.isPending}',
-  'statsLoadFailed={activeStatsQuery.isError}',
+  'tagMenuEnabled',
+  'statsLoading={statsQuery.isPending}',
+  'statsLoadFailed={statsQuery.isError}',
   'tagTreeNodes={tagTree.nodes}',
-  'tagTreeLoading={activeTagTreeQuery.isPending}',
-  'tagTreeLoadFailed={activeTagTreeQuery.isError}',
+  'tagTreeLoading={tagTreeQuery.isPending}',
+  'tagTreeLoadFailed={tagTreeQuery.isError}',
 ]) {
   assert.ok(
     workspacePageSource.includes(snippet),

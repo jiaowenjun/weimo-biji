@@ -119,69 +119,10 @@ export function resolveHomeNavTitle(
   return formatTagPathForNavTitle(t, { maxLen, isNarrow, pathPrefix: 'none' })
 }
 
-/**
- * 好友列表标题：无标签为好友展示名，有标签为 `好友昵称·标签路径`。
- * 标签部分复用首页标签路径缩略规则；好友昵称过长时再压缩昵称，确保总标题不超预算。
- */
-export function resolveFriendHomeNavTitle(
-  friendLabel: string,
-  selectedTag: string,
-  windowWidthPx: number,
-): string {
-  const label = String(friendLabel || '').trim() || '好友'
-  const tag = String(selectedTag || '').trim()
-  const { maxLen, isNarrow } = homeNavTitleBudget(windowWidthPx)
-
-  if (!tag) {
-    return ellipsizeText(label, maxLen)
-  }
-
-  const separator = '·'
-  const full = `${label}${separator}${tag}`
-  if (full.length <= maxLen) {
-    return full
-  }
-
-  const minTagLen = 4
-  const initialTagMaxLen = Math.max(minTagLen, maxLen - label.length - separator.length)
-  const initialTag = formatTagPathForNavTitle(tag, {
-    maxLen: initialTagMaxLen,
-    isNarrow,
-    pathPrefix: 'none',
-  })
-  const initialTitle = `${label}${separator}${initialTag}`
-  if (initialTitle.length <= maxLen) {
-    return initialTitle
-  }
-
-  const labelMaxLen = Math.max(1, maxLen - separator.length - minTagLen)
-  const compactLabel = ellipsizeText(label, labelMaxLen)
-  const compactTagMaxLen = Math.max(minTagLen, maxLen - compactLabel.length - separator.length)
-  const compactTag = formatTagPathForNavTitle(tag, {
-    maxLen: compactTagMaxLen,
-    isNarrow,
-    pathPrefix: 'none',
-  })
-  const compactTitle = `${compactLabel}${separator}${compactTag}`
-
-  return compactTitle.length <= maxLen
-    ? compactTitle
-    : ellipsizeText(compactTitle, maxLen)
-}
-
-/**
- * 搜索页导航标题：自用与 {@link resolveHomeNavTitle} 相同。
- * 从好友笔记列表打开搜索页时传入 `friendLabel`（一般为 `nickname || username`），
- * 与好友首页导航一致：无选中标签时为好友昵称，有标签时为 `好友昵称·标签路径缩略`。
- */
+/** 搜索页导航标题：与 {@link resolveHomeNavTitle} 相同。 */
 export function resolveSearchNavTitle(
   selectedTag: string,
   windowWidthPx: number,
-  friendLabel?: string | null,
 ): string {
-  const label = typeof friendLabel === 'string' ? friendLabel.trim() : ''
-  if (label) {
-    return resolveFriendHomeNavTitle(label, selectedTag, windowWidthPx)
-  }
   return resolveHomeNavTitle(selectedTag, windowWidthPx)
 }

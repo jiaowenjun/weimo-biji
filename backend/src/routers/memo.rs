@@ -130,9 +130,7 @@ async fn delete_memo<U: UserDb, M: MemoDb>(
 mod tests {
     use super::*;
     use crate::config::ServerConfig;
-    use crate::data::{
-        DataManager, JsonSocial, MdDb, MemoRef, MemoSearchQuery, MemoTextFilter, UserCreate,
-    };
+    use crate::data::{DataManager, MdDb, MemoRef, MemoSearchQuery, MemoTextFilter, UserCreate};
     use crate::error::WeimoError;
     use time::OffsetDateTime;
     use tokio::time::{Duration, sleep};
@@ -169,9 +167,7 @@ mod tests {
             sleep(Duration::from_millis(2)).await;
         }
 
-        let manager = DataManager::new_with_social(db, JsonSocial::in_memory())
-            .await
-            .unwrap();
+        let manager = DataManager::new(db).await.unwrap();
         let state = AppState::new(
             manager,
             ServerConfig {
@@ -288,7 +284,7 @@ mod tests {
                 MemoUpdate {
                     content: None,
                     tags: None,
-                    refs: Some(vec![MemoRef::Own(1)]),
+                    refs: Some(vec![MemoRef(1)]),
                 },
             )
             .await

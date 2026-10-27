@@ -156,15 +156,9 @@ describe('search page layout contract', () => {
     expect(refresh).toContain('shouldSearchFromDraft(this.data.draft)')
     expect(refresh).toContain('this.clearSearchMemoList()')
     expect(refresh.indexOf('shouldSearchFromDraft(this.data.draft)')).toBeLessThan(
-      refresh.indexOf('refreshFriendMemoList'),
-    )
-    expect(refresh.indexOf('shouldSearchFromDraft(this.data.draft)')).toBeLessThan(
       refresh.indexOf('workspaceStore.refreshMemoList'),
     )
     expect(loadMore).toContain('shouldSearchFromDraft(this.data.draft)')
-    expect(loadMore.indexOf('shouldSearchFromDraft(this.data.draft)')).toBeLessThan(
-      loadMore.indexOf('loadMoreFriendMemoList'),
-    )
     expect(loadMore.indexOf('shouldSearchFromDraft(this.data.draft)')).toBeLessThan(
       loadMore.indexOf('workspaceStore.loadMoreMemoList'),
     )

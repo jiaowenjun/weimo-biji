@@ -50,8 +50,6 @@
 .iconfont--indent-right::before                   { content: "\e61a"; }
 .iconfont--logo-miniprogram::before               { content: "\e61b"; }
 .iconfont--logout::before                         { content: "\e61c"; }
-.iconfont--member::before                         { content: "\e61d"; }
-.iconfont--notification::before                   { content: "\e61e"; }
 .iconfont--page-head::before                      { content: "\e61f"; }
 .iconfont--quote::before                          { content: "\e620"; }
 .iconfont--refresh::before                        { content: "\e621"; }

@@ -1,8 +1,6 @@
 import { requestProtectedJson } from '@/features/auth/auth-api'
 
 import {
-  friendSummarySchema,
-  memoDtoSchema,
   memoSearchPageDtoSchema,
   mutationIdSchema,
   tagMutationResultSchema,
@@ -43,38 +41,6 @@ export function deleteTag(token: string, tag: string) {
     {
       method: 'DELETE',
     },
-  )
-}
-
-function friendPath(username: string) {
-  return encodeURIComponent(String(username || '').trim())
-}
-
-export function getFriendSummary(token: string) {
-  return requestProtectedJson('/friend/me', token, friendSummarySchema)
-}
-
-export function getFriendStats(token: string, friendUsername: string) {
-  return requestProtectedJson(
-    `/friend/${friendPath(friendUsername)}/stats`,
-    token,
-    workspaceStatsSchema,
-  )
-}
-
-export function getFriendTagTree(token: string, friendUsername: string) {
-  return requestProtectedJson(
-    `/friend/${friendPath(friendUsername)}/tag/meta`,
-    token,
-    tagTreeMetaSchema,
-  )
-}
-
-export function getFriendMemo(token: string, friendUsername: string, id: number) {
-  return requestProtectedJson(
-    `/friend/${friendPath(friendUsername)}/memos/${id}`,
-    token,
-    memoDtoSchema,
   )
 }
 
@@ -142,26 +108,6 @@ export function searchMemos(
     body: JSON.stringify(payload),
     method: 'POST',
   })
-}
-
-export function searchFriendMemos(
-  token: string,
-  friendUsername: string,
-  filters: MemoSearchQuery = {},
-  cursor: string | null = null,
-  pageSize = 8,
-) {
-  const payload = buildMemoSearchPayload(filters, cursor, pageSize)
-
-  return requestProtectedJson(
-    `/friend/${friendPath(friendUsername)}/memos/search`,
-    token,
-    memoSearchPageDtoSchema,
-    {
-      body: JSON.stringify(payload),
-      method: 'POST',
-    },
-  )
 }
 
 export function updateMemo(

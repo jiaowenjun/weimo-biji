@@ -6,15 +6,11 @@ function invokeRefresh(action: RefreshAction): Promise<unknown> {
 
 export function runWorkspaceTitleRefreshActions(actions: {
   refreshMemoList: RefreshAction
-  refreshReferencePreviews?: RefreshAction
   refreshStats: RefreshAction
   refreshTagTree: RefreshAction
 }): Promise<void> {
   const refreshActions = [
     invokeRefresh(actions.refreshMemoList),
-    ...(actions.refreshReferencePreviews
-      ? [invokeRefresh(actions.refreshReferencePreviews)]
-      : []),
     invokeRefresh(actions.refreshStats),
     invokeRefresh(actions.refreshTagTree),
   ]

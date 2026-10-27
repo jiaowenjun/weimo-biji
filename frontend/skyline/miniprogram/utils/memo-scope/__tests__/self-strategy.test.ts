@@ -45,10 +45,6 @@ describe('SelfScopeStrategy', () => {
     expect(strategy.kind).toBe('self')
   })
 
-  it('returns no friend profile for self scope', () => {
-    expect(strategy.getFriend()).toBeUndefined()
-  })
-
   it('buildSearchQuery normalizes draft into own memo search query', () => {
     const query = strategy.buildSearchQuery({
       keyword: '  hello  ',
@@ -69,13 +65,9 @@ describe('SelfScopeStrategy', () => {
     const tagTreeNodes = [{ label: 'Work', tag: 'work', item_count: 1, children: [] }]
     const data = {
       memoQuery,
-      friendMemoQuery: { keyword: 'friend', selectedTag: 'life', dateMode: 'day' as const, dateValue: '' },
       memoDateLabel: '今天',
-      friendMemoDateLabel: '昨天',
       stats,
-      friendStats: null,
       tagTreeNodes,
-      friendTagTreeNodes: [],
     }
 
     expect(strategy.getCurrentQuery(data)).toBe(memoQuery)

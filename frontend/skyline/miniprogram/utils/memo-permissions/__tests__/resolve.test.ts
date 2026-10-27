@@ -13,7 +13,7 @@ const MATRIX: Record<ViewerRole, {
   canShare: boolean
   canCopy: boolean
   canSeeDetailEntry: boolean
-  quoteMode: 'self' | 'friend' | 'none'
+  quoteMode: 'self' | 'none'
   menuActions: MemoAction[]
   doubleTapPreferred: 'edit' | 'quote' | 'preview' | 'none'
 }> = {
@@ -31,21 +31,6 @@ const MATRIX: Record<ViewerRole, {
     quoteMode: 'self',
     menuActions: ['edit', 'quote', 'delete', 'share', 'copy', 'memoDetail'],
     doubleTapPreferred: 'edit',
-  },
-  friend: {
-    canView: true,
-    canEdit: false,
-    canDelete: false,
-    canModifyTag: false,
-    canRemoveTag: false,
-    canAddTag: false,
-    canQuote: true,
-    canShare: true,
-    canCopy: true,
-    canSeeDetailEntry: true,
-    quoteMode: 'friend',
-    menuActions: ['quote', 'share', 'copy', 'memoDetail'],
-    doubleTapPreferred: 'quote',
   },
   visitor: {
     canView: true,

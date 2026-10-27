@@ -198,41 +198,6 @@ assert.equal(
   'memo-id lookup should resolve memos from cached lists outside the current tag.',
 )
 
-const friendListKey = [
-  'workspace',
-  scope,
-  'friend',
-  'bob',
-  'memos',
-  'list',
-  { pageSize: 8, filters: {} },
-]
-queryClient.setQueryData(
-  friendListKey,
-  makeInfinitePage([makeMemo(100, [], 'bob memo with colliding id')], 1),
-)
-const secondFriendListKey = [
-  'workspace',
-  scope,
-  'friend',
-  'carol',
-  'memos',
-  'list',
-  { pageSize: 8, filters: {} },
-]
-queryClient.setQueryData(
-  secondFriendListKey,
-  makeInfinitePage([makeMemo(100, [], 'carol memo with colliding id')], 1),
-)
-const friendMemoCacheIndex = createWorkspaceMemoCacheIndex(
-  queryClient,
-  { kind: 'friend', scope, friendUsername: 'bob' },
-)
-const secondFriendMemoCacheIndex = createWorkspaceMemoCacheIndex(
-  queryClient,
-  { kind: 'friend', scope, friendUsername: 'carol' },
-)
-
 const statsKey = ['workspace', scope, 'stats']
 const tagTreeKey = ['workspace', scope, 'tag-tree']
 queryClient.setQueryData(statsKey, { note_count: 1 })
@@ -245,16 +210,6 @@ assert.equal(
   queryClient.getQueryState(otherScopeKey).isInvalidated,
   false,
   'workspace invalidation must not invalidate another user scope.',
-)
-assert.equal(
-  friendMemoCacheIndex.getMemoById(100)?.content,
-  'bob memo with colliding id',
-  'friend reference lookup must stay inside the selected friend cache namespace.',
-)
-assert.equal(
-  secondFriendMemoCacheIndex.getMemoById(100)?.content,
-  'carol memo with colliding id',
-  'different friend namespaces must remain isolated when memo ids collide.',
 )
 assert.equal(
   memoCacheIndex.getSummaryCache() instanceof Map,

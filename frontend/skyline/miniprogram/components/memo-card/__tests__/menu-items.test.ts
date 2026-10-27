@@ -43,31 +43,6 @@ describe('buildMemoCardMenuItems', () => {
     expect(items.find((item) => item.id === 'delete')?.dividerBefore).toBe(true)
   })
 
-  it('friend menu includes a divider after quote before detail share and copy', () => {
-    const items = buildMemoCardMenuItems(['friend'], {
-      permissions: resolvePermissions('friend'),
-      showMemoDetailPage: true,
-    })
-
-    expect(ids(items)).toEqual(['quote', 'memo-detail', 'share', 'copy'])
-    expect(items.find((item) => item.id === 'quote')?.dividerBefore).toBe(false)
-    expect(items.find((item) => item.id === 'memo-detail')?.dividerBefore).toBe(true)
-    expect(items.find((item) => item.id === 'share')?.dividerBefore).toBe(false)
-    expect(items.find((item) => item.id === 'copy')?.dividerBefore).toBe(false)
-    expect(items.every((item) => !item.disabled)).toBe(true)
-  })
-
-  it('friend menu keeps the divider before share when detail entry is not visible', () => {
-    const items = buildMemoCardMenuItems([], {
-      permissions: resolvePermissions('friend'),
-    })
-
-    expect(ids(items)).toEqual(['quote', 'share', 'copy'])
-    expect(items.find((item) => item.id === 'quote')?.dividerBefore).toBe(false)
-    expect(items.find((item) => item.id === 'share')?.dividerBefore).toBe(true)
-    expect(items.find((item) => item.id === 'copy')?.dividerBefore).toBe(false)
-  })
-
   it('visitor menu remains edit and delete only', () => {
     const items = buildMemoCardMenuItems([], {
       permissions: resolvePermissions('visitor'),

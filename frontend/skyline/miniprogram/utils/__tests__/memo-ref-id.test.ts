@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   appendMemoRefId,
   ownMemoIdFromRef,
-  parseFriendMemoRef,
   removeMemoRefId,
   uniqueOwnMemoIds,
 } from '../memo-ref-id'
@@ -12,32 +11,15 @@ describe('ownMemoIdFromRef', () => {
     expect(ownMemoIdFromRef('42')).toBe(42)
   })
 
-  it('rejects friend refs and invalid local ids', () => {
+  it('rejects slash refs and invalid local ids', () => {
     expect(ownMemoIdFromRef('bob/42')).toBeNull()
     expect(ownMemoIdFromRef('0')).toBeNull()
     expect(ownMemoIdFromRef('not-a-number')).toBeNull()
   })
 })
 
-describe('parseFriendMemoRef', () => {
-  it('parses friend username and positive memo id', () => {
-    expect(parseFriendMemoRef('bob/42')).toEqual({
-      username: 'bob',
-      memoId: 42,
-    })
-  })
-
-  it('rejects local refs, empty owners, nested paths, and invalid ids', () => {
-    expect(parseFriendMemoRef('42')).toBeNull()
-    expect(parseFriendMemoRef('/42')).toBeNull()
-    expect(parseFriendMemoRef('bob/0')).toBeNull()
-    expect(parseFriendMemoRef('bob/not-a-number')).toBeNull()
-    expect(parseFriendMemoRef('bob/team/42')).toBeNull()
-  })
-})
-
 describe('uniqueOwnMemoIds', () => {
-  it('deduplicates local refs while ignoring friend refs', () => {
+  it('deduplicates local refs while ignoring non-local refs', () => {
     expect(uniqueOwnMemoIds(['1', 'bob/2', '2', '1'])).toEqual([1, 2])
   })
 })

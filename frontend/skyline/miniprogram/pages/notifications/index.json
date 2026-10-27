@@ -1,9 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "disableScroll": true,
-  "usingComponents": {
-    "navigation-bar": "/components/navigation-bar/navigation-bar",
-    "page-shell": "/components/page-shell/page-shell",
-    "weimo-button": "/components/weimo-button/index"
-  }
-}

@@ -1,22 +1,9 @@
 import type { MemoRefId } from '../models/memo'
 
-export interface FriendMemoRefParts {
-  username: string
-  memoId: number
-}
-
 export function ownMemoIdFromRef(ref: MemoRefId): number | null {
   if (ref.includes('/')) return null
   const id = Number(ref)
   return Number.isFinite(id) && id > 0 ? id : null
-}
-
-export function parseFriendMemoRef(ref: MemoRefId): FriendMemoRefParts | null {
-  const parts = ref.split('/')
-  if (parts.length !== 2 || !parts[0]) return null
-  const memoId = Number(parts[1])
-  if (!Number.isFinite(memoId) || memoId <= 0) return null
-  return { username: parts[0], memoId }
 }
 
 export function uniqueOwnMemoIds(refs: MemoRefId[]): number[] {

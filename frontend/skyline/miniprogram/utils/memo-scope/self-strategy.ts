@@ -20,10 +20,6 @@ export function createSelfScopeStrategy(getSort: () => MemoCreatedAtSort): MemoS
   return {
     kind: 'self',
 
-    getFriend() {
-      return undefined
-    },
-
     buildSearchQuery(draft: MemoQueryDraft) {
       return buildSelfMergedSearchQuery(draft, getSort())
     },

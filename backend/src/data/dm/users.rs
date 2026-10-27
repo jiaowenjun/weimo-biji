@@ -4,9 +4,7 @@ use tokio::sync::RwLock;
 
 use super::DataManager;
 use super::memos::MemoManager;
-use crate::data::{
-    DeletedFriendProfile, FriendProfile, MemoDb, User, UserCreate, UserDb, UserView,
-};
+use crate::data::{MemoDb, User, UserCreate, UserDb};
 use crate::error::WeimoResult;
 
 impl<U: UserDb, M: MemoDb> DataManager<U, M> {
@@ -28,7 +26,6 @@ impl<U: UserDb, M: MemoDb> DataManager<U, M> {
             db.delete_user(username).await?;
         }
         self.memo_managers.write().await.remove(username);
-        self.expire_social_for_deleted_user(username).await?;
         Ok(())
     }
 
@@ -104,29 +101,5 @@ impl<U: UserDb, M: MemoDb> DataManager<U, M> {
 
     pub async fn user_exists(&self, username: &str) -> bool {
         self.db.read().await.user_exists(username).await
-    }
-
-    pub(super) async fn friend_profile(&self, username: &str) -> WeimoResult<FriendProfile> {
-        Ok(FriendProfile::from(UserView::from(
-            self.db.read().await.get_user(username).await?,
-        )))
-    }
-
-    pub(super) async fn friend_profile_or_deleted(&self, username: &str) -> DeletedFriendProfile {
-        match self.db.read().await.get_user(username).await {
-            Ok(user) => {
-                let view = UserView::from(user);
-                DeletedFriendProfile {
-                    username: view.username,
-                    nickname: view.nickname,
-                    deleted: false,
-                }
-            }
-            Err(_) => DeletedFriendProfile {
-                username: username.to_string(),
-                nickname: "用户已注销".to_string(),
-                deleted: true,
-            },
-        }
     }
 }

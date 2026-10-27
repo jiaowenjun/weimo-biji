@@ -180,7 +180,7 @@ for (const snippet of [
   'setQuoteMemoId(null)',
   'const handleMemoQuoteSave = useCallback((memo: Memo, draft: CardDraft) => {',
   'createWorkspaceMemo({ content, tags, refs: [String(memo.id)] })',
-  'onQuoteSelect={homeMemoScope.kind === \'self\' ? () => setQuoteMemoId(memo.id) : undefined}',
+  'onQuoteSelect={() => setQuoteMemoId(memo.id)}',
 ]) {
   assert.ok(
     workspacePageSource.includes(snippet),

@@ -42,7 +42,6 @@ describe('memo-list-singleton-menu methods', () => {
     host.onCardMenuOpen({
       detail: {
         memoId: 7,
-        ownerUsername: 'alice',
         mode: 'card',
         triggerRect: rect,
         items: [{ id: 'edit', label: '编辑' }],
@@ -76,7 +75,6 @@ describe('memo-list-singleton-menu methods', () => {
     const host = createHost({
       singletonMenuActive: true,
       singletonMenuMemoId: 17,
-      singletonMenuOwnerUsername: 'alice',
       singletonMenuMode: 'card',
       singletonMenuItems: [{ id: 'copy', label: '复制', icon: 'copy' }],
     })
@@ -89,7 +87,7 @@ describe('memo-list-singleton-menu methods', () => {
     })
 
     expect(host.handleMemoCopy).toHaveBeenCalledWith({
-      detail: { memoId: 17, ownerUsername: 'alice' },
+      detail: { memoId: 17 },
     })
     expect(host.data.singletonMenuActive).toBe(false)
   })

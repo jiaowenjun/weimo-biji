@@ -109,14 +109,22 @@ describe('memo-reference-detail-view relation sections contract', () => {
     expect(wxml).not.toContain('handleRelationTabTap')
   })
 
-  it('uses card ownership to derive viewer-role in references-only mode', () => {
+  it('renders references-only mode cards with self viewer role and no ownership props', () => {
     const wxml = read('index.wxml')
+    const ts = read('index.ts')
     const referencesEnd = wxml.indexOf(`<block wx:elif="{{mode === 'detail'}}">`)
 
     expect(referencesEnd).toBeGreaterThan(0)
     const referencesSection = wxml.slice(0, referencesEnd)
-    expect(referencesSection).toContain(`viewer-role="{{item.ownerUsername ? 'friend' : 'self'}}"`)
-    expect(referencesSection).not.toContain('viewer-role="self"')
+    expect(referencesSection).toContain('viewer-role="self"')
+    expect(referencesSection).not.toContain('ownerUsername')
+    expect(wxml).not.toContain('owner-username')
+    expect(wxml).not.toContain('ownerUsername')
+    expect(wxml).not.toContain('friendReference')
+    expect(wxml).not.toContain('ownReference')
+    expect(ts).not.toContain('ownerUsername')
+    expect(ts).not.toContain('ownReferenceCards')
+    expect(ts).not.toContain('friendReferenceCards')
   })
 
   it('renders root card before relation panels and uses horizontal track when mounted', () => {
@@ -184,10 +192,8 @@ describe('memo-reference-detail-view relation sections contract', () => {
 
     expect(wxml).toContain('wx:else class="memo-reference-relation-flat"')
     expect(wxml).not.toContain('<block wx:else>')
-    expect(wxml).toContain('wx:if="{{ownReferenceCards.length}}"')
-    expect(wxml).toContain('wx:if="{{friendReferenceCards.length}}"')
-    expect(wxml).toContain('wx:if="{{ownReferencedByCards.length}}"')
-    expect(wxml).toContain('wx:if="{{friendReferencedByCards.length}}"')
+    expect(wxml).toContain('wx:if="{{referenceCards.length}}"')
+    expect(wxml).toContain('wx:if="{{referencedByCards.length}}"')
     expect(wxss).toMatch(/\.memo-reference-relation-flat\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column/)
   })
 

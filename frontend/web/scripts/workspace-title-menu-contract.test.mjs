@@ -39,19 +39,14 @@ assert.ok(
 )
 
 for (const snippet of [
-  "import { ArrowUpDown, Check, Grid2X2, Home, LogIn, RefreshCw, Undo2, Users } from 'lucide-react'",
+  "import { ArrowUpDown, Check, Grid2X2, LogIn, RefreshCw, Undo2 } from 'lucide-react'",
   "import { ActionMenu, type ActionMenuItem } from 'weimo-ui/components/menu'",
   "import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'",
   "import type { MemoSearchQuery } from './workspace-types'",
   "type MemoCreatedAtSort = NonNullable<MemoSearchQuery['created_at_sort']>",
-  "export type WorkspaceHomeMemoScope = 'self' | 'friend'",
   'type WorkspaceTitleMenuProps = {',
-  'canViewFriendMemos?: boolean',
-  'homeMemoScope?: WorkspaceHomeMemoScope',
   'memoCreatedAtSort?: MemoCreatedAtSort',
   'onMemoCreatedAtSortChange?: (sort: MemoCreatedAtSort) => void',
-  'onViewFriendMemos?: () => void',
-  'onViewMyMemos?: () => void',
   'onRefresh?: () => void',
   'selectedTag?: string',
   'showGuestAuthAction?: boolean',
@@ -62,26 +57,12 @@ for (const snippet of [
   'onMemoCreatedAtSortChange?.(nextSort)',
   "function parentTagPath(tagPath: string): string | null {",
   'function buildWorkspaceTitleMenuItems({',
-  'canViewFriendMemos',
-  'homeMemoScope = \'self\'',
   'memoCreatedAtSort',
   'onMemoCreatedAtSortChange',
-  'onViewFriendMemos',
-  'onViewMyMemos',
   'onRefresh',
   'showGuestAuthAction',
   "const sort = memoCreatedAtSort ?? 'desc'",
-  "if (homeMemoScope === 'friend') {",
-  "key: 'viewMyMemos'",
-  "icon: <Home aria-hidden=\"true\" />",
-  "label: '查看我的笔记'",
-  'onSelect: onViewMyMemos',
-  "} else if (canViewFriendMemos) {",
-  "key: 'viewFriendMemos'",
-  "icon: <Users aria-hidden=\"true\" />",
-  "label: '查看好友笔记'",
-  'onSelect: onViewFriendMemos',
-  "if (homeMemoScope === 'self' && showGuestAuthAction) {",
+  "if (showGuestAuthAction) {",
   "key: 'guestAuth'",
   "label: '登录/注册'",
   "key: 'parentTag'",
@@ -105,12 +86,8 @@ for (const snippet of [
   "label: '刷新'",
   'onSelect: onRefresh',
   'export function WorkspaceTitleMenu({',
-  'canViewFriendMemos',
-  'homeMemoScope',
   'memoCreatedAtSort',
   'onMemoCreatedAtSortChange',
-  'onViewFriendMemos',
-  'onViewMyMemos',
   'onRefresh',
   '<ActionMenu',
   'ariaLabel="更多"',
@@ -139,29 +116,11 @@ const memoSortItemsIndex = titleMenuSource.indexOf('items: [', memoSortSectionIn
 const newestSortIndex = titleMenuSource.indexOf("key: 'memoSortNewestFirst'")
 const oldestSortIndex = titleMenuSource.indexOf("key: 'memoSortOldestFirst'")
 const refreshIndex = titleMenuSource.indexOf("key: 'refresh'")
-const viewFriendMemosIndex = titleMenuSource.indexOf("key: 'viewFriendMemos'")
-const viewMyMemosIndex = titleMenuSource.indexOf("key: 'viewMyMemos'")
 
-assert.ok(
-  viewFriendMemosIndex >= 0,
-  'workspace title menu must expose the Skyline friend memo list entry when a friend exists.',
-)
-assert.ok(
-  viewMyMemosIndex >= 0,
-  'workspace title menu must expose the Skyline self memo list entry in friend scope.',
-)
 assert.ok(memoSortSectionIndex >= 0, 'workspace title menu must include a sort submenu.')
 assert.ok(
   memoSortItemsIndex > memoSortSectionIndex,
   'workspace title menu sort choices must be nested under the sort submenu.',
-)
-assert.ok(
-  viewFriendMemosIndex < memoSortSectionIndex,
-  'view friend memos must stay a top-level navigation item before the sort submenu.',
-)
-assert.ok(
-  viewMyMemosIndex < memoSortSectionIndex,
-  'view my memos must stay a top-level navigation item before the sort submenu.',
 )
 assert.ok(
   newestSortIndex > memoSortItemsIndex,
@@ -234,16 +193,12 @@ for (const [name, source] of [
 
 assert.ok(
   workspacePageSource.includes('memoCreatedAtSort={navigation.memoCreatedAtSort}') &&
-    workspacePageSource.includes('canViewFriendMemos={canViewFriendMemos}') &&
-    workspacePageSource.includes('homeMemoScope={homeMemoScope.kind}') &&
     workspacePageSource.includes(
       'onMemoCreatedAtSortChange={navigation.setMemoCreatedAtSort}',
     ) &&
-    workspacePageSource.includes('onViewFriendMemos={handleViewFriendMemos}') &&
-    workspacePageSource.includes('onViewMyMemos={handleViewMyMemos}') &&
     workspacePageSource.includes('onRefresh={handleTitleRefresh}') &&
     workspacePageSource.includes('selectedTag={navigation.selectedTag}'),
-  'workspace page must pass current sort state, scope switch actions, refresh action, and selected tag to the title menu.',
+  'workspace page must pass current sort state, refresh action, and selected tag to the title menu.',
 )
 
 assert.ok(
@@ -261,19 +216,19 @@ for (const snippet of [
   'const handleTitleRefresh = useCallback(() => {',
   'clearMemoDisplayOverrides()',
   'void runWorkspaceTitleRefreshActions({',
-  'refreshMemoList: () => activeMemoListQuery.refetch()',
-  'refreshStats: () => activeStatsQuery.refetch()',
-  'refreshTagTree: () => activeTagTreeQuery.refetch()',
+  'refreshMemoList: () => memoListQuery.refetch()',
+  'refreshStats: () => statsQuery.refetch()',
+  'refreshTagTree: () => tagTreeQuery.refetch()',
 ]) {
   assert.ok(
     workspacePageSource.includes(snippet),
-    `workspace page refresh menu must refresh the active self/friend home scope: ${snippet}`,
+    `workspace page refresh menu must refresh the memo list, stats, and tag tree: ${snippet}`,
   )
 }
 
 const workspaceRefreshSource = workspacePageSource.slice(
   workspacePageSource.indexOf('const handleTitleRefresh = useCallback'),
-  workspacePageSource.indexOf('const handleViewFriendMemos = useCallback'),
+  workspacePageSource.indexOf('const handleMemoSave = useCallback'),
 )
 assert.ok(
   workspaceRefreshSource.indexOf('clearMemoDisplayOverrides()') <

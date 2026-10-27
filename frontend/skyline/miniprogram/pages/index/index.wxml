@@ -18,15 +18,15 @@
         <view class="page-nav-spacer" style="height: {{navBarOverlayHeight}}px;"></view>
         <view class="memo-list-top-gap"></view>
 
-        <view class="filter-bar memo-list-filter--scroll-root {{(homeMemoScope.kind === 'friend' ? friendMemoDateLabel : memoDateLabel) || (homeMemoScope.kind === 'friend' ? friendMemoFacetLabel : memoFacetLabel) ? '' : 'filter-bar--collapsed'}}">
+        <view class="filter-bar memo-list-filter--scroll-root {{(memoDateLabel || memoFacetLabel) ? '' : 'filter-bar--collapsed'}}">
           <filter-summary
-            wx:if="{{homeMemoScope.kind === 'friend' ? friendMemoDateLabel : memoDateLabel}}"
-            value="{{homeMemoScope.kind === 'friend' ? friendMemoDateLabel : memoDateLabel}}"
+            wx:if="{{memoDateLabel}}"
+            value="{{memoDateLabel}}"
             bind:clear="handleClearDate"
           />
           <filter-summary
-            wx:if="{{homeMemoScope.kind === 'friend' ? friendMemoFacetLabel : memoFacetLabel}}"
-            value="{{homeMemoScope.kind === 'friend' ? friendMemoFacetLabel : memoFacetLabel}}"
+            wx:if="{{memoFacetLabel}}"
+            value="{{memoFacetLabel}}"
             bind:clear="handleClearFacet"
           />
         </view>
@@ -48,7 +48,7 @@
 
         <error-state
           wx:elif="{{memoListInitialLoadFailed && memoCards.length === 0}}"
-          message="{{homeMemoScope.kind === 'friend' ? (friendMemoQuery.selectedTag || friendMemoDateLabel ? '筛选结果加载失败' : '好友笔记列表加载失败') : (memoQuery.keyword || memoQuery.selectedTag || memoDateLabel ? '筛选结果加载失败' : '笔记列表加载失败')}}"
+          message="{{memoQuery.keyword || memoQuery.selectedTag || memoDateLabel ? '筛选结果加载失败' : '笔记列表加载失败'}}"
           retry-text="重新加载"
           bind:retry="handleRetryLoad"
         />
@@ -86,10 +86,9 @@
                 external-menu="{{true}}"
                 external-menu-active="{{singletonMenuActive && singletonMenuMemoId === item.id}}"
                 external-popover-mode="{{singletonMenuMode}}"
-                selected-tag="{{homeMemoScope.kind === 'friend' ? friendMemoQuery.selectedTag : memoQuery.selectedTag}}"
+                selected-tag="{{memoQuery.selectedTag}}"
                 viewer-role="{{viewerRole}}"
-                owner-username="{{homeMemoScope.kind === 'friend' ? homeMemoScope.targetFriend.username : ''}}"
-                bind:tap="handleMemoCardTap"
+                                bind:tap="handleMemoCardTap"
                 bind:edit="handleMemoEdit"
                 bind:quote="handleMemoQuote"
                 bind:referencetap="handleMemoReferenceTap"
@@ -164,7 +163,6 @@
     </view>
 
     <view
-      wx:if="{{homeMemoScope.kind === 'self'}}"
       class="fab ds-surface-floating ds-surface-frosted {{fabCompact ? 'fab--compact' : ''}}"
       bind:tap="handleFabTap"
       hover-class="fab--hover"
@@ -179,19 +177,18 @@
   visible="{{sidebarVisible}}"
   authenticated="{{!!session.accessToken}}"
   auth-action-text="{{session.user ? '' : '登录/注册'}}"
-  user-nickname="{{homeMemoScope.kind === 'friend' ? (homeMemoScope.targetFriend.nickname || homeMemoScope.targetFriend.username) : (session.user ? session.user.nickname : '')}}"
-  unread-count="{{friendUnreadCount}}"
-  stats="{{homeMemoScope.kind === 'friend' ? friendStats : stats}}"
-  stats-loading="{{homeMemoScope.kind === 'friend' ? friendStatsLoading : statsLoading}}"
-  active-date="{{homeMemoScope.kind === 'friend' ? (friendMemoQuery.dateMode === 'day' ? friendMemoQuery.dateValue : '') : (memoQuery.dateMode === 'day' ? memoQuery.dateValue : '')}}"
-  tag-tree-nodes="{{homeMemoScope.kind === 'friend' ? friendTagTreeNodes : tagTreeNodes}}"
+  user-nickname="{{session.user ? session.user.nickname : ''}}"
+  stats="{{stats}}"
+  stats-loading="{{statsLoading}}"
+  active-date="{{memoQuery.dateMode === 'day' ? memoQuery.dateValue : ''}}"
+  tag-tree-nodes="{{tagTreeNodes}}"
   tag-tree-untagged-count="{{tagTreeUntaggedCount}}"
-  tag-tree-loading="{{homeMemoScope.kind === 'friend' ? friendTagTreeLoading : tagTreeLoading}}"
-  tag-tree-initialized="{{homeMemoScope.kind === 'friend' ? friendTagTreeInitialized : tagTreeInitialized}}"
-  tag-tree-load-failed="{{homeMemoScope.kind === 'friend' ? friendTagTreeLoadFailed : tagTreeLoadFailed}}"
-  selected-tag="{{homeMemoScope.kind === 'friend' ? friendMemoQuery.selectedTag : memoQuery.selectedTag}}"
-  tag-menu-enabled="{{homeMemoScope.kind === 'self' && !!session.accessToken}}"
-  list-facet="{{homeMemoScope.kind === 'friend' ? (friendMemoQuery.listFacet || 'none') : (memoQuery.listFacet || 'none')}}"
+  tag-tree-loading="{{tagTreeLoading}}"
+  tag-tree-initialized="{{tagTreeInitialized}}"
+  tag-tree-load-failed="{{tagTreeLoadFailed}}"
+  selected-tag="{{memoQuery.selectedTag}}"
+  tag-menu-enabled="{{!!session.accessToken}}"
+  list-facet="{{memoQuery.listFacet || 'none'}}"
   bind:auth="handleSidebarAuth"
   bind:close="handleSidebarClose"
   bind:visiblechange="handleSidebarVisibleChange"
@@ -203,7 +200,6 @@
   bind:todayreview="handleSidebarTodayReview"
   bind:tagretry="syncTagTree"
   bind:settings="handleSidebarSettings"
-  bind:notifications="handleSidebarNotifications"
   bind:edittag="handleSidebarEditTag"
   bind:deletetag="handleSidebarDeleteTag"
 />

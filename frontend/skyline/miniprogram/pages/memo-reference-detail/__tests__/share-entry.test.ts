@@ -1,46 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { FriendSummary } from '../../../models/friend'
 
-const getFriendSummaryMock = vi.fn<() => Promise<FriendSummary>>()
 const reLaunchMock = vi.fn()
 const reLaunchToHomeMock = vi.fn()
 const showToastMock = vi.fn()
 const openMemoReferenceDetailMock = vi.fn()
-const openFriendMemoReferenceDetailMock = vi.fn()
 const getSessionMock = vi.fn(() => ({
   user: { username: 'alice', nickname: 'Alice', login_name: 'alice', has_login_password: false },
 }))
 const loadSelfMemoReferenceDetailDataMock = vi.fn()
-const loadFriendMemoReferenceDetailDataMock = vi.fn()
 
 function emptyDetailData() {
   return {
     rootCard: null,
     referenceCards: [],
-    ownReferenceCards: [],
-    friendReferenceCards: [],
     referencedByCards: [],
-    ownReferencedByCards: [],
-    friendReferencedByCards: [],
-    friendReferenceOwnerLabel: '',
-    friendReferencedByOwnerLabel: '',
-    friendOwnerUsername: '',
-    friendOwnerLabel: '',
   }
 }
-
-function friendSummary(friends: FriendSummary['friends']): FriendSummary {
-  return {
-    friends,
-    pending_outgoing: [],
-    pending_incoming_count: 0,
-    unread_count: 0,
-  }
-}
-
-vi.mock('../../../services/friend', () => ({
-  getFriendSummary: () => getFriendSummaryMock(),
-}))
 
 vi.mock('../../../utils/session', () => ({
   getSession: () => getSessionMock(),
@@ -49,8 +24,6 @@ vi.mock('../../../utils/session', () => ({
 
 vi.mock('../../../utils/memo-reference-detail-loader', () => ({
   emptyMemoReferenceDetailData: emptyDetailData,
-  loadFriendMemoReferenceDetailData: (...args: unknown[]) =>
-    loadFriendMemoReferenceDetailDataMock(...args),
   loadMemoReferenceListData: vi.fn(),
   loadSelfMemoReferenceDetailData: (...args: unknown[]) =>
     loadSelfMemoReferenceDetailDataMock(...args),
@@ -58,9 +31,7 @@ vi.mock('../../../utils/memo-reference-detail-loader', () => ({
 
 vi.mock('../../../utils/navigation', () => ({
   openMemoReferenceDetail: (...args: unknown[]) => openMemoReferenceDetailMock(...args),
-  openFriendMemoReferenceDetail: (...args: unknown[]) => openFriendMemoReferenceDetailMock(...args),
   openMemoShareImage: vi.fn(),
-  openFriendSearch: vi.fn(),
   reLaunchToHome: () => reLaunchToHomeMock(),
 }))
 
@@ -72,10 +43,9 @@ type DetailPageConfig = {
   handleHomeTap: () => void
   _handleMemoDeleted: (memoId: number) => void
   handleMemoReferenceTap: (
-    event: { detail?: { memoId?: number; ownerUsername?: string } },
+    event: { detail?: { memoId?: number } },
   ) => void
   loadMemoReferenceDetail: (memoId: number) => Promise<void>
-  loadFriendMemoReferenceDetail: (memoId: number, friendUsername: string) => Promise<void>
 }
 
 type DetailPageInstance = {
@@ -83,10 +53,10 @@ type DetailPageInstance = {
   _modifyingMemoId: number | null
   setData: (patch: Record<string, unknown>) => void
   loadMemoReferenceDetail: (memoId: number) => Promise<void>
-  loadFriendMemoReferenceDetail: (memoId: number, friendUsername: string) => Promise<void>
   _navOptions: <T extends Record<string, unknown>>(extra?: T) => (T & { routeType?: string }) | undefined
   _ensureRelationSwipeCtx: () => void
   _applyRelationTabStateAfterDataChange: () => void
+  _setDataWithRelationTab: (patch: Record<string, unknown>) => void
 }
 
 async function loadPageConfig(): Promise<DetailPageConfig> {
@@ -120,22 +90,23 @@ async function loadPageConfig(): Promise<DetailPageConfig> {
 }
 
 function makeInstance(pageConfig: DetailPageConfig): DetailPageInstance {
-  const instance: DetailPageInstance = {
-    data: {
-      ...pageConfig.data,
-      errorActionKind: 'retry',
-      errorActionLabel: '重新加载',
-    },
-    _modifyingMemoId: null,
-    setData: vi.fn((patch: Record<string, unknown>) => {
-      instance.data = { ...instance.data, ...patch }
-    }),
-    loadMemoReferenceDetail: pageConfig.loadMemoReferenceDetail,
-    loadFriendMemoReferenceDetail: pageConfig.loadFriendMemoReferenceDetail,
-    _navOptions: (pageConfig as unknown as DetailPageInstance)._navOptions,
-    _ensureRelationSwipeCtx: vi.fn(),
-    _applyRelationTabStateAfterDataChange: vi.fn(),
+  const instance = {} as DetailPageInstance
+  instance.data = {
+    ...pageConfig.data,
+    errorActionKind: 'retry',
+    errorActionLabel: '重新加载',
   }
+  instance._modifyingMemoId = null
+  instance.setData = vi.fn((patch: Record<string, unknown>) => {
+    instance.data = { ...instance.data, ...patch }
+  })
+  instance.loadMemoReferenceDetail = pageConfig.loadMemoReferenceDetail
+  instance._navOptions = (pageConfig as unknown as DetailPageInstance)._navOptions
+  instance._ensureRelationSwipeCtx = vi.fn()
+  instance._applyRelationTabStateAfterDataChange = vi.fn()
+  instance._setDataWithRelationTab = vi.fn((patch: Record<string, unknown>) => {
+    instance.setData(patch)
+  })
   return instance
 }
 
@@ -149,7 +120,7 @@ describe('memo-reference-detail share entry', () => {
     })
   })
 
-  it('resolves self viewer role when share entry owner matches session', async () => {
+  it('resolves self viewer role for share entry with a session', async () => {
     loadSelfMemoReferenceDetailDataMock.mockResolvedValue(emptyDetailData())
     const pageConfig = await loadPageConfig()
     const instance = makeInstance(pageConfig)
@@ -157,44 +128,12 @@ describe('memo-reference-detail share entry', () => {
     await pageConfig.onLoad.call(instance, {
       entry: 'share',
       memoId: '7',
-      ownerUsername: 'alice',
     })
 
     expect(instance.data.entry).toBe('share')
     expect(instance.data.rootViewerRole).toBe('self')
-    expect(instance.data.owner).toBe('self')
     expect(instance.data.navTitle).toBe('我的笔记')
     expect(loadSelfMemoReferenceDetailDataMock).toHaveBeenCalledWith(7)
-    expect(loadFriendMemoReferenceDetailDataMock).not.toHaveBeenCalled()
-  })
-
-  it('resolves friend viewer role and uses nickname in navTitle when share owner is a friend', async () => {
-    getFriendSummaryMock.mockResolvedValue(
-      friendSummary([
-        {
-          username: 'bob',
-          nickname: 'Bobby',
-          avatar_url: '',
-          status: 'accepted',
-          added_at: '2026-01-01T00:00:00Z',
-        } as FriendSummary['friends'][number],
-      ]),
-    )
-    loadFriendMemoReferenceDetailDataMock.mockResolvedValue(emptyDetailData())
-    const pageConfig = await loadPageConfig()
-    const instance = makeInstance(pageConfig)
-
-    await pageConfig.onLoad.call(instance, {
-      entry: 'share',
-      memoId: '12',
-      ownerUsername: 'bob',
-    })
-
-    expect(instance.data.rootViewerRole).toBe('friend')
-    expect(instance.data.owner).toBe('friend')
-    expect(instance.data.navTitle).toBe('Bobby的笔记')
-    expect(loadFriendMemoReferenceDetailDataMock).toHaveBeenCalledWith(12, 'bob')
-    expect(loadSelfMemoReferenceDetailDataMock).not.toHaveBeenCalled()
   })
 
   it('short-circuits with denied state when share entry has no session', async () => {
@@ -205,13 +144,11 @@ describe('memo-reference-detail share entry', () => {
     await pageConfig.onLoad.call(instance, {
       entry: 'share',
       memoId: '5',
-      ownerUsername: 'bob',
     })
 
     expect(instance.data.rootViewerRole).toBe('denied')
     expect(instance.data.loading).toBe(false)
     expect(loadSelfMemoReferenceDetailDataMock).not.toHaveBeenCalled()
-    expect(loadFriendMemoReferenceDetailDataMock).not.toHaveBeenCalled()
   })
 
   it('handleHomeTap reLaunches to the home route', async () => {
@@ -226,14 +163,14 @@ describe('memo-reference-detail share entry', () => {
   it('reLaunches home when share-entry root card is deleted', async () => {
     loadSelfMemoReferenceDetailDataMock.mockResolvedValue({
       ...emptyDetailData(),
-      rootCard: { id: 7, ownerUsername: '', content: 'hi', tags: [] },
+      rootCard: { id: 7, content: 'hi', tags: [] },
     })
     const pageConfig = await loadPageConfig()
     const instance = makeInstance(pageConfig)
     instance.data = {
       ...instance.data,
       entry: 'share',
-      rootCard: { id: 7, ownerUsername: '', content: 'hi', tags: [] },
+      rootCard: { id: 7, content: 'hi', tags: [] },
     }
 
     pageConfig._handleMemoDeleted.call(instance, 7)
@@ -262,48 +199,21 @@ describe('memo-reference-detail share entry', () => {
   it('opens nested self-memo reference without routeType in share entry (defaults to cupertino)', async () => {
     const pageConfig = await loadPageConfig()
     const instance = makeInstance(pageConfig)
-    instance.data = { ...instance.data, entry: 'share', owner: 'self', rootCard: null }
+    instance.data = { ...instance.data, entry: 'share', rootCard: null }
 
     pageConfig.handleMemoReferenceTap.call(instance, { detail: { memoId: 42 } })
 
     expect(openMemoReferenceDetailMock).toHaveBeenCalledWith(42, undefined)
   })
 
-  it('opens nested friend-memo reference without routeType in share entry', async () => {
-    const pageConfig = await loadPageConfig()
-    const instance = makeInstance(pageConfig)
-    instance.data = { ...instance.data, entry: 'share', owner: 'friend', rootCard: null }
-
-    pageConfig.handleMemoReferenceTap.call(instance, {
-      detail: { memoId: 42, ownerUsername: 'bob' },
-    })
-
-    expect(openFriendMemoReferenceDetailMock).toHaveBeenCalledWith(42, { ownerUsername: 'bob' })
-  })
-
   it('opens nested reference with cupertino-inside in in-app entry', async () => {
     const pageConfig = await loadPageConfig()
     const instance = makeInstance(pageConfig)
-    instance.data = { ...instance.data, entry: 'in-app', owner: 'self', rootCard: null }
+    instance.data = { ...instance.data, entry: 'in-app', rootCard: null }
 
     pageConfig.handleMemoReferenceTap.call(instance, { detail: { memoId: 42 } })
 
     expect(openMemoReferenceDetailMock).toHaveBeenCalledWith(42, { routeType: 'cupertino-inside' })
-  })
-
-  it('opens nested friend-reference with cupertino-inside in in-app entry', async () => {
-    const pageConfig = await loadPageConfig()
-    const instance = makeInstance(pageConfig)
-    instance.data = { ...instance.data, entry: 'in-app', owner: 'friend', rootCard: null }
-
-    pageConfig.handleMemoReferenceTap.call(instance, {
-      detail: { memoId: 42, ownerUsername: 'bob' },
-    })
-
-    expect(openFriendMemoReferenceDetailMock).toHaveBeenCalledWith(42, {
-      ownerUsername: 'bob',
-      routeType: 'cupertino-inside',
-    })
   })
 
   it('clears stale modifying state on show after returning from the tag picker without apply', async () => {

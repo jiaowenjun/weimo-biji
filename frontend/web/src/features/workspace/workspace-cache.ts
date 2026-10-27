@@ -17,22 +17,9 @@ export interface WorkspaceMemoCacheIndex {
   getSummaryCache(): Map<number, string>
 }
 
-export type WorkspaceMemoCacheOwner =
-  | { kind: 'self'; scope: string }
-  | { kind: 'friend'; scope: string; friendUsername: string }
+export type WorkspaceMemoCacheOwner = { kind: 'self'; scope: string }
 
 function memoCacheListQueryPrefix(owner: WorkspaceMemoCacheOwner) {
-  if (owner.kind === 'friend') {
-    return [
-      'workspace',
-      owner.scope,
-      'friend',
-      owner.friendUsername,
-      'memos',
-      'list',
-    ] as const
-  }
-
   return ['workspace', owner.scope, 'memos', 'list'] as const
 }
 

@@ -7,7 +7,6 @@ import {
   copyMemoContentForCard,
   detectMemoCardDoubleTap,
   openEditComposeForCard,
-  openFriendQuoteComposeForCard,
   openMemoShareForCard,
   openQuoteComposeForCard,
   runMemoAddTagFromList,
@@ -20,31 +19,21 @@ import {
 } from '../../utils/memo-reference-detail'
 import {
   emptyMemoReferenceDetailData,
-  loadFriendMemoReferenceDetailData,
   loadMemoReferenceListData,
   loadSelfMemoReferenceDetailData,
 } from '../../utils/memo-reference-detail-loader'
 import {
-  openFriendMemoReferenceDetail,
   openMemoReferenceDetail,
   openMemoShareImage,
-  openFriendSearch,
   reLaunchToHome,
 } from '../../utils/navigation'
-import {
-  defaultFriendResourceRecoveryState,
-  resolveFriendResourceRecovery,
-  type FriendResourceRecoveryActionKind,
-} from '../../utils/friend-resource-recovery'
 import { toErrorMessage } from '../../utils/request'
 import { applyNavStatusBarStyle } from '../../utils/theme'
 import { resolvePermissions, type MemoPermissions, type ViewerRole } from '../../utils/memo-permissions'
-import { getFriendSummary } from '../../services/friend'
-import { friendByUsername, type FriendProfile } from '../../models/friend'
 import { getSession } from '../../utils/session'
 import { AppRoutes } from '../../utils/routes'
 import { computeCompactNavigationBarLayout } from '../../utils/navigation-bar-layout'
-import { ownMemoIdFromRef, parseFriendMemoRef } from '../../utils/memo-ref-id'
+import { ownMemoIdFromRef } from '../../utils/memo-ref-id'
 import {
   createRelationTabState,
   reduceRelationTabExitComplete,
@@ -56,11 +45,12 @@ import {
 } from '../../utils/memo-reference-relation-tab'
 import { computeRelationGestureFillHeightPx } from '../../components/memo-reference-detail-view/relation-swipe-gesture'
 
+type ErrorActionKind = 'retry' | 'home'
+
 function retryActionState() {
-  const recovery = defaultFriendResourceRecoveryState()
   return {
-    errorActionKind: recovery.actionKind,
-    errorActionLabel: recovery.actionLabel,
+    errorActionKind: 'retry' as ErrorActionKind,
+    errorActionLabel: '重试',
   } as const
 }
 
@@ -94,13 +84,6 @@ function parseMemoRefList(value: string | undefined): MemoRefId[] {
     })().trim()
     if (!decoded) return
 
-    if (parseFriendMemoRef(decoded)) {
-      if (seen.has(decoded)) return
-      seen.add(decoded)
-      refs.push(decoded)
-      return
-    }
-
     const ownMemoId = ownMemoIdFromRef(decoded)
     if (ownMemoId === null) return
     const normalizedRef = String(ownMemoId)
@@ -116,29 +99,18 @@ interface MemoReferenceDetailPageData {
   mode: MemoReferenceDetailMode
   cardMenuActive: boolean
   cardGestureGateActive: boolean
-  owner: ViewerRole
   rootViewerRole: ViewerRole
   navTitle: string
   navOverlayHeight: number
   navStatusMaskHeight: number
   memoId: number | null
-  ownerUsername: string
-  ownerNickname: string
   referenceMemoRefs: MemoRefId[]
   rootCard: MemoCardItem | null
   referenceCards: MemoCardItem[]
-  ownReferenceCards: MemoCardItem[]
-  friendReferenceCards: MemoCardItem[]
-  friendReferenceOwnerLabel: string
   referencedByCards: MemoCardItem[]
-  ownReferencedByCards: MemoCardItem[]
-  friendReferencedByCards: MemoCardItem[]
-  friendReferencedByOwnerLabel: string
-  friendOwnerUsername: string
-  friendOwnerLabel: string
   loading: boolean
   errorMessage: string
-  errorActionKind: FriendResourceRecoveryActionKind
+  errorActionKind: ErrorActionKind
   errorActionLabel: string
   selectedRelationTab: RelationTabKey
   tabRenderState: RelationTabRenderState
@@ -148,14 +120,11 @@ interface MemoReferenceDetailPageData {
 
 interface MemoReferenceDetailPageCustom {
   loadMemoReferenceDetail: (memoId: number) => Promise<void>
-  loadFriendMemoReferenceDetail: (memoId: number, friendUsername: string) => Promise<void>
   loadMemoReferenceList: (memoRefs: MemoRefId[]) => Promise<void>
   handleRetry: () => void
   handleClose: () => void
   handleHomeTap: () => void
-  handleMemoReferenceTap: (
-    event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>
-  ) => void
+  handleMemoReferenceTap: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleCardTap: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleCardEdit: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleCardQuote: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
@@ -165,8 +134,8 @@ interface MemoReferenceDetailPageCustom {
   ) => void
   handleCardTagAdd: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleCardTagRemove: (event: WechatMiniprogram.CustomEvent<{ memoId: number; tag: string }>) => void
-  handleCardCopy: (event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) => void
-  handleCardShare: (event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) => void
+  handleCardCopy: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
+  handleCardShare: (event: WechatMiniprogram.CustomEvent<{ memoId: number }>) => void
   handleRelationTabTap: (event: { currentTarget?: { dataset?: { tab?: string } } }) => void
   handleRelationTabSwipe: (event: WechatMiniprogram.CustomEvent<{ tab?: string }>) => void
   handleRelationPanelLayout: () => void
@@ -182,7 +151,6 @@ interface MemoReferenceDetailPageCustom {
   _getAllCards: () => MemoCardItem[]
   _permissionsFor: (memoId: number) => MemoPermissions
   _createCardActionsHost: () => CardActionsHost
-  _resolveFriendOwnerUsername: (memoId: number) => string | undefined
   _handleMemoDeleted: (memoId: number) => void
   _handleMemoTagsUpdated: (memoId: number, tags: string[]) => void
   _navOptions: <T extends Record<string, unknown>>(extra?: T) => (T & { routeType?: string }) | undefined
@@ -199,26 +167,15 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     mode: 'detail' as MemoReferenceDetailMode,
     cardMenuActive: false,
     cardGestureGateActive: false,
-    owner: 'self' as ViewerRole,
     rootViewerRole: 'self' as ViewerRole,
     navTitle: '笔记详情',
     navOverlayHeight: 0,
     navStatusMaskHeight: 0,
     memoId: null,
-    ownerUsername: '',
-    ownerNickname: '',
     referenceMemoRefs: [] as MemoRefId[],
     rootCard: null as MemoCardItem | null,
     referenceCards: [] as MemoCardItem[],
-    ownReferenceCards: [] as MemoCardItem[],
-    friendReferenceCards: [] as MemoCardItem[],
-    friendReferenceOwnerLabel: '',
     referencedByCards: [] as MemoCardItem[],
-    ownReferencedByCards: [] as MemoCardItem[],
-    friendReferencedByCards: [] as MemoCardItem[],
-    friendReferencedByOwnerLabel: '',
-    friendOwnerUsername: '',
-    friendOwnerLabel: '',
     loading: true,
     errorMessage: '',
     ...retryActionState(),
@@ -245,76 +202,37 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
 
     if (entry === 'share') {
       const memoId = Number(options.memoId)
-      const ownerUsername = String(options.ownerUsername || '').trim()
-      if (!Number.isFinite(memoId) || memoId <= 0 || !ownerUsername) {
+      if (!Number.isFinite(memoId) || memoId <= 0 || !getSession().user) {
         this.setData({
           entry,
           loading: false,
           rootViewerRole: 'denied',
-          owner: 'self',
           memoId: null,
-          ownerUsername,
         })
         return
       }
-      this.setData({ entry, memoId, ownerUsername })
-
-      const sessionUsername = getSession().user?.username
-      let friend: FriendProfile | null = null
-      if (sessionUsername && ownerUsername !== sessionUsername) {
-        try {
-          const summary = await getFriendSummary()
-          friend = friendByUsername(summary.friends, ownerUsername)
-        } catch (_error) {
-          friend = null
-        }
-      }
-
-      const role: ViewerRole = !sessionUsername
-        ? 'denied'
-        : ownerUsername === sessionUsername
-          ? 'self'
-          : 'friend'
-
-      if (role === 'denied') {
-        this.setData({ loading: false, rootViewerRole: 'denied', owner: 'self' })
-        return
-      }
-
-      const nickname = role === 'friend' ? String(friend?.nickname || '').trim() : ''
-      const navTitle =
-        role === 'self' ? '我的笔记' : `${nickname || ownerUsername}的笔记`
       this.setData({
-        owner: role,
-        rootViewerRole: role,
-        ownerNickname: nickname,
-        navTitle,
+        entry,
+        memoId,
+        rootViewerRole: 'self',
+        navTitle: '我的笔记',
         mode: 'detail',
         referenceMemoRefs: [],
-        friendOwnerUsername: role === 'friend' ? ownerUsername : '',
       })
-
-      if (role === 'self') {
-        void this.loadMemoReferenceDetail(memoId)
-      } else {
-        void this.loadFriendMemoReferenceDetail(memoId, ownerUsername)
-      }
+      void this.loadMemoReferenceDetail(memoId)
       return
     }
 
     const mode: MemoReferenceDetailMode = options.mode === 'references' ? 'references' : 'detail'
-    const owner: ViewerRole = options.owner === 'friend' ? 'friend' : 'self'
     const memoRefs = parseMemoRefList(options.memoRefs || options.memoIds)
     const memoId = Number(options.memoId)
-    const friendOwnerUsername = String(options.ownerUsername || '').trim()
     const navTitle = mode === 'references' ? `引用 ${memoRefs.length} 条笔记` : '笔记详情'
 
     if (mode === 'references' && memoRefs.length > 0) {
       this.setData({
         entry,
         mode,
-        owner,
-        rootViewerRole: owner === 'friend' ? 'friend' : 'self',
+        rootViewerRole: 'self',
         navTitle,
         memoId: null,
         referenceMemoRefs: memoRefs,
@@ -327,8 +245,7 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
       this.setData({
         entry,
         mode,
-        owner,
-        rootViewerRole: owner === 'friend' ? 'friend' : 'self',
+        rootViewerRole: 'self',
         navTitle,
         memoId: null,
         referenceMemoRefs: memoRefs,
@@ -338,37 +255,7 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
       return
     }
 
-    if (owner === 'friend') {
-      if (!friendOwnerUsername) {
-        this.setData({
-          entry,
-          mode: 'detail',
-          owner,
-          rootViewerRole: 'friend',
-          navTitle: '好友笔记详情',
-          memoId,
-          referenceMemoRefs: [],
-          friendOwnerUsername: '',
-          loading: false,
-          errorMessage: '笔记不可用',
-        })
-        return
-      }
-      this.setData({
-        entry,
-        mode: 'detail',
-        owner,
-        rootViewerRole: 'friend',
-        navTitle: '好友笔记详情',
-        memoId,
-        referenceMemoRefs: [],
-        friendOwnerUsername,
-      })
-      void this.loadFriendMemoReferenceDetail(memoId, friendOwnerUsername)
-      return
-    }
-
-    this.setData({ entry, mode, owner, rootViewerRole: 'self', navTitle, memoId, referenceMemoRefs: [] })
+    this.setData({ entry, mode, rootViewerRole: 'self', navTitle, memoId, referenceMemoRefs: [] })
     void this.loadMemoReferenceDetail(memoId)
   },
 
@@ -403,10 +290,8 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
         tabSliderAnimated: d.tabSliderAnimated,
       },
       {
-        ownReferenceCards: d.ownReferenceCards,
-        friendReferenceCards: d.friendReferenceCards,
-        ownReferencedByCards: d.ownReferencedByCards,
-        friendReferencedByCards: d.friendReferencedByCards,
+        referenceCards: d.referenceCards,
+        referencedByCards: d.referencedByCards,
       },
       d.mode,
     )
@@ -422,10 +307,8 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
         tabSliderAnimated: this.data.tabSliderAnimated,
       },
       {
-        ownReferenceCards: this.data.ownReferenceCards,
-        friendReferenceCards: this.data.friendReferenceCards,
-        ownReferencedByCards: this.data.ownReferencedByCards,
-        friendReferencedByCards: this.data.friendReferencedByCards,
+        referenceCards: this.data.referenceCards,
+        referencedByCards: this.data.referencedByCards,
       },
       this.data.mode,
     )
@@ -454,10 +337,8 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
         tabSliderAnimated: merged.tabSliderAnimated,
       },
       {
-        ownReferenceCards: merged.ownReferenceCards,
-        friendReferenceCards: merged.friendReferenceCards,
-        ownReferencedByCards: merged.ownReferencedByCards,
-        friendReferencedByCards: merged.friendReferencedByCards,
+        referenceCards: merged.referenceCards,
+        referencedByCards: merged.referencedByCards,
       },
       merged.mode,
     )
@@ -600,44 +481,6 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     }
   },
 
-  async loadFriendMemoReferenceDetail(memoId: number, friendUsername: string) {
-    this.setData({
-      loading: true,
-      errorMessage: '',
-      ...retryActionState(),
-    })
-
-    try {
-      const projection = await loadFriendMemoReferenceDetailData(memoId, friendUsername)
-      const isShare = this.data.entry === 'share'
-      const navTitle = isShare ? this.data.navTitle : '好友笔记详情'
-      const shareFriendLabel = isShare ? (this.data.ownerNickname || friendUsername) : ''
-
-      this._setDataWithRelationTab({
-        ...projection,
-        navTitle,
-        friendOwnerUsername: projection.friendOwnerUsername || (isShare ? friendUsername : ''),
-        friendOwnerLabel: projection.friendOwnerLabel || shareFriendLabel,
-        friendReferenceOwnerLabel: projection.friendReferenceOwnerLabel || shareFriendLabel,
-        friendReferencedByOwnerLabel: projection.friendReferencedByOwnerLabel || shareFriendLabel,
-        loading: false,
-        errorMessage: '',
-        ...retryActionState(),
-      })
-    } catch (err) {
-      const recovery = resolveFriendResourceRecovery(err, '笔记不可用')
-      this.setData({
-        loading: false,
-        errorMessage: recovery.errorMessage,
-        errorActionKind: recovery.actionKind,
-        errorActionLabel: recovery.actionLabel,
-      })
-      if (recovery.toastMessage) {
-        wx.showToast({ title: recovery.toastMessage, icon: 'none' })
-      }
-    }
-  },
-
   async loadMemoReferenceList(memoRefs: MemoRefId[]) {
     this.setData({
       loading: true,
@@ -657,16 +500,11 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
         ...retryActionState(),
       })
     } catch (err) {
-      const recovery = resolveFriendResourceRecovery(err, '笔记不可用')
       this.setData({
         loading: false,
-        errorMessage: recovery.errorMessage,
-        errorActionKind: recovery.actionKind,
-        errorActionLabel: recovery.actionLabel,
+        errorMessage: toErrorMessage(err, '笔记不可用'),
+        ...retryActionState(),
       })
-      if (recovery.toastMessage) {
-        wx.showToast({ title: recovery.toastMessage, icon: 'none' })
-      }
     }
   },
 
@@ -690,27 +528,6 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
       const memoId = this.data.memoId
       if (!memoId) return
 
-      if (this.data.owner === 'friend') {
-        const friendUsername = this.data.friendOwnerUsername
-        if (!friendUsername) return
-        const projection = await loadFriendMemoReferenceDetailData(memoId, friendUsername)
-        const shareFriendLabel = this.data.entry === 'share'
-          ? (this.data.ownerNickname || friendUsername)
-          : ''
-        this._setDataWithRelationTab({
-          ...projection,
-          navTitle: this.data.navTitle,
-          friendOwnerUsername: projection.friendOwnerUsername || (this.data.entry === 'share' ? friendUsername : ''),
-          friendOwnerLabel: projection.friendOwnerLabel || shareFriendLabel,
-          friendReferenceOwnerLabel: projection.friendReferenceOwnerLabel || shareFriendLabel,
-          friendReferencedByOwnerLabel: projection.friendReferencedByOwnerLabel || shareFriendLabel,
-          loading: false,
-          errorMessage: '',
-          ...retryActionState(),
-        })
-        return
-      }
-
       const projection = await loadSelfMemoReferenceDetailData(memoId)
       this._setDataWithRelationTab({
         ...projection,
@@ -725,19 +542,8 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
   },
 
   handleRetry() {
-    if (this.data.errorActionKind === 'friend-search') {
-      openFriendSearch()
-      return
-    }
     if (this.data.errorActionKind === 'home') {
       reLaunchToHome()
-      return
-    }
-    if (this.data.owner === 'friend') {
-      const memoId = this.data.memoId
-      const friendOwnerUsername = this.data.friendOwnerUsername
-      if (!memoId || !friendOwnerUsername) return
-      void this.loadFriendMemoReferenceDetail(memoId, friendOwnerUsername)
       return
     }
     if (this.data.mode === 'references' && this.data.referenceMemoRefs.length > 0) {
@@ -764,22 +570,9 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     return { ...((extra as Record<string, unknown>) || {}), routeType: 'cupertino-inside' } as T & { routeType?: string }
   },
 
-  handleMemoReferenceTap(
-    event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>,
-  ) {
+  handleMemoReferenceTap(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
     const memoId = event.detail?.memoId
     if (!memoId) return
-    const ownerUsername =
-      String(event.detail?.ownerUsername || '').trim() ||
-      (
-        this.data.owner === 'friend' && this.data.rootCard?.id === memoId
-          ? String(this.data.friendOwnerUsername || '').trim()
-          : ''
-      )
-    if (ownerUsername) {
-      openFriendMemoReferenceDetail(memoId, this._navOptions({ ownerUsername }))
-      return
-    }
     openMemoReferenceDetail(memoId, this._navOptions())
   },
 
@@ -794,29 +587,14 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     }
     if (d.rootCard) addCard(d.rootCard)
     d.referenceCards.forEach(addCard)
-    d.ownReferenceCards.forEach(addCard)
-    d.friendReferenceCards.forEach(addCard)
     d.referencedByCards.forEach(addCard)
-    d.ownReferencedByCards.forEach(addCard)
-    d.friendReferencedByCards.forEach(addCard)
     return cards
   },
 
   _permissionsFor(memoId: number): MemoPermissions {
     const card = this._getAllCards().find((item) => item.id === memoId)
     if (!card) return resolvePermissions('denied')
-    if (this.data.owner === 'friend' && this.data.rootCard?.id === memoId) {
-      return resolvePermissions('friend')
-    }
-    return resolvePermissions(card.ownerUsername ? 'friend' : 'self')
-  },
-
-  _resolveFriendOwnerUsername(memoId: number): string | undefined {
-    if (this.data.owner === 'friend' && this.data.rootCard?.id === memoId) {
-      return this.data.friendOwnerUsername || undefined
-    }
-    const card = this._getAllCards().find((item) => item.id === memoId)
-    return card?.ownerUsername || undefined
+    return resolvePermissions('self')
   },
 
   _handleMemoDeleted(memoId: number) {
@@ -828,13 +606,9 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     this._setDataWithRelationTab(removeMemoReferenceDetailCard({
       rootCard: d.rootCard,
       referenceCards: d.referenceCards,
-      ownReferenceCards: d.ownReferenceCards,
-      friendReferenceCards: d.friendReferenceCards,
       referencedByCards: d.referencedByCards,
-      ownReferencedByCards: d.ownReferencedByCards,
-      friendReferencedByCards: d.friendReferencedByCards,
     }, memoId, {
-      includeRootCard: d.owner === 'self',
+      includeRootCard: true,
     }))
   },
 
@@ -843,13 +617,9 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     this.setData(updateMemoReferenceDetailCardTags({
       rootCard: d.rootCard,
       referenceCards: d.referenceCards,
-      ownReferenceCards: d.ownReferenceCards,
-      friendReferenceCards: d.friendReferenceCards,
       referencedByCards: d.referencedByCards,
-      ownReferencedByCards: d.ownReferencedByCards,
-      friendReferencedByCards: d.friendReferencedByCards,
     }, memoId, tags, {
-      includeRootCard: d.owner === 'self',
+      includeRootCard: true,
     }))
   },
 
@@ -882,7 +652,7 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     const cards = this._getAllCards()
 
     if (readMemoCardDoubleTapBehavior() === 'preview') {
-      openMemoShareForCard(cards, memoId, this._resolveFriendOwnerUsername(memoId), this._navOptions())
+      openMemoShareForCard(cards, memoId, this._navOptions())
       return
     }
 
@@ -910,26 +680,8 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
   handleCardQuote(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
     const memoId = event.detail?.memoId
     if (!memoId) return
-    const p = this._permissionsFor(memoId)
-    if (!p.canQuote) return
-    const cards = this._getAllCards()
-    const card = cards.find((c) => c.id === memoId)
-    if (!card) return
-    if (this.data.owner === 'friend' && this.data.rootCard?.id === memoId) {
-      openFriendQuoteComposeForCard(cards, memoId, this.data.friendOwnerUsername, this._navOptions({
-        ownerLabel: this.data.friendOwnerLabel,
-        onSaved: () => void this._refreshAfterMemoComposeSaved(),
-      }))
-      return
-    }
-    if (card.ownerUsername) {
-      openFriendQuoteComposeForCard(cards, memoId, card.ownerUsername, this._navOptions({
-        ownerLabel: this.data.friendReferenceOwnerLabel || this.data.friendReferencedByOwnerLabel,
-        onSaved: () => void this._refreshAfterMemoComposeSaved(),
-      }))
-      return
-    }
-    openQuoteComposeForCard(cards, memoId, this._navOptions({
+    if (!this._permissionsFor(memoId).canQuote) return
+    openQuoteComposeForCard(this._getAllCards(), memoId, this._navOptions({
       onSaved: () => void this._refreshAfterMemoComposeSaved(),
     }))
   },
@@ -968,22 +720,17 @@ Page<MemoReferenceDetailPageData, MemoReferenceDetailPageCustom>({
     runMemoRemoveTagFromMemo(this._createCardActionsHost(), memoId, tag)
   },
 
-  handleCardCopy(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+  handleCardCopy(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
     const memoId = event.detail?.memoId
     if (!memoId) return
     copyMemoContentForCard(this._getAllCards(), memoId)
   },
 
-  handleCardShare(event: WechatMiniprogram.CustomEvent<{ memoId: number; ownerUsername?: string }>) {
+  handleCardShare(event: WechatMiniprogram.CustomEvent<{ memoId: number }>) {
     const memoId = event.detail?.memoId
     if (!memoId) return
     const card = this._getAllCards().find((c) => c.id === memoId)
     if (!card) return
-    openMemoShareImage({
-      card: {
-        ...card,
-        ownerUsername: String(event.detail?.ownerUsername || card.ownerUsername || ''),
-      },
-    }, this._navOptions())
+    openMemoShareImage({ card }, this._navOptions())
   },
 })
