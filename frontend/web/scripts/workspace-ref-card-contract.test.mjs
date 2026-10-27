@@ -293,7 +293,7 @@ assert.equal(
   'vite.config.ts must resolve weimo-ui through the installed package interface.',
 )
 assert.ok(
-  viteConfigSource.includes("path.resolve(__dirname, '../../../shared/frontend/workspace-core')"),
+  viteConfigSource.includes("path.resolve(__dirname, '../../shared/frontend/workspace-core')"),
   'vite.config.ts must keep workspace-core sources available to Vite dev.',
 )
 

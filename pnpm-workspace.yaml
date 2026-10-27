@@ -1,0 +1,6 @@
+packages:
+  - "frontend/web"
+  - "shared/frontend/workspace-core"
+allowBuilds:
+  esbuild: true
+  msw: false

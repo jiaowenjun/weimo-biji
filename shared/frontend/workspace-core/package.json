@@ -1,0 +1,37 @@
+{
+  "name": "@weimo/workspace-core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./cache": "./src/cache.ts",
+    "./display-overrides": "./src/display-overrides.ts",
+    "./guest-workspace": "./src/guest-workspace.ts",
+    "./pending-create": "./src/pending-create.ts",
+    "./tag-state": "./src/tag-state.ts",
+    "./use-pending-create": "./src/use-pending-create.ts",
+    "./use-workspace-tag-actions": "./src/use-workspace-tag-actions.ts"
+  },
+  "scripts": {
+    "test": "node scripts/workspace-contract.test.mjs && node scripts/pending-create.test.mjs && node scripts/guest-workspace.test.mjs && node scripts/tag-state.test.mjs && node scripts/display-overrides.test.mjs && node scripts/cache.test.mjs && vitest run && pnpm test:typecheck",
+    "test:typecheck": "tsc -p tsconfig.test.json --noEmit --pretty false",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tanstack/query-core": "^5.101.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^29.1.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "packageManager": "pnpm@11.9.0+sha512.bd682d5d03fe525ef7c9fd6780c6884d1e756ac4c9c9fe00c538782824310dcf90e3ddc4f53835f06dfaebd5085e41855e0bcbb3b60de2ac5bbab89e5036f03b"
+}

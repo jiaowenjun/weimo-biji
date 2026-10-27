@@ -33,7 +33,7 @@ export default defineConfig({
     fs: {
       allow: [
         path.resolve(__dirname, '..'),
-        path.resolve(__dirname, '../../../shared/frontend/workspace-core'),
+        path.resolve(__dirname, '../../shared/frontend/workspace-core'),
       ],
     },
     proxy: {
