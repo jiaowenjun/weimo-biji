@@ -1,0 +1,11 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar/navigation-bar",
+    "weimo-button": "/components/weimo-button/index",
+    "weimo-chip": "/components/weimo-chip/index",
+    "weimo-icon-button": "/components/weimo-icon-button/index",
+    "weimo-toggle-button": "/components/weimo-toggle-button/index"
+  }
+}

@@ -1,0 +1,169 @@
+<template name="memo-share-render">
+  <view class="memo-share-paper {{shareFontId === 'print' ? 'memo-share-paper--print' : ''}} {{shareLargeText ? 'memo-share-paper--large-text' : ''}}">
+    <view class="memo-share-paper__edge-cover" aria-hidden="true"></view>
+    <view class="memo-share-paper__content">
+      <rich-text
+        wx:if="{{card.renderRichText}}"
+        class="memo-share-paper__rich"
+        mode="compat"
+        nodes="{{card.contentNodes}}"
+      />
+      <text wx:else class="memo-share-paper__plain">{{card.content}}</text>
+    </view>
+
+    <view wx:if="{{shareOptions.showTags && card.tags.length}}" class="memo-share-paper__tags">
+      <weimo-chip
+        wx:for="{{card.tags}}"
+        wx:key="*this"
+        wx:for-item="tag"
+        value="{{tag}}"
+        prefix="#"
+        size="{{shareLargeText ? 'sm' : 'xs'}}"
+        haptic="{{false}}"
+      />
+    </view>
+
+    <view class="memo-share-paper__footer">
+      <text
+        wx:if="{{shareOptions.showNickname && shareNickname}}"
+        class="memo-share-paper__nickname"
+      >{{shareNickname}}</text>
+      <view
+        wx:if="{{shareOptions.showDate || shareOptions.showBrand}}"
+        class="memo-share-paper__footer-dateline"
+      >
+        <view class="memo-share-paper__footer-dateline-left">
+          <text wx:if="{{shareOptions.showDate}}" class="memo-share-paper__date">{{sharePaperDateText}}</text>
+        </view>
+        <view wx:if="{{shareOptions.showBrand}}" class="memo-share-paper__brand">
+          <text class="iconfont iconfont--logo-miniprogram memo-share-paper__brand-icon" aria-hidden="true"></text>
+          <text class="memo-share-paper__brand-label">维摩笔记</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<view class="memo-share-shell ds-page-inline-shell">
+  <scroll-view
+    class="memo-share-scroll"
+    scroll-y
+    type="list"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+  >
+    <view
+      class="memo-share-scroll__content"
+      style="padding-top: calc({{navOverlayHeight}}px + var(--spacing-md));"
+    >
+      <view wx:if="{{!card}}" class="memo-share-status">
+        <text class="memo-share-status-text">{{status === 'error' ? errorMessage : '加载中…'}}</text>
+      </view>
+
+      <view wx:if="{{card}}" class="memo-share-live-wrap">
+        <template
+          is="memo-share-render"
+          data="{{card, shareFontId, shareOptions, shareNickname, sharePaperDateText, shareLargeText}}"
+        />
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="memo-share-toolbar memo-share-toolbar--rest">
+    <view class="memo-share-toolbar__shell">
+      <view
+        hidden="{{!(shareFontId === 'print' && printFontStatus === 'downloading')}}"
+        class="memo-share-toolbar__font-ring"
+        style="--ring-progress: {{printFontProgress}}"
+      >
+        <view class="memo-share-toolbar__font-ring-inner ds-surface-floating ds-surface-frosted">
+          <text class="iconfont iconfont--refresh memo-share-toolbar__font-ring-icon memo-share-toolbar__font-ring-icon--spin"></text>
+        </view>
+      </view>
+      <view
+        wx:if="{{shareFontId === 'print' && printFontStatus === 'error'}}"
+        class="memo-share-toolbar__font-error"
+      >
+        <text class="memo-share-toolbar__font-error-text">字体加载失败</text>
+        <weimo-icon-button
+          icon="refresh"
+          variant="glass"
+          tone="neutral"
+          size="lg"
+          ariaLabel="重试加载字体"
+          bind:tap="handlePrintFontRetry"
+        />
+      </view>
+      <weimo-icon-button
+        wx:if="{{!(shareFontId === 'print' && printFontStatus === 'downloading') && !(shareFontId === 'print' && printFontStatus === 'error')}}"
+        icon="share-1"
+        variant="glass"
+        tone="brand"
+        size="xl"
+        loading="{{status === 'capturing'}}"
+        disabled="{{actionDisabled}}"
+        ariaLabel="{{status === 'capturing' ? '正在生成图片' : '发送给朋友'}}"
+        bind:tap="handleShareToFriendTap"
+      />
+    </view>
+  </view>
+
+  <view class="memo-share-nav-overlay">
+    <view class="memo-share-nav-mask" style="height: {{navStatusMaskHeight}}px;"></view>
+    <navigation-bar
+      title="分享"
+      modal="{{true}}"
+      compact="{{true}}"
+      background="transparent"
+      back="{{false}}"
+    >
+      <view slot="left" class="memo-share-nav-back-slot">
+        <weimo-icon-button
+          icon="chevron-left"
+          variant="glass"
+          tone="neutral"
+          feedbackStyle="nav-glass"
+          size="md"
+          iconSize="var(--nav-bar-icon-size)"
+          ariaLabel="返回"
+          bind:tap="handleClose"
+        />
+      </view>
+      <view slot="right" class="memo-share-nav-actions">
+        <view id="memo-share-visibility-trigger" class="memo-share-nav-actions__hit">
+          <weimo-icon-button
+            icon="adjustment"
+            variant="glass"
+            tone="neutral"
+            feedbackStyle="nav-glass"
+            size="md"
+            iconSize="var(--nav-bar-icon-size)"
+            hoverable="{{false}}"
+            pressed="{{visibilityMenuActive}}"
+            ariaLabel="分享图选项"
+            bind:tap="handleVisibilityMenuTap"
+          />
+        </view>
+      </view>
+    </navigation-bar>
+  </view>
+</view>
+
+<weimo-popover-menu
+  visible="{{visibilityMenuActive}}"
+  trigger-rect="{{visibilityMenuAnchorRect}}"
+  items="{{visibilityMenuItems}}"
+  estimated-height="388"
+  estimated-width="260"
+  bind:select="handleVisibilityMenuSelect"
+  bind:close="handleVisibilityMenuClose"
+/>
+
+<view wx:if="{{card}}" class="memo-share-snapshot-host" aria-hidden="true">
+  <snapshot id="memo-share-snapshot" class="memo-share-snapshot">
+    <template
+      is="memo-share-render"
+      data="{{card, shareFontId, shareOptions, shareNickname, sharePaperDateText, shareLargeText}}"
+    />
+  </snapshot>
+</view>

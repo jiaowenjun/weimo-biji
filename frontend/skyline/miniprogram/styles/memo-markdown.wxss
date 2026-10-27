@@ -1,0 +1,258 @@
+/* ── 段落 ── */
+
+.memo-markdown__p {
+  margin: 0;
+  color: var(--color-text-primary);
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.memo-markdown__p+.memo-markdown__p,
+.memo-markdown__p+.memo-markdown__list,
+.memo-markdown__p+.memo-markdown__blockquote,
+.memo-markdown__list+.memo-markdown__p,
+.memo-markdown__list+.memo-markdown__list,
+.memo-markdown__blockquote+.memo-markdown__p,
+.memo-markdown__blockquote+.memo-markdown__list {
+  margin-top: 1em;
+}
+
+/* ── 标题 ── */
+
+.memo-markdown__heading {
+  margin: 0;
+  color: var(--color-text-primary);
+  text-align: center;
+  font-weight: 650;
+}
+
+.memo-markdown__heading--h1 {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-reading);
+}
+
+.memo-markdown__heading--h2 {
+  font-size: var(--font-size-md);
+  line-height: 1.35;
+}
+
+.memo-markdown__heading--h3 {
+  font-size: var(--font-size-md);
+  line-height: 1.4;
+}
+
+.memo-markdown__heading--h4,
+.memo-markdown__heading--h5,
+.memo-markdown__heading--h6 {
+  font-size: var(--font-size-base);
+}
+
+.memo-markdown__heading+.memo-markdown__p,
+.memo-markdown__heading+.memo-markdown__list,
+.memo-markdown__heading+.memo-markdown__blockquote,
+.memo-markdown__heading+.memo-markdown__pre {
+  margin-top: var(--spacing-sm);
+}
+
+.memo-markdown__p+.memo-markdown__heading,
+.memo-markdown__list+.memo-markdown__heading,
+.memo-markdown__blockquote+.memo-markdown__heading {
+  margin-top: 40rpx;
+}
+
+/* ── 粗体、斜体、删除线 ── */
+
+.memo-markdown__strong {
+  color: var(--color-text-primary);
+  font-weight: 650;
+}
+
+.memo-markdown__em {
+  font-style: italic;
+}
+
+.memo-markdown__del {
+  color: var(--color-text-secondary);
+}
+
+/* ── 引用 ── */
+
+.memo-markdown__blockquote {
+  margin: 0;
+  padding: 0 var(--spacing-lg);
+  text-align: left;
+  color: var(--color-text-secondary);
+}
+
+.memo-markdown__blockquote .memo-markdown__p {
+  color: var(--color-text-secondary);
+  text-align: left;
+}
+
+/* 连续 `>` 行升格为多 p：取消段落间距，仅靠 line-height 贴近普通正文多行 */
+.memo-markdown__blockquote--tight-lines .memo-markdown__p + .memo-markdown__p {
+  margin-top: 0;
+}
+
+.memo-markdown__blockquote--centered {
+  text-align: center;
+}
+
+.memo-markdown__blockquote--centered .memo-markdown__p {
+  text-align: center;
+}
+
+/* ── 列表 ── */
+/* Skyline 不支持 list-style-type，序号/项目符号由渲染器内联生成 */
+/* 前缀合并到首个 text 节点，不再依赖 text-indent 悬挂缩进 */
+
+.memo-markdown__list {
+  display: block;
+  margin: 0;
+  padding-left: 0;
+}
+
+.memo-markdown__list-item {
+  display: block;
+  padding-left: 0;
+}
+
+.memo-markdown__list-item+.memo-markdown__list-item {
+  margin-top: var(--spacing-xs);
+}
+
+.memo-markdown__list-item .memo-markdown__p {
+  margin: 0;
+}
+
+.memo-markdown__list-item .memo-markdown__list {
+  margin-top: var(--spacing-xs);
+  padding-left: 40rpx;
+}
+
+/* ── 行内代码 ── */
+
+.memo-markdown__code--inline {
+  font-family: Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92em;
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4rpx 12rpx;
+  word-break: break-all;
+}
+
+/* ── 代码块 ── */
+
+.memo-markdown__pre {
+  margin: 0;
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  overflow: hidden;
+}
+
+.memo-markdown__pre+.memo-markdown__p,
+.memo-markdown__p+.memo-markdown__pre,
+.memo-markdown__pre+.memo-markdown__heading,
+.memo-markdown__heading+.memo-markdown__pre,
+.memo-markdown__pre+.memo-markdown__list,
+.memo-markdown__list+.memo-markdown__pre,
+.memo-markdown__pre+.memo-markdown__blockquote,
+.memo-markdown__blockquote+.memo-markdown__pre {
+  margin-top: 40rpx;
+}
+
+.memo-markdown__code--block {
+  display: block;
+  font-family: Menlo, Monaco, Consolas, monospace;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  word-break: break-all;
+  color: var(--color-text-primary);
+}
+
+/* ── 链接 ── */
+
+.memo-markdown__link {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+
+.memo-markdown__link-text {
+  color: var(--color-brand);
+}
+
+/* ── 分隔线 ── */
+
+.memo-markdown__hr {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 0;
+}
+
+.memo-markdown__hr+.memo-markdown__p,
+.memo-markdown__p+.memo-markdown__hr,
+.memo-markdown__hr+.memo-markdown__heading,
+.memo-markdown__heading+.memo-markdown__hr,
+.memo-markdown__hr+.memo-markdown__list,
+.memo-markdown__list+.memo-markdown__hr,
+.memo-markdown__hr+.memo-markdown__blockquote,
+.memo-markdown__blockquote+.memo-markdown__hr {
+  margin-top: 40rpx;
+}
+
+/* ── 图片占位 ── */
+
+.memo-markdown__image-placeholder {
+  color: var(--color-text-placeholder);
+  font-size: 0.92em;
+  background: var(--color-bg-page);
+  border-radius: var(--radius-sm);
+  padding: 4rpx 12rpx;
+}
+
+/* ── 表格简化渲染 ── */
+
+.memo-markdown__table {
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-bg-page);
+}
+
+.memo-markdown__table-head {
+  background: var(--color-bg-page);
+}
+
+.memo-markdown__table-head .memo-markdown__table-cell {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.memo-markdown__table-row {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.memo-markdown__table-cell {
+  flex: 1;
+  padding: 12rpx 16rpx;
+  font-size: var(--font-size-sm);
+  word-break: break-all;
+}
+
+.memo-markdown__table-cell+.memo-markdown__table-cell {
+  border-left: 1px solid var(--color-border);
+}
+
+/* ── 搜索高亮 ── */
+
+.memo-markdown__mark {
+  background-color: var(--color-highlight, #fff3b0);
+  color: var(--color-text-primary);
+  padding: 0;
+}

@@ -1,0 +1,145 @@
+  <navigation-bar
+    wx:if="{{entry === 'share'}}"
+    ext-class="weui-navigation-bar--title-base"
+    title="{{navTitle}}"
+    back="{{false}}"
+    home-button="{{true}}"
+    bind:home="handleHomeTap"
+  />
+
+  <view class="memo-reference-detail-shell ds-page-inline-shell">
+    <scroll-view
+      class="memo-reference-detail-scroll"
+      scroll-y="{{!cardMenuActive && !cardGestureGateActive}}"
+      type="list"
+      enhanced="{{true}}"
+      show-scrollbar="{{false}}"
+    >
+      <view
+        class="memo-reference-detail-scroll__content"
+        style="padding-top: {{entry === 'in-app' ? navOverlayHeight : 0}}px;"
+      >
+        <view wx:if="{{loading}}" class="memo-reference-detail__status">
+          <text class="memo-reference-detail__status-text">正在加载...</text>
+        </view>
+
+        <view wx:elif="{{errorMessage}}" class="memo-reference-detail__status">
+          <text class="memo-reference-detail__status-text">{{errorMessage}}</text>
+          <view class="memo-reference-detail__retry">
+            <weimo-button
+              variant="outline"
+              tone="brand"
+              size="sm"
+              shape="pill"
+              bind:tap="handleRetry"
+            >
+              {{errorActionLabel}}
+            </weimo-button>
+          </view>
+        </view>
+
+        <view wx:elif="{{rootViewerRole === 'denied'}}" class="memo-reference-detail__denied">
+          <text class="memo-reference-detail__denied-title">无权限查看此笔记</text>
+          <text class="memo-reference-detail__denied-subtitle">仅笔记作者和其好友可查看</text>
+          <view class="memo-reference-detail__denied-action">
+            <weimo-button
+              variant="solid"
+              tone="brand"
+              size="sm"
+              shape="pill"
+              bind:tap="handleHomeTap"
+            >
+              返回首页
+            </weimo-button>
+          </view>
+        </view>
+
+        <memo-reference-detail-view
+          wx:else
+          id="memo-reference-detail-view"
+          mode="{{mode}}"
+          owner="{{owner}}"
+          root-viewer-role="{{rootViewerRole}}"
+          root-card="{{rootCard}}"
+          reference-cards="{{referenceCards}}"
+          own-reference-cards="{{ownReferenceCards}}"
+          friend-reference-cards="{{friendReferenceCards}}"
+          friend-reference-owner-label="{{friendReferenceOwnerLabel}}"
+          referenced-by-cards="{{referencedByCards}}"
+          own-referenced-by-cards="{{ownReferencedByCards}}"
+          friend-referenced-by-cards="{{friendReferencedByCards}}"
+          friend-referenced-by-owner-label="{{friendReferencedByOwnerLabel}}"
+          selected-relation-tab="{{selectedRelationTab}}"
+          tab-render-state="{{tabRenderState}}"
+          tab-slider-animated="{{tabSliderAnimated}}"
+          card-menu-active="{{cardMenuActive}}"
+          relation-gesture-fill-style="{{relationGestureFillStyle}}"
+          bind:cardtap="handleCardTap"
+          bind:cardedit="handleCardEdit"
+          bind:cardquote="handleCardQuote"
+          bind:carddelete="handleCardDelete"
+          bind:cardmodifytag="handleCardModifyTag"
+          bind:cardtagadd="handleCardTagAdd"
+          bind:cardtagremove="handleCardTagRemove"
+          bind:cardreferencetap="handleMemoReferenceTap"
+          bind:cardcopy="handleCardCopy"
+          bind:cardshare="handleCardShare"
+          bind:gesturegatechange="handleCardGestureGateChange"
+          bind:menuchange="handleCardMenuChange"
+          bind:relationtabswipe="handleRelationTabSwipe"
+          bind:relationpanellayout="handleRelationPanelLayout"
+        />
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{mode === 'detail' && !loading && errorMessage.length === 0 && rootViewerRole !== 'denied' && tabRenderState !== 'hidden'}}" class="memo-reference-detail-toolbar memo-reference-detail-toolbar--rest">
+      <view class="memo-reference-detail-toolbar__pill ds-surface-floating ds-surface-frosted{{tabRenderState === 'exiting' ? ' memo-reference-detail-toolbar__pill--exiting' : ''}}">
+        <view
+          class="memo-reference-detail-toolbar__slider{{tabSliderAnimated ? ' memo-reference-detail-toolbar__slider--animated' : ''}}"
+          style="transform: translateX({{selectedRelationTab === 'reference' ? '0' : '100%'}})"
+        ></view>
+        <view class="memo-reference-detail-toolbar__items">
+          <view
+            class="memo-reference-detail-toolbar__item{{selectedRelationTab === 'reference' ? ' memo-reference-detail-toolbar__item--selected' : ''}}"
+            data-tab="reference"
+            bind:tap="handleRelationTabTap"
+          >
+            <text class="iconfont iconfont--arrow-left-up-circle memo-reference-detail-toolbar__icon"></text>
+            <text class="memo-reference-detail-toolbar__label">引用</text>
+          </view>
+          <view
+            class="memo-reference-detail-toolbar__item{{selectedRelationTab === 'referencedBy' ? ' memo-reference-detail-toolbar__item--selected' : ''}}"
+            data-tab="referencedBy"
+            bind:tap="handleRelationTabTap"
+          >
+            <text class="iconfont iconfont--arrow-right-down-circle memo-reference-detail-toolbar__icon"></text>
+            <text class="memo-reference-detail-toolbar__label">被引用</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{entry === 'in-app'}}" class="memo-reference-detail-nav-overlay">
+      <view class="memo-reference-detail-nav-mask" style="height: {{navStatusMaskHeight}}px;"></view>
+      <navigation-bar
+        title="{{navTitle}}"
+        modal="{{true}}"
+        compact="{{true}}"
+        background="transparent"
+        back="{{false}}"
+      >
+        <view slot="left" class="memo-reference-detail-nav-back-slot">
+          <weimo-icon-button
+            icon="chevron-left"
+            variant="glass"
+            tone="neutral"
+            feedbackStyle="nav-glass"
+            size="md"
+            iconSize="var(--nav-bar-icon-size)"
+            ariaLabel="返回"
+            bind:tap="handleClose"
+          />
+        </view>
+      </navigation-bar>
+    </view>
+</view>

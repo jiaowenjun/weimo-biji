@@ -1,0 +1,259 @@
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg-mask);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-overlay--visible {
+  pointer-events: auto;
+}
+
+.sidebar-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-panel-width);
+  box-sizing: border-box;
+  background: var(--color-bg-sidebar-panel);
+  backdrop-filter: blur(var(--blur-frosted));
+  border-right: 1rpx solid var(--color-border);
+  border-top-right-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+  overflow: hidden;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  box-sizing: border-box;
+  flex: none;
+}
+
+/* 游客：避免父级 space-between 在「身份｜通知｜设置」三件事之间撕开大块空隙；
+   改用 flex-start + 通知区 margin-left:auto，把右侧图标整体顶到右边 */
+.sidebar-header--guest-auth {
+  justify-content: flex-start;
+}
+
+.sidebar-header--guest-auth .sidebar-header__identity {
+  flex: 0 1 auto;
+  justify-content: flex-start;
+}
+
+.sidebar-header--guest-auth .sidebar-header__notification {
+  margin-left: auto;
+}
+
+.sidebar-header__identity {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-header__nickname {
+  font-size: var(--font-size-base);
+  font-weight: bold;
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-header__auth-link {
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0;
+  margin: 0;
+  border: none;
+  line-height: 1.2;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-brand-strong);
+  text-align: left;
+}
+
+.sidebar-header__notification {
+  position: relative;
+  flex: none;
+  margin-left: 12rpx;
+}
+
+.sidebar-header__notification-badge {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: var(--color-danger, #e64340);
+  box-shadow: 0 0 0 2rpx var(--color-bg-sidebar-panel);
+}
+
+.sidebar-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* stats */
+.sidebar-stats {
+  padding: 24rpx 32rpx 0;
+}
+
+.sidebar-stats__metrics {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 auto 24rpx;
+}
+
+.sidebar-stats__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sidebar-stats__metric-value {
+  font-size: 56rpx;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--color-text-secondary);
+}
+
+.sidebar-stats__metric-label {
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  color: var(--color-text-secondary);
+  margin-top: 16rpx;
+  margin-left: 2rpx;
+}
+
+/* skeleton */
+.sidebar-stats-skeleton {
+  padding: 24rpx 32rpx 0;
+}
+
+.sidebar-stats-skeleton__metrics {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  max-width: 80%;
+  margin: 0 auto 24rpx;
+}
+
+.sidebar-stats-skeleton__item {
+  width: 80rpx;
+  height: 100rpx;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.sidebar-stats-skeleton__heatmap {
+  height: 200rpx;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+.sidebar-stats-empty {
+  padding: 32rpx;
+  text-align: center;
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-sm);
+}
+
+/* heatmap */
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 32rpx;
+}
+
+.heatmap__grid {
+  display: flex;
+  flex-direction: row;
+}
+
+.heatmap__column {
+  display: flex;
+  flex-direction: column;
+  width: var(--heatmap-cell-size-rpx);
+  margin-right: var(--heatmap-gap-rpx);
+}
+
+.heatmap__column:last-child {
+  margin-right: 0;
+}
+
+.heatmap__cell {
+  width: var(--heatmap-cell-size-rpx);
+  height: var(--heatmap-cell-size-rpx);
+  border-radius: 8rpx;
+  margin-bottom: var(--heatmap-gap-rpx);
+  background: var(--color-border);
+}
+
+.heatmap__cell--active {
+  box-shadow: 0 0 0 3rpx var(--color-text-primary);
+}
+
+.heatmap__cell--today {
+  box-shadow: inset 0 0 0 2rpx var(--color-heatmap-today-ring);
+}
+
+.heatmap__cell--today.heatmap__cell--active {
+  box-shadow: inset 0 0 0 2rpx var(--color-heatmap-today-ring), 0 0 0 3rpx var(--color-text-primary);
+}
+
+.heat-level-0 {
+  background: var(--color-border);
+}
+
+.heat-level-1 {
+  background: var(--color-heat-1);
+}
+
+.heat-level-2 {
+  background: var(--color-heat-2);
+}
+
+.heat-level-3 {
+  background: var(--color-heat-3);
+}
+
+.heat-level-4 {
+  background: var(--color-heat-4);
+}
+
+.heatmap__month {
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: visible;
+  margin-top: var(--heatmap-gap-rpx);
+  height: var(--heatmap-cell-size-rpx);
+  line-height: var(--heatmap-cell-size-rpx);
+}
+
+.heatmap__month-spacer {
+  height: var(--heatmap-cell-size-rpx);
+  margin-top: var(--heatmap-gap-rpx);
+}

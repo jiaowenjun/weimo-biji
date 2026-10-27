@@ -1,0 +1,135 @@
+<view
+  class="sidebar-overlay {{visible ? 'sidebar-overlay--visible' : ''}}"
+  bind:tap="handleOverlayTap"
+></view>
+<view class="sidebar-panel">
+  <view
+    class="sidebar-header {{!authenticated && authActionText ? 'sidebar-header--guest-auth' : ''}}"
+    style="{{headerStyle}}"
+  >
+    <view class="sidebar-header__identity">
+      <text
+        wx:if="{{!authenticated && authActionText}}"
+        class="sidebar-header__auth-link"
+        user-select="{{false}}"
+        aria-role="button"
+        aria-label="{{authActionText}}"
+        bind:tap="handleAuthTap"
+      >
+        {{authActionText}}
+      </text>
+      <text wx:elif="{{userNickname}}" class="sidebar-header__nickname">{{userNickname}}</text>
+    </view>
+    <view class="sidebar-header__notification">
+      <weimo-icon-button
+        icon="notification"
+        variant="ghost"
+        tone="neutral"
+        size="md"
+        iconSize="var(--nav-bar-icon-size)"
+        captureTap="{{false}}"
+        ariaLabel="打开通知"
+        bind:tap="handleNotificationsTap"
+      />
+      <view wx:if="{{unreadCount > 0}}" class="sidebar-header__notification-badge"></view>
+    </view>
+    <weimo-icon-button
+      icon="setting"
+      variant="ghost"
+      tone="neutral"
+      size="md"
+      iconSize="var(--nav-bar-icon-size)"
+      customStyle="margin-left: 12rpx;"
+      captureTap="{{false}}"
+      ariaLabel="打开设置"
+      bind:tap="handleSettingsTap"
+    />
+  </view>
+
+  <scroll-view
+    class="sidebar-body"
+    scroll-y="{{!tagMenuActive && !tagMenuGestureGateActive}}"
+    type="list"
+    show-scrollbar="{{false}}"
+  >
+    <!-- 统计区 -->
+    <view wx:if="{{statsLoading && !stats}}" class="sidebar-stats-skeleton">
+      <view class="sidebar-stats-skeleton__metrics">
+        <view class="sidebar-stats-skeleton__item" />
+        <view class="sidebar-stats-skeleton__item" />
+        <view class="sidebar-stats-skeleton__item" />
+      </view>
+      <view class="sidebar-stats-skeleton__heatmap" />
+    </view>
+
+    <view wx:elif="{{stats}}" class="sidebar-stats">
+      <view class="sidebar-stats__metrics" style="width: {{heatmapContentWidth}}rpx">
+        <view class="sidebar-stats__metric">
+          <text class="sidebar-stats__metric-value">{{stats.note_count}}</text>
+          <text class="sidebar-stats__metric-label">笔记</text>
+        </view>
+        <view class="sidebar-stats__metric">
+          <text class="sidebar-stats__metric-value">{{wordCountValue}}</text>
+          <text class="sidebar-stats__metric-label">{{wordCountUnit}}</text>
+        </view>
+        <view class="sidebar-stats__metric">
+          <text class="sidebar-stats__metric-value">{{activeDays}}</text>
+          <text class="sidebar-stats__metric-label">天</text>
+        </view>
+      </view>
+
+      <view
+        class="heatmap"
+        style="--heatmap-gap-rpx: {{heatmapGapRpx}}rpx; --heatmap-cell-size-rpx: {{heatmapCellSizeRpx}}rpx"
+      >
+        <view class="heatmap__grid">
+          <view
+            wx:for="{{heatmapColumns}}"
+            wx:key="index"
+            class="heatmap__column"
+          >
+            <view
+              wx:for="{{item.cells}}"
+              wx:for-item="cell"
+              wx:key="date"
+              class="heatmap__cell heat-level-{{cell.level}} {{activeDate === cell.date ? 'heatmap__cell--active' : ''}} {{cell.isToday ? 'heatmap__cell--today' : ''}}"
+              data-date="{{cell.date}}"
+              bind:tap="handleHeatmapCellTap"
+            />
+            <text wx:if="{{item.monthLabel}}" class="heatmap__month">{{item.monthLabel}}</text>
+            <view wx:else class="heatmap__month-spacer"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="sidebar-stats-empty">
+      <text>暂无统计信息</text>
+    </view>
+
+    <!-- 标签树 -->
+    <tag-tree
+      style="{{tagTreeStyle}}"
+      nodes="{{tagTreeNodes}}"
+      untagged-count="{{tagTreeUntaggedCount}}"
+      loading="{{tagTreeLoading}}"
+      initialized="{{tagTreeInitialized}}"
+      load-failed="{{tagTreeLoadFailed}}"
+      selected-tag="{{selectedTag}}"
+      has-date-filter="{{activeDate !== ''}}"
+      active-date="{{activeDate}}"
+      authenticated="{{authenticated}}"
+      tag-menu-enabled="{{tagMenuEnabled}}"
+      list-facet="{{listFacet}}"
+      bind:select="handleTagTreeSelect"
+      bind:showall="handleTagTreeShowAll"
+      bind:selectfacet="handleTagTreeSelectFacet"
+      bind:todayreview="handleTagTreeTodayReview"
+      bind:retry="handleTagTreeRetry"
+      bind:menuchange="handleTagTreeMenuChange"
+      bind:gesturegatechange="handleTagTreeGestureGateChange"
+      bind:edittag="handleTagTreeEditTag"
+      bind:deletetag="handleTagTreeDeleteTag"
+    />
+  </scroll-view>
+</view>

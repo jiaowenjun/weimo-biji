@@ -1,0 +1,113 @@
+<view class="weui-navigation-bar {{compact ? 'weui-navigation-bar--compact' : ''}} {{extClass}}">
+  <view class="weui-navigation-bar__inner {{ios ? 'ios' : 'android'}} {{modal ? 'weui-navigation-bar__inner--modal' : ''}}" style="color: {{color}}; background: {{background}}; {{displayStyle}}; {{innerPaddingRight}}; {{safeAreaTop}};">
+
+    <!-- 左侧按钮 -->
+    <view class='weui-navigation-bar__left' style="{{leftWidth}};">
+      <block wx:if="{{back || homeButton}}">
+        <!-- 返回上一页 -->
+        <block wx:if="{{back}}">
+          <view class="weui-navigation-bar__buttons weui-navigation-bar__buttons_goback">
+            <view
+              bindtap="back"
+              class="weui-navigation-bar__btn_goback_wrapper"
+              hover-class="weui-active"
+              hover-stay-time="100"
+              aria-role="button"
+              aria-label="返回"
+            >
+              <text class="iconfont iconfont--chevron-left weui-navigation-bar__button weui-navigation-bar__btn_goback"></text>
+            </view>
+          </view>
+        </block>
+        <!-- 返回首页 -->
+        <block wx:if="{{homeButton}}">
+          <view class="weui-navigation-bar__buttons weui-navigation-bar__buttons_home">
+            <view
+              bindtap="home"
+              class="weui-navigation-bar__btn_home_wrapper"
+              hover-class="weui-active"
+              aria-role="button"
+              aria-label="首页"
+            >
+              <text class="iconfont iconfont--home weui-navigation-bar__button weui-navigation-bar__btn_home"></text>
+            </view>
+          </view>
+        </block>
+      </block>
+      <block wx:if="{{!(back || homeButton) && menu}}">
+        <view class="weui-navigation-bar__buttons">
+          <view
+            bindtap="onMenuTap"
+            class="weui-navigation-bar__btn_menu_wrapper"
+            hover-class="weui-active"
+            hover-stay-time="100"
+            aria-role="button"
+            aria-label="菜单"
+          >
+            <text class="iconfont iconfont--view-list weui-navigation-bar__button weui-navigation-bar__btn_menu"></text>
+          </view>
+        </view>
+      </block>
+      <view class="weui-navigation-bar__left-slot">
+        <slot name="left"></slot>
+      </view>
+    </view>
+
+    <!-- 标题 -->
+    <view class='weui-navigation-bar__center'>
+      <view wx:if="{{loading}}" class="weui-navigation-bar__loading" aria-role="alert">
+        <view
+          class="weui-loading"
+          aria-role="img"
+          aria-label="加载中"
+        ></view>
+      </view>
+      <block wx:if="{{title}}">
+        <view
+          id="navigation-bar-title-trigger"
+          class="weui-navigation-bar__title-trigger {{titleMenuItems.length ? 'weui-navigation-bar__title-trigger--clickable' : ''}}"
+          hover-class="{{titleMenuItems.length ? 'weui-navigation-bar__title-trigger--hover' : 'none'}}"
+          hover-stay-time="80"
+          bind:tap="handleTitleTap"
+          aria-role="{{titleMenuItems.length ? 'button' : ''}}"
+          aria-label="{{titleMenuItems.length ? ('打开' + title + '菜单') : ''}}"
+        >
+          <text
+            wx:if="{{titleLeadingIcon === 'search'}}"
+            class="iconfont iconfont--search weui-navigation-bar__title-leading-icon"
+            aria-hidden="true"
+          ></text>
+          <text
+            wx:if="{{titleLeadingIcon === 'hashtag'}}"
+            class="iconfont iconfont--hashtag weui-navigation-bar__title-leading-icon"
+            aria-hidden="true"
+          ></text>
+          <text class="weui-navigation-bar__title-text">{{title}}</text>
+          <text
+            wx:if="{{titleMenuItems.length}}"
+            class="iconfont iconfont--chevron-down weui-navigation-bar__title-chevron"
+          ></text>
+        </view>
+      </block>
+      <block wx:else>
+        <slot name="center"></slot>
+      </block>
+    </view>
+    
+    <!-- 右侧留空 -->
+    <view class="weui-navigation-bar__right">
+      <view class="weui-navigation-bar__right-slot">
+        <slot name="right"></slot>
+      </view>
+    </view>
+  </view>
+
+  <weimo-popover-menu
+    visible="{{titleMenuActive}}"
+    trigger-rect="{{titleMenuAnchorRect}}"
+    items="{{titleMenuItems}}"
+    horizontal-align="center"
+    bind:select="handleTitleMenuSelect"
+    bind:close="handleTitleMenuClose"
+  />
+</view>

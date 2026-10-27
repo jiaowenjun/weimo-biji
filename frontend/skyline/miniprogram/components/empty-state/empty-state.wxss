@@ -1,0 +1,23 @@
+.empty-state__icon {
+  font-size: 96rpx;
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-state__title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+  text-align: center;
+}
+
+.empty-state__desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.empty-state__action {
+  margin-top: var(--spacing-lg);
+}

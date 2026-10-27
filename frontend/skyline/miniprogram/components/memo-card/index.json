@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "styleIsolation": "apply-shared",
+  "usingComponents": {
+    "weimo-popover-menu": "/components/weimo-popover-menu/index",
+    "weimo-chip": "/components/weimo-chip/index",
+    "weimo-icon-button": "/components/weimo-icon-button/index"
+  }
+}

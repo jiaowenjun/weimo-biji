@@ -1,0 +1,295 @@
+.tag-tree {
+  --row-lead-icon-size: 40rpx;
+  --row-lead-icon-gap: 8rpx;
+  --row-body-h-padding: 16rpx;
+  --row-body-margin-end: 16rpx;
+  --row-trailing-slot-width: 68rpx;
+  --row-guide-slot-width: 40rpx;
+  --row-outer-h-margin: 16rpx;
+  padding: 16rpx var(--tag-tree-edge-right-rpx) calc(env(safe-area-inset-bottom) + 16rpx) var(--tag-tree-edge-left-rpx);
+}
+
+.tag-tree__shortcut {
+  display: flex;
+  align-items: center;
+  height: var(--sidebar-row-height);
+  margin: 0 var(--row-outer-h-margin);
+  padding: 0 var(--row-body-h-padding);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+}
+
+.tag-tree__shortcut--selected {
+  background: var(--color-brand-light);
+}
+
+/* All Notes expandable sub-items */
+.tag-tree__shortcut-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 「全部笔记」末列与标签行 weimo-icon-button 槽（68rpx + content margin-right 16）右缘对齐 */
+.tag-tree__shortcut-wrap > .tag-tree__shortcut:first-child {
+  padding-right: 0;
+}
+
+.tag-tree__shortcut-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-tree__shortcut-expander {
+  height: 64rpx;
+}
+
+.tag-tree__shortcut-arrow {
+  font-size: 40rpx;
+  color: var(--color-text-placeholder);
+  transition: transform 0.2s ease;
+}
+
+.tag-tree__shortcut-arrow--expanded {
+  transform: rotate(90deg);
+}
+
+.tag-tree__all-notes-subitems {
+  overflow: hidden;
+  height: calc(var(--sidebar-row-height) * 4);
+  opacity: 1;
+  transition: height 200ms ease, opacity 200ms ease;
+}
+
+.tag-tree__all-notes-subitems--collapsed {
+  height: 0;
+  opacity: 0;
+}
+
+.tag-tree__section-hint {
+  padding: 24rpx 32rpx 8rpx;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-placeholder);
+}
+
+.tag-tree__skeleton {
+  padding: 0 32rpx;
+}
+
+.tag-tree__skeleton-row {
+  height: 40rpx;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  margin: 18rpx 0;
+  width: 60%;
+}
+
+.tag-tree__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.tag-tree__retry {
+  margin-top: 16rpx;
+}
+
+.tag-tree__empty {
+  padding: 24rpx 32rpx;
+  text-align: left;
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-sm);
+}
+
+.tag-tree__row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: relative;
+  z-index: 0;
+  height: var(--sidebar-row-height);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  opacity: 1;
+  transition: height 200ms ease, opacity 200ms ease;
+}
+
+.tag-tree__row--pressing,
+.tag-tree__row--lifted {
+  overflow: visible;
+}
+
+.tag-tree__row--lifted {
+  z-index: 1;
+}
+
+.tag-tree__row--enter {
+  height: 0;
+  opacity: 0;
+}
+
+.tag-tree__subitem {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: var(--sidebar-row-height);
+  color: var(--color-text-primary);
+}
+
+/* Body: shared geometry across .__content (tag rows) and .__subitem-content (subitems).
+   padding differs (left-only vs left+right), so kept per-class. */
+.tag-tree__content,
+.tag-tree__subitem-content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  margin-right: var(--row-body-margin-end);
+  border-radius: var(--radius-md);
+}
+
+.tag-tree__content {
+  flex-direction: row;
+  align-items: stretch;
+  padding-left: var(--row-body-h-padding);
+  border: 1rpx solid transparent;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0),
+              0 0 0 rgba(0, 0, 0, 0);
+  transition: transform 300ms cubic-bezier(0.2, 0, 0.4, 1),
+              box-shadow 300ms cubic-bezier(0.2, 0, 0.4, 1);
+}
+
+.tag-tree__row--pressing .tag-tree__content {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0),
+              0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+}
+
+.tag-tree__row--lifted .tag-tree__content {
+  transform: translateY(-2rpx) scale(1.02);
+  background-color: var(--color-bg-elevated);
+  border-color: var(--color-border);
+  box-shadow: 0 0 32rpx rgba(0, 0, 0, 0.12),
+              0 16rpx 48rpx rgba(0, 0, 0, 0.18);
+  transition: transform 200ms cubic-bezier(0.2, 1.2, 0.4, 1),
+              box-shadow 200ms cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+.tag-tree__subitem-content {
+  align-items: center;
+  padding: 0 var(--row-body-h-padding);
+}
+
+.tag-tree__row--selected .tag-tree__content,
+.tag-tree__subitem-content--selected {
+  background: var(--color-brand-light);
+}
+
+.tag-tree__indent-area {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-shrink: 0;
+  padding-left: var(--row-body-h-padding);
+}
+
+.tag-tree__guide-slot {
+  width: var(--row-guide-slot-width);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  box-sizing: border-box;
+  padding-left: 20rpx;
+}
+
+.tag-tree__guide-line {
+  width: 2rpx;
+  background: var(--color-border);
+}
+
+/* Lead icons: shared geometry across all three row variants.
+   .__tag-icon deliberately omitted from the margin-right group below — tag rows
+   space the label via .__label { padding: 0 8rpx } instead. See row-styles.test.ts. */
+.tag-tree__shortcut-icon,
+.tag-tree__tag-icon,
+.tag-tree__subitem-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: var(--row-lead-icon-size);
+  flex-shrink: 0;
+}
+
+.tag-tree__shortcut-icon,
+.tag-tree__subitem-icon {
+  margin-right: var(--row-lead-icon-gap);
+}
+
+.tag-tree__hash,
+.tag-tree__shortcut-glyph,
+.tag-tree__subitem-glyph {
+  font-size: var(--font-size-base);
+  line-height: 1;
+  color: var(--color-text-placeholder);
+}
+
+/* 与笔记卡片「查看详情」菜单图标一致：arrow-up-down-circle 逆时针 45° */
+.tag-tree__subitem-glyph--rot-ccw-45 {
+  transform: rotate(-45deg);
+}
+
+.tag-tree__subitem-label {
+  font-size: var(--font-size-base);
+}
+
+.tag-tree__label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  padding: 0 8rpx;
+  line-height: var(--sidebar-row-height);
+}
+
+/* Trailing 68rpx slot: shared width across action / action-spacer / menu-slot / shortcut-expander.
+   action-spacer is a pure spacer; the rest center their content. */
+.tag-tree__action,
+.tag-tree__action-spacer,
+.tag-tree__menu-slot,
+.tag-tree__shortcut-expander {
+  width: var(--row-trailing-slot-width);
+  flex-shrink: 0;
+}
+
+.tag-tree__action,
+.tag-tree__menu-slot,
+.tag-tree__shortcut-expander {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tag-tree__expander {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  flex-shrink: 0;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+.tag-tree__expander--expanded {
+  transform: rotate(90deg);
+}
+
+.tag-tree__arrow {
+  font-size: 40rpx;
+  color: var(--color-text-placeholder);
+}

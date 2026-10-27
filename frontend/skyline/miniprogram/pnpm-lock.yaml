@@ -1,0 +1,49 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      lunar-javascript:
+        specifier: ^1.7.7
+        version: 1.7.7
+      pinyin-pro:
+        specifier: ^3.28.1
+        version: 3.28.1
+    devDependencies:
+      miniprogram-api-typings:
+        specifier: ^5.1.2
+        version: 5.1.2
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.3
+
+packages:
+
+  lunar-javascript@1.7.7:
+    resolution: {integrity: sha512-u/KYiwPIBo/0bT+WWfU7qO1d+aqeB90Tuy4ErXenr2Gam0QcWeezUvtiOIyXR7HbVnW2I1DKfU0NBvzMZhbVQw==}
+
+  miniprogram-api-typings@5.1.2:
+    resolution: {integrity: sha512-+4tABz3krRZu0EFO9obYwsfNC5Grpc5v49ZZc9qNzHRUHvKnM6G/n8/LnJBQCFht9dymhRnRx3FKcJ6TmzfmwA==}
+
+  pinyin-pro@3.28.1:
+    resolution: {integrity: sha512-oqz8ulwRgtUXRi0vbqEfGNly19zpyCxYrjhkk5TibGcgSW6eNwS5woajCXRwqURi8Ehc2yOFTiB4uNoZ+NJOnA==}
+
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+snapshots:
+
+  lunar-javascript@1.7.7: {}
+
+  miniprogram-api-typings@5.1.2: {}
+
+  pinyin-pro@3.28.1: {}
+
+  typescript@6.0.3: {}

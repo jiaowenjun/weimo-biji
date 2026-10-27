@@ -1,0 +1,32 @@
+.filter-bar {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  /* 与 --spacing-sm（16rpx）一致。Skyline 上 gap: var() 在部分基础库/场景下不生效，勿改回 var */
+  column-gap: 16rpx;
+  row-gap: 16rpx;
+  /* 与首张笔记卡间距一致：占位底→胶囊顶由列表顶部 spacer 承担，此处仅栏底外边距 */
+  margin-bottom: var(--spacing-md);
+  /* 左右留白与 shadow 同量级，避免 scroll/祖先裁切 glass 胶囊 box-shadow（首枚左侧等）；顶不设 padding，避免与占位条之间变成 24rpx+8rpx */
+  padding: 0 8rpx;
+  /* 单行内容行高预算（左右 padding 不计入行高） */
+  max-height: 80rpx;
+  /* 展开时须 visible，否则子节点 glass 胶囊的 box-shadow 被裁切 */
+  overflow: visible;
+  opacity: 1;
+  transition:
+    max-height 220ms ease,
+    margin-bottom 220ms ease,
+    padding 220ms ease,
+    opacity 150ms ease;
+}
+
+.filter-bar--collapsed {
+  max-height: 0;
+  margin-bottom: 0;
+  padding: 0;
+  opacity: 0;
+  /* 折叠动画时隐藏溢出，避免内容在 max-height 过渡中露出 */
+  overflow: hidden;
+}

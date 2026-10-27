@@ -1,0 +1,36 @@
+[package]
+name = "biji"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "维摩笔记服务端"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+axum = { workspace = true }
+base64 = { workspace = true }
+bcrypt = { workspace = true }
+clap = { workspace = true }
+http = { workspace = true }
+jsonwebtoken = { workspace = true }
+noyalib = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true }
+shellexpand = { workspace = true }
+thiserror = { workspace = true }
+time = { workspace = true }
+tokio = { workspace = true }
+tower-cookies = { workspace = true }
+tower-http = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+tagtree = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tower = "0.5.2"

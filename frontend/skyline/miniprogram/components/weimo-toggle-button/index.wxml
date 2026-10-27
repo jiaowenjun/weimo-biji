@@ -1,0 +1,14 @@
+<view
+  class="{{rootClass}}"
+  style="{{customStyle}}"
+  catch:tap="onTap"
+  aria-role="button"
+  aria-label="{{ariaLabel}}"
+>
+  <text
+    wx:if="{{icon}}"
+    class="iconfont iconfont--{{icon}} weimo-toggle-button__icon"
+  ></text>
+  <text wx:if="{{label}}" class="weimo-toggle-button__label">{{label}}</text>
+  <slot />
+</view>

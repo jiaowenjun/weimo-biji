@@ -1,0 +1,73 @@
+@layer components {
+  .ref-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .ref-card[data-has-reference="true"] {
+  }
+
+  .ref-card[data-has-reference="true"] > .weimo-card {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .ref-card__reference {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-placeholder);
+    box-shadow: none;
+    appearance: none;
+    font: inherit;
+    margin: 0;
+    padding: 0;
+    text-align: start;
+  }
+
+  .ref-card__reference:disabled {
+    cursor: default;
+  }
+
+  .ref-card__reference-inner {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ref-card__reference-line {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ref-card__icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+    color: var(--color-text-placeholder);
+    transform: rotate(-45deg);
+  }
+
+  .ref-card__icon--reference,
+  .ref-card__icon--referenced-by {
+    transform: rotate(-45deg);
+  }
+
+  .ref-card__reference-text {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: var(--color-text-placeholder);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

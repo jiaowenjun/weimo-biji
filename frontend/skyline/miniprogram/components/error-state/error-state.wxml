@@ -1,0 +1,13 @@
+<view class="error-state ds-status-stack">
+  <text class="iconfont iconfont--error-circle error-state__icon"></text>
+  <text class="error-state__message">{{message}}</text>
+  <weimo-button
+    variant="outline"
+    tone="brand"
+    size="md"
+    shape="pill"
+    bind:tap="onRetry"
+  >
+    {{retryText}}
+  </weimo-button>
+</view>

@@ -1,0 +1,184 @@
+@import '../../styles/memo-markdown.wxss';
+@import '../../styles/memo-reference-inline.wxss';
+@import './memo-compose-toolbar-debug.wxss';
+
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-page);
+}
+
+.compose-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.memo-compose-nav-overlay {
+  position: absolute;
+  top: 0;
+  left: calc(0rpx - var(--page-inline-shell-margin));
+  right: calc(0rpx - var(--page-inline-shell-margin));
+  z-index: 5;
+  pointer-events: none;
+}
+
+.memo-compose-nav-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    0deg,
+    var(--color-nav-status-mask-start) 0%,
+    var(--color-nav-status-mask-mid) 45%,
+    var(--color-nav-status-mask-end) 100%
+  );
+}
+
+.memo-compose-nav-overlay .weui-navigation-bar {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.memo-compose-nav-back-slot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.editor-textarea {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-reading);
+  color: var(--color-text-primary);
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.editor-placeholder {
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-reading);
+}
+
+/* 正文下方标签行：高度与工具栏对齐，胶囊垂直居中。
+   chip 间距由容器 gap 提供（chip 自身不再带 margin），
+   避免 chip 不对称 margin 与 align-items: center 互相干扰导致目视偏上。 */
+.editor-tags {
+  margin-top: var(--spacing-md);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  /* 与主页 filter-bar 胶囊列间距一致 */
+  gap: var(--spacing-sm);
+}
+
+.editor-reference {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12rpx;
+  min-width: 0;
+  margin-top: var(--spacing-md);
+}
+
+/* 工具栏：纯布局容器（外边距 + 横向 space-between），让磨砂按钮直接浮在页面背景上 */
+.compose-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--icon-button-size-lg);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-sizing: border-box;
+}
+
+/* send-filled 字形左重右尖，在圆形容器内略向右光学对齐（仅新建保存按钮使用该图标） */
+.compose-toolbar weimo-icon-button .iconfont--send-filled {
+  margin-left: 2rpx;
+}
+
+.md-toolbar {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8rpx;
+  padding: 4rpx 12rpx;
+  border-radius: var(--radius-md);
+}
+
+.md-toolbar__slider {
+  position: absolute;
+  left: 12rpx;
+  top: 4rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-toggle-selected-surface);
+  pointer-events: none;
+}
+
+.md-toolbar__slider--animated {
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease;
+}
+
+.md-toolbar .weimo-toggle-button--selected {
+  background-color: transparent;
+}
+
+/* 与 tag-tree__guide-line 同色（--color-border），短竖线分隔；左右间距由行内 gap 承担 */
+.md-toolbar__sep {
+  width: 2rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+  background: var(--color-border);
+}
+
+/* 初始化错误态 */
+.init-error-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.init-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-xl);
+}
+
+.init-error__title {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.init-error__desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}

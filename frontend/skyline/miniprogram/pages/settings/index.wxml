@@ -1,0 +1,102 @@
+<navigation-bar title="设置" back="{{true}}" />
+
+<scroll-view class="page-scroll" scroll-y type="list">
+  <page-shell padding="{{true}}">
+    <!-- Greeting -->
+    <text wx:if="{{isLoggedIn && nickname}}" class="settings-greeting">你好，{{nickname}}</text>
+
+    <!-- Group 1: Account & Social (logged in) -->
+    <view wx:if="{{isLoggedIn}}" class="settings-group ds-surface-card">
+      <view
+        class="settings-menu-item"
+        hover-class="settings-menu-item--active"
+        hover-stay-time="70"
+        bindtap="handleAccountTap"
+      >
+        <view class="settings-icon">
+          <text class="iconfont iconfont--user-1 settings-icon__glyph" aria-hidden="true"></text>
+        </view>
+        <text class="settings-menu-item__label">账户</text>
+        <text class="iconfont iconfont--chevron-right settings-menu-item__chevron" aria-hidden="true"></text>
+      </view>
+
+      <view
+        class="settings-menu-item settings-menu-item--border"
+        hover-class="settings-menu-item--active"
+        hover-stay-time="70"
+        bindtap="handleAddFriendTap"
+      >
+        <view class="settings-icon">
+          <text class="iconfont iconfont--member settings-icon__glyph" aria-hidden="true"></text>
+        </view>
+        <text class="settings-menu-item__label">添加朋友</text>
+        <text class="iconfont iconfont--chevron-right settings-menu-item__chevron" aria-hidden="true"></text>
+      </view>
+    </view>
+
+    <!-- Group 1: Login (logged out) -->
+    <view wx:if="{{!isLoggedIn}}" class="settings-group ds-surface-card">
+      <view
+        class="settings-menu-item"
+        hover-class="settings-menu-item--active"
+        hover-stay-time="70"
+        bindtap="handleLoginTap"
+      >
+        <view class="settings-icon">
+          <text class="iconfont iconfont--login settings-icon__glyph" aria-hidden="true"></text>
+        </view>
+        <text class="settings-menu-item__label">登录 / 注册</text>
+        <text class="iconfont iconfont--chevron-right settings-menu-item__chevron" aria-hidden="true"></text>
+      </view>
+    </view>
+
+    <!-- Group 2: 笔记卡片双击 -->
+    <view wx:if="{{isLoggedIn}}" class="settings-group ds-surface-card settings-group--gap">
+      <view class="settings-memo-doubletap-row">
+        <view class="settings-memo-doubletap-start">
+          <view class="settings-icon">
+            <text class="iconfont iconfont--gesture-click settings-icon__glyph" aria-hidden="true"></text>
+          </view>
+          <text class="settings-group__title">笔记卡片双击</text>
+        </view>
+        <radio-group class="settings-memo-radio-inline" bindchange="handleMemoCardDoubleTapChange">
+          <label class="settings-radio-inline">
+            <view class="settings-radio-slot settings-radio-slot--inline">
+              <radio
+                class="settings-radio-native settings-radio-native--inline"
+                value="edit-annotate"
+                checked="{{memoCardDoubleTapBehavior === 'edit-annotate'}}"
+              />
+            </view>
+            <text class="settings-radio-inline__label">编辑</text>
+          </label>
+          <label class="settings-radio-inline">
+            <view class="settings-radio-slot settings-radio-slot--inline">
+              <radio
+                class="settings-radio-native settings-radio-native--inline"
+                value="preview"
+                checked="{{memoCardDoubleTapBehavior === 'preview'}}"
+              />
+            </view>
+            <text class="settings-radio-inline__label">分享</text>
+          </label>
+        </radio-group>
+      </view>
+    </view>
+
+    <!-- Group 3: Logout -->
+    <view wx:if="{{isLoggedIn}}" class="settings-group ds-surface-card settings-group--gap">
+      <view
+        class="settings-menu-item"
+        hover-class="settings-menu-item--active"
+        hover-stay-time="70"
+        bindtap="handleLogoutTap"
+      >
+        <view class="settings-icon settings-icon--logout">
+          <text class="iconfont iconfont--logout settings-icon__glyph" aria-hidden="true"></text>
+        </view>
+        <text class="settings-menu-item__label settings-menu-item__label--danger">退出登录</text>
+      </view>
+    </view>
+  </page-shell>
+</scroll-view>

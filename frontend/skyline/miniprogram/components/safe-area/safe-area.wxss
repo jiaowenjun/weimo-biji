@@ -1,0 +1,11 @@
+.safe-area {
+  flex: none;
+}
+
+.safe-area--bottom {
+  height: env(safe-area-inset-bottom);
+}
+
+.safe-area--top {
+  height: env(safe-area-inset-top);
+}

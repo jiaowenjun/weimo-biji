@@ -1,0 +1,34 @@
+<block wx:if="{{captureTap}}">
+  <view
+    class="{{rootClass}}"
+    style="{{customStyle}}"
+    hover-class="{{hoverClass}}"
+    hover-stay-time="80"
+    catch:tap="onTap"
+    aria-role="button"
+    aria-label="{{ariaLabel}}"
+  >
+    <text
+      wx:if="{{icon}}"
+      class="iconfont iconfont--{{icon}} weimo-icon-button__icon"
+      style="{{iconStyle}}"
+    ></text>
+  </view>
+</block>
+<block wx:else>
+  <view
+    class="{{rootClass}}"
+    style="{{customStyle}}"
+    hover-class="{{hoverClass}}"
+    hover-stay-time="80"
+    bind:tap="onTap"
+    aria-role="button"
+    aria-label="{{ariaLabel}}"
+  >
+    <text
+      wx:if="{{icon}}"
+      class="iconfont iconfont--{{icon}} weimo-icon-button__icon"
+      style="{{iconStyle}}"
+    ></text>
+  </view>
+</block>

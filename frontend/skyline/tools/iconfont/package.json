@@ -1,0 +1,11 @@
+{
+  "name": "biji-iconfont-tools",
+  "private": true,
+  "scripts": {
+    "mapping": "node build-mapping.js",
+    "font": "python build-font.py"
+  },
+  "devDependencies": {
+    "tdesign-miniprogram": "^1.13.2"
+  }
+}

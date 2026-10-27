@@ -1,0 +1,222 @@
+@import '../../styles/memo-markdown.wxss';
+
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-page);
+}
+
+/* 与 memo-share-image：scroll 撑满剩余高度，底部工具栏绝对定位悬浮层 */
+.memo-reference-detail-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+/* 与 index 列表等宽：不叠加 ds-page-inline-shell 默认水平 margin/padding */
+.memo-reference-detail-shell.ds-page-inline-shell {
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.memo-reference-detail-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.memo-reference-detail-scroll__content {
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-md) var(--memo-layout-gutter) 176rpx;
+}
+
+.memo-reference-detail-nav-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.memo-reference-detail-nav-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    0deg,
+    var(--color-nav-status-mask-start) 0%,
+    var(--color-nav-status-mask-mid) 45%,
+    var(--color-nav-status-mask-end) 100%
+  );
+}
+
+.memo-reference-detail-nav-overlay .weui-navigation-bar {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.memo-reference-detail-nav-back-slot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* clip-fix start: 页面 wxss 穿透 memo-card，恢复视觉 gutter 并允许 scale 溢出（仅 panels 模式；flat 无 bleed，勿叠加 host margin） */
+.memo-reference-relation-panels .memo-card-host {
+  margin-left: var(--memo-layout-gutter);
+  margin-right: var(--memo-layout-gutter);
+  overflow: visible;
+}
+/* clip-fix end */
+
+.memo-reference-detail-toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--floating-action-size);
+  padding: 0 var(--memo-layout-gutter) var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+.memo-reference-detail-toolbar--rest {
+  padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+}
+
+.memo-reference-detail-toolbar__pill {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 360rpx;
+  max-width: 360rpx;
+  padding: 4rpx;
+  border-radius: 9999rpx;
+  overflow: hidden;
+}
+
+.memo-reference-detail-toolbar__pill--exiting {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  transition:
+    opacity 260ms cubic-bezier(0.4, 0, 0.2, 1),
+    max-height 260ms cubic-bezier(0.4, 0, 0.2, 1),
+    padding 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.memo-reference-detail-toolbar__slider {
+  position: absolute;
+  left: 4rpx;
+  top: 4rpx;
+  width: calc((100% - 8rpx) / 2);
+  height: calc(100% - 8rpx);
+  border-radius: 9999rpx;
+  background-color: var(--color-toggle-selected-surface);
+  pointer-events: none;
+}
+
+.memo-reference-detail-toolbar__slider--animated {
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Skyline 下 applyAnimatedStyle 会把 slider 提升为动画合成层，覆盖在同级 items
+ * 之上吞掉点击；这里把 items 装进一个独立的合成层（position+z-index+translateZ），
+ * 让它的层级稳定地排在 slider 动画层之上，避免依赖不可靠的 pointer-events: none。
+ */
+.memo-reference-detail-toolbar__items {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  transform: translateZ(0);
+}
+
+.memo-reference-detail-toolbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 0;
+  text-align: center;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.memo-reference-detail-toolbar__icon {
+  margin-right: 6rpx;
+  font-size: var(--font-size-base);
+}
+
+.memo-reference-detail-toolbar__label {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}
+
+.memo-reference-detail-toolbar__item--selected {
+  color: var(--color-text-primary);
+}
+
+.memo-reference-detail__status {
+  min-height: 240rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.memo-reference-detail__status-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.memo-reference-detail__retry {
+  margin-top: var(--spacing-sm);
+}
+
+.memo-reference-detail__denied {
+  min-height: 240rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  gap: var(--spacing-md);
+}
+
+.memo-reference-detail__denied-title {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.memo-reference-detail__denied-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.memo-reference-detail__denied-action {
+  margin-top: var(--spacing-sm);
+}

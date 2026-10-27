@@ -1,0 +1,40 @@
+@layer components {
+  .workspace-memo-detail-dialog {
+    width: min(100%, 680px);
+  }
+
+  .workspace-memo-detail-dialog__panel {
+    padding: var(--space-gutter);
+  }
+
+  .workspace-memo-detail-dialog__content,
+  .workspace-memo-detail-dialog__sections,
+  .workspace-memo-detail-dialog__section-cards {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-gutter);
+  }
+
+  .workspace-memo-detail-dialog__section {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .workspace-memo-detail-dialog__section-title {
+    margin: 0;
+    color: var(--color-text-placeholder);
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .workspace-memo-detail-dialog__empty {
+    margin: 0;
+    padding: 20px 0 4px;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+  }
+}

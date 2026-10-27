@@ -1,0 +1,210 @@
+<view class="tag-tree">
+  <view class="tag-tree__shortcut-wrap">
+    <view
+      class="tag-tree__shortcut {{allNotesSelected ? 'tag-tree__shortcut--selected' : ''}}"
+      bind:tap="handleShowAll"
+    >
+      <view class="tag-tree__shortcut-icon">
+        <text class="iconfont iconfont--grid-view tag-tree__shortcut-glyph" aria-hidden="true"></text>
+      </view>
+      <text class="tag-tree__shortcut-label">全部笔记</text>
+      <view class="tag-tree__shortcut-expander" catch:tap="handleToggleAllNotes">
+        <text class="iconfont iconfont--chevron-right tag-tree__shortcut-arrow {{allNotesExpanded ? 'tag-tree__shortcut-arrow--expanded' : ''}}" aria-hidden="true"></text>
+      </view>
+    </view>
+
+    <view class="tag-tree__all-notes-subitems {{allNotesExpanded ? '' : 'tag-tree__all-notes-subitems--collapsed'}}">
+      <view
+        class="tag-tree__subitem {{listFacet === 'annotation' ? 'tag-tree__subitem--selected' : ''}}"
+        data-facet="annotation"
+        bind:tap="handleSelectFacet"
+      >
+        <view class="tag-tree__indent-area">
+          <view class="tag-tree__guide-slot">
+            <view class="tag-tree__guide-line"></view>
+          </view>
+        </view>
+        <view class="tag-tree__subitem-content {{listFacet === 'annotation' ? 'tag-tree__subitem-content--selected' : ''}}">
+          <view class="tag-tree__subitem-icon">
+            <text class="iconfont iconfont--arrow-up-down-circle tag-tree__subitem-glyph tag-tree__subitem-glyph--rot-ccw-45" aria-hidden="true"></text>
+          </view>
+          <text class="tag-tree__subitem-label">有批注</text>
+        </view>
+      </view>
+
+      <view
+        class="tag-tree__subitem {{listFacet === 'heading' ? 'tag-tree__subitem--selected' : ''}}"
+        data-facet="heading"
+        bind:tap="handleSelectFacet"
+      >
+        <view class="tag-tree__indent-area">
+          <view class="tag-tree__guide-slot">
+            <view class="tag-tree__guide-line"></view>
+          </view>
+        </view>
+        <view class="tag-tree__subitem-content {{listFacet === 'heading' ? 'tag-tree__subitem-content--selected' : ''}}">
+          <view class="tag-tree__subitem-icon">
+            <text class="iconfont iconfont--page-head tag-tree__subitem-glyph" aria-hidden="true"></text>
+          </view>
+          <text class="tag-tree__subitem-label">有标题</text>
+        </view>
+      </view>
+
+      <view
+        class="tag-tree__subitem {{listFacet === 'unordered-list' ? 'tag-tree__subitem--selected' : ''}}"
+        data-facet="unordered-list"
+        bind:tap="handleSelectFacet"
+      >
+        <view class="tag-tree__indent-area">
+          <view class="tag-tree__guide-slot">
+            <view class="tag-tree__guide-line"></view>
+          </view>
+        </view>
+        <view class="tag-tree__subitem-content {{listFacet === 'unordered-list' ? 'tag-tree__subitem-content--selected' : ''}}">
+          <view class="tag-tree__subitem-icon">
+            <text class="iconfont iconfont--bulletpoint tag-tree__subitem-glyph" aria-hidden="true"></text>
+          </view>
+          <text class="tag-tree__subitem-label">有列表</text>
+        </view>
+      </view>
+
+      <view
+        class="tag-tree__subitem {{listFacet === 'markdown-quote' ? 'tag-tree__subitem--selected' : ''}}"
+        data-facet="markdown-quote"
+        bind:tap="handleSelectFacet"
+      >
+        <view class="tag-tree__indent-area">
+          <view class="tag-tree__guide-slot">
+            <view class="tag-tree__guide-line"></view>
+          </view>
+        </view>
+        <view class="tag-tree__subitem-content {{listFacet === 'markdown-quote' ? 'tag-tree__subitem-content--selected' : ''}}">
+          <view class="tag-tree__subitem-icon">
+            <text class="iconfont iconfont--quote tag-tree__subitem-glyph" aria-hidden="true"></text>
+          </view>
+          <text class="tag-tree__subitem-label">有引用</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view
+    class="tag-tree__shortcut {{todayReviewSelected ? 'tag-tree__shortcut--selected' : ''}}"
+    bind:tap="handleTodayReview"
+  >
+    <view class="tag-tree__shortcut-icon">
+      <text class="iconfont iconfont--calendar-event tag-tree__shortcut-glyph" aria-hidden="true"></text>
+    </view>
+    <text>今日回顾</text>
+  </view>
+
+  <view class="tag-tree__section-hint">
+    <text>标签</text>
+  </view>
+
+  <view wx:if="{{loading && !initialized}}" class="tag-tree__skeleton">
+    <view class="tag-tree__skeleton-row" />
+    <view class="tag-tree__skeleton-row" />
+    <view class="tag-tree__skeleton-row" />
+  </view>
+
+  <view wx:elif="{{loadFailed}}" class="tag-tree__error">
+    <text>标签树加载失败</text>
+    <view class="tag-tree__retry">
+      <weimo-button
+        variant="text"
+        tone="brand"
+        size="xs"
+        bind:tap="handleRetry"
+      >
+        重新加载
+      </weimo-button>
+    </view>
+  </view>
+
+  <view wx:elif="{{initialized && visibleRows.length === 0}}" class="tag-tree__empty">
+    <text>暂无标签</text>
+  </view>
+
+  <view wx:else class="tag-tree__list">
+    <view
+      wx:for="{{visibleRows}}"
+      wx:key="tag"
+      class="tag-tree__row {{item.selected ? 'tag-tree__row--selected' : ''}} {{item.enter ? 'tag-tree__row--enter' : ''}} {{pressingIndex === index ? 'tag-tree__row--pressing' : ''}} {{liftedIndex === index ? 'tag-tree__row--lifted' : ''}}"
+      data-tag="{{item.tag}}"
+      data-index="{{index}}"
+      bind:longpress="handleRowMenuLongPress"
+      bind:touchstart="handleRowTouchStart"
+      bind:touchmove="handleRowTouchMove"
+      bind:touchend="handleRowTouchEnd"
+      bind:touchcancel="handleRowTouchEnd"
+    >
+      <view class="tag-tree__indent-area">
+        <view
+          wx:for="{{item.guideSlots}}"
+          wx:for-item="slot"
+          wx:key="d"
+          class="tag-tree__guide-slot"
+        >
+          <view wx:if="{{slot.g}}" class="tag-tree__guide-line"></view>
+        </view>
+      </view>
+
+      <view class="tag-tree__content">
+        <view class="tag-tree__tag-icon">
+          <text class="iconfont iconfont--hashtag tag-tree__hash"></text>
+        </view>
+
+        <view
+          class="tag-tree__label"
+          data-tag="{{item.tag}}"
+          bind:tap="handleTagSelect"
+        >
+          <text overflow="ellipsis" max-lines="1">{{item.label}}</text>
+        </view>
+
+        <view
+          wx:if="{{item.hasChildren}}"
+          class="tag-tree__action"
+          data-tag="{{item.tag}}"
+          bind:tap="handleToggle"
+        >
+          <view class="tag-tree__expander {{item.expanded ? 'tag-tree__expander--expanded' : ''}}">
+            <text class="iconfont iconfont--chevron-right tag-tree__arrow"></text>
+          </view>
+        </view>
+        <view wx:else class="tag-tree__action-spacer"></view>
+
+        <view wx:if="{{authenticated && tagMenuEnabled}}" class="tag-tree__menu-slot">
+          <weimo-icon-button
+            id="tag-tree-menu-{{index}}"
+            icon="ellipsis"
+            variant="ghost"
+            tone="neutral"
+            size="sm"
+            iconSize="28rpx"
+            iconColor="var(--color-text-placeholder)"
+            hoverable="{{false}}"
+            pressed="{{menuActive && menuTag === item.tag}}"
+            ariaLabel="重命名标签"
+            data-tag="{{item.tag}}"
+            data-index="{{index}}"
+            mark:tagTreeControl="menu"
+            bind:touchstart="handleMenuButtonTouchStart"
+            catch:tap="handleMenuButtonTap"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <weimo-popover-menu
+    visible="{{menuActive}}"
+    trigger-rect="{{menuAnchorRect}}"
+    header="{{menuHeaderLabel}}"
+    items="{{menuItems}}"
+    placement-priority="up-first"
+    bind:select="handleMenuSelect"
+    bind:close="handleMenuClose"
+  />
+</view>

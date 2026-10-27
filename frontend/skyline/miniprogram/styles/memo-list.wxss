@@ -1,0 +1,79 @@
+@import './filter-bar.wxss';
+
+.memo-list {
+  margin: 0 calc(0rpx - var(--page-shell-inline-padding));
+  padding: 0 var(--memo-layout-gutter);
+}
+
+.memo-list-top-gap {
+  flex: none;
+  height: var(--spacing-md);
+}
+
+.memo-list-filter--scroll-root {
+  /* 滚动根内的筛选栏不能做高度过渡：首次插入胶囊时高度若继续增长，
+     Skyline scroll-view 会保留列表锚点，导致胶囊被导航层吃掉一截。 */
+  transition: none;
+}
+
+.memo-skeleton {
+  margin-bottom: var(--memo-layout-gutter);
+}
+
+.memo-list__item-tombstone {
+  height: 0;
+  overflow: hidden;
+}
+
+.memo-skeleton__header {
+  width: 120rpx;
+  height: 24rpx;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.memo-skeleton__body {
+  margin-bottom: var(--spacing-sm);
+}
+
+.memo-skeleton__line {
+  height: 24rpx;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.memo-skeleton__line--mid {
+  width: 80%;
+}
+
+.memo-skeleton__line--short {
+  width: 50%;
+}
+
+.memo-skeleton__tags {
+  display: flex;
+  flex-direction: row;
+}
+
+.memo-skeleton__tag {
+  width: 80rpx;
+  height: 32rpx;
+  background: var(--color-border);
+  border-radius: var(--radius-round);
+  margin-right: var(--spacing-xs);
+}
+
+.memo-skeleton__tag--narrow {
+  width: 56rpx;
+}
+
+.memo-list__footer {
+  padding-bottom: var(--spacing-xl);
+}
+
+.memo-list__footer-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-placeholder);
+}

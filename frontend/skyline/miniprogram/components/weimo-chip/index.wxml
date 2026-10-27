@@ -1,0 +1,34 @@
+<block wx:if="{{captureTap}}">
+  <view
+    class="{{rootClass}}"
+    hover-class="{{hoverClass}}"
+    hover-stay-time="80"
+    catch:tap="onTap"
+    aria-role="button"
+  >
+    <text wx:if="{{icon}}" class="iconfont iconfont--{{icon}} weimo-chip__icon"></text>
+    <text wx:if="{{prefix}}" class="weimo-chip__prefix">{{prefix}}</text>
+    <text wx:if="{{value}}" class="weimo-chip__text">{{value}}</text>
+    <view wx:else class="weimo-chip__slot"><slot /></view>
+    <view wx:if="{{closable}}" class="weimo-chip__close" catch:tap="onClose">
+      <text class="iconfont iconfont--close weimo-chip__close-icon"></text>
+    </view>
+  </view>
+</block>
+<block wx:else>
+  <view
+    class="{{rootClass}}"
+    hover-class="{{hoverClass}}"
+    hover-stay-time="80"
+    bind:tap="onTap"
+    aria-role="button"
+  >
+    <text wx:if="{{icon}}" class="iconfont iconfont--{{icon}} weimo-chip__icon"></text>
+    <text wx:if="{{prefix}}" class="weimo-chip__prefix">{{prefix}}</text>
+    <text wx:if="{{value}}" class="weimo-chip__text">{{value}}</text>
+    <view wx:else class="weimo-chip__slot"><slot /></view>
+    <view wx:if="{{closable}}" class="weimo-chip__close" catch:tap="onClose">
+      <text class="iconfont iconfont--close weimo-chip__close-icon"></text>
+    </view>
+  </view>
+</block>

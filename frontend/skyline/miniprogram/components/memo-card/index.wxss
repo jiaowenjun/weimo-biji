@@ -1,0 +1,159 @@
+@import '../../styles/memo-reference-inline.wxss';
+
+.memo-card-host {
+  margin-bottom: var(--memo-layout-gutter);
+  /*
+   * 出场动画：transform 左滑 + opacity 淡出 + max-height/margin-bottom 折叠 host 占位。
+   * transition 全部声明在 base 类，且 _startExitAnimation 走两阶段 inline style
+   * 写法（先把这些属性显式设为「起点值」，再 setTimeout 后切到「终值」），
+   * 让 Skyline 能稳定触发插值。
+   */
+  transition: transform 200ms ease-in,
+              opacity 160ms ease-out,
+              max-height 200ms ease-out,
+              margin-bottom 200ms ease-out;
+}
+
+.memo-card {
+  padding: var(--spacing-md);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0),
+              0 0 0 rgba(0, 0, 0, 0);
+  transition: transform 300ms cubic-bezier(0.2, 0, 0.4, 1),
+              box-shadow 300ms cubic-bezier(0.2, 0, 0.4, 1);
+}
+
+.memo-card--pressing {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0),
+              0 16rpx 48rpx rgba(0, 0, 0, 0.18);
+}
+
+.memo-card--lifted {
+  transform: scale(1.02);
+  box-shadow: 0 0 32rpx rgba(0, 0, 0, 0.12),
+              0 16rpx 48rpx rgba(0, 0, 0, 0.18);
+  transition: transform 200ms cubic-bezier(0.2, 1.2, 0.4, 1),
+              box-shadow 200ms cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+.memo-card__header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: calc(var(--memo-card-section-gap) - (var(--icon-button-size-sm) - var(--font-size-sm)) / 2);
+}
+
+.memo-card__time {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-placeholder);
+}
+
+.memo-card__more {
+  margin: -12rpx -12rpx -12rpx 0;
+}
+
+.memo-card__body {
+  margin-bottom: var(--memo-card-section-gap);
+}
+
+.memo-card__rich {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.memo-card__plain {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.memo-card__tags-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.memo-card__tags {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+  gap: var(--spacing-xs);
+}
+
+.memo-card__tag-anchor {
+  display: inline-flex;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0),
+              0 0 0 rgba(0, 0, 0, 0);
+  transition: transform 300ms cubic-bezier(0.2, 0, 0.4, 1),
+              box-shadow 300ms cubic-bezier(0.2, 0, 0.4, 1);
+  border-radius: var(--radius-round);
+}
+
+.memo-card__tag-anchor--pressing {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0),
+              0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+}
+
+.memo-card__tag-anchor--lifted {
+  transform: scale(1.05);
+  box-shadow: 0 0 20rpx rgba(0, 0, 0, 0.1),
+              0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  transition: transform 200ms cubic-bezier(0.2, 1.2, 0.4, 1),
+              box-shadow 200ms cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+.memo-card__reference {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--memo-card-section-gap);
+}
+
+.memo-card__reference-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.memo-card__reference-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12rpx;
+  min-width: 0;
+}
+
+/* === 删除出场动画 === */
+
+.memo-card-host--exiting {
+  overflow: hidden;
+}
+
+.memo-card-host--snap-reset {
+  transition: none;
+}
+
+/* === 标签过渡入场动画 === */
+
+@keyframes memo-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memo-card--entering {
+  animation: memo-card-enter 240ms ease-out both;
+}

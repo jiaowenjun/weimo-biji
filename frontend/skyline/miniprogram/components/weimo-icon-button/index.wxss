@@ -1,0 +1,177 @@
+.weimo-icon-button {
+  flex: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--icon-button-size-sm);
+  height: var(--icon-button-size-sm);
+  border-radius: var(--radius-round);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    transform 120ms ease,
+    box-shadow 180ms ease;
+}
+
+.weimo-icon-button:not(.weimo-icon-button--variant-glass) {
+  border: 1rpx solid transparent;
+  background-color: transparent;
+}
+
+.weimo-icon-button--size-xs {
+  width: var(--icon-button-size-xs);
+  height: var(--icon-button-size-xs);
+}
+
+.weimo-icon-button--size-sm {
+  width: var(--icon-button-size-sm);
+  height: var(--icon-button-size-sm);
+}
+
+.weimo-icon-button--size-md {
+  width: var(--icon-button-size-md);
+  height: var(--icon-button-size-md);
+}
+
+.weimo-icon-button--size-lg {
+  width: var(--icon-button-size-lg);
+  height: var(--icon-button-size-lg);
+}
+
+.weimo-icon-button--size-xl {
+  width: var(--icon-button-size-xl);
+  height: var(--icon-button-size-xl);
+}
+
+.weimo-icon-button--variant-plain.weimo-icon-button--hover {
+  opacity: 0.72;
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-default.weimo-icon-button--tone-neutral.weimo-icon-button--hover,
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-default.weimo-icon-button--tone-neutral.weimo-icon-button--pressed {
+  background-color: var(--color-menu-trigger-highlight-bg);
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-default.weimo-icon-button--tone-brand.weimo-icon-button--hover,
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-default.weimo-icon-button--tone-brand.weimo-icon-button--pressed {
+  background-color: var(--color-brand-light);
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-brand-soft {
+  background-color: var(--color-brand-ghost-transparent);
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-brand-soft.weimo-icon-button--hover,
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-brand-soft.weimo-icon-button--pressed {
+  background-color: var(--color-brand-light);
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--feedback-brand-soft.weimo-icon-button--hover {
+  transform: scale(0.96);
+}
+
+.weimo-icon-button--variant-solid.weimo-icon-button--hover {
+  transform: scale(0.92);
+}
+
+.weimo-icon-button--variant-solid.weimo-icon-button--tone-brand {
+  background: var(--color-brand);
+}
+
+.weimo-icon-button--variant-solid.weimo-icon-button--tone-neutral {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--hover {
+  transform: scale(0.92);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--feedback-nav-glass {
+  transition: opacity 180ms ease, transform 80ms ease;
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--feedback-nav-glass.weimo-icon-button--hover {
+  box-shadow: inset 0 0 0 999rpx var(--color-pressable-hover), var(--shadow-float-elevated);
+  transform: scale(0.94);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--feedback-nav-glass.weimo-icon-button--pressed {
+  box-shadow: inset 0 0 0 999rpx var(--color-pressable-hover), var(--shadow-float-elevated);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--size-xl.weimo-icon-button--hover {
+  opacity: 0.8;
+  transform: scale(0.95);
+}
+
+.weimo-icon-button--disabled {
+  opacity: 0.55;
+}
+
+.weimo-icon-button--loading {
+  opacity: 0.55;
+}
+
+.weimo-icon-button__icon {
+  line-height: 1;
+}
+
+.weimo-icon-button--variant-plain.weimo-icon-button--tone-neutral .weimo-icon-button__icon {
+  color: var(--color-text-placeholder);
+}
+
+.weimo-icon-button--variant-plain.weimo-icon-button--tone-brand .weimo-icon-button__icon {
+  color: var(--color-brand);
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--tone-neutral .weimo-icon-button__icon {
+  color: var(--color-text-secondary);
+}
+
+.weimo-icon-button--variant-ghost.weimo-icon-button--tone-brand .weimo-icon-button__icon {
+  color: var(--color-brand);
+}
+
+.weimo-icon-button--variant-solid.weimo-icon-button--tone-brand .weimo-icon-button__icon {
+  color: var(--color-text-on-brand);
+}
+
+.weimo-icon-button--variant-solid.weimo-icon-button--tone-neutral .weimo-icon-button__icon {
+  color: var(--color-text-primary);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--tone-brand .weimo-icon-button__icon {
+  color: var(--color-brand);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--tone-neutral .weimo-icon-button__icon {
+  color: var(--color-text-primary);
+}
+
+.weimo-icon-button--variant-glass.weimo-icon-button--disabled .weimo-icon-button__icon {
+  color: var(--color-text-placeholder);
+}
+
+.weimo-icon-button--size-xs .weimo-icon-button__icon {
+  font-size: 24rpx;
+}
+
+.weimo-icon-button--size-sm .weimo-icon-button__icon {
+  font-size: 28rpx;
+}
+
+.weimo-icon-button--size-md .weimo-icon-button__icon {
+  font-size: 32rpx;
+}
+
+.weimo-icon-button--size-lg .weimo-icon-button__icon {
+  font-size: 38rpx;
+}
+
+.weimo-icon-button--size-xl .weimo-icon-button__icon {
+  font-size: 40rpx;
+}

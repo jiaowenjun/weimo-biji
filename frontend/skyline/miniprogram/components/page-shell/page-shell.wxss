@@ -1,0 +1,15 @@
+.page-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-shell--padded {
+  padding: var(--spacing-md) var(--page-shell-inline-padding) 0;
+}
+
+.page-shell__safe-bottom {
+  flex: none;
+  height: calc(env(safe-area-inset-bottom) + var(--page-shell-safe-bottom-space));
+}

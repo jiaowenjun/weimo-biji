@@ -1,0 +1,14 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "usingComponents": {
+    "empty-state": "/components/empty-state/empty-state",
+    "error-state": "/components/error-state/error-state",
+    "filter-summary": "/components/filter-summary/index",
+    "memo-card": "/components/memo-card/index",
+    "page-nav-chrome": "/components/page-nav-chrome/index",
+    "weimo-button": "/components/weimo-button/index",
+    "weimo-popover-menu": "/components/weimo-popover-menu/index",
+    "weimo-icon-button": "/components/weimo-icon-button/index"
+  }
+}

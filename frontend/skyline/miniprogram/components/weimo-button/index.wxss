@@ -1,0 +1,205 @@
+.weimo-btn {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 24rpx;
+  height: var(--control-height-lg);
+  line-height: 1;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  box-sizing: border-box;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    transform 120ms ease,
+    box-shadow 180ms ease;
+}
+
+.weimo-btn::after {
+  border: none;
+}
+
+.weimo-btn--block {
+  display: flex;
+  width: 100%;
+}
+
+.weimo-btn--shape-pill {
+  border-radius: var(--radius-round);
+}
+
+.weimo-btn--shape-rounded {
+  border-radius: var(--radius-md);
+}
+
+.weimo-btn--shape-square {
+  border-radius: 0;
+}
+
+.weimo-btn--size-xs {
+  height: var(--control-height-xs);
+  padding: 0 16rpx;
+  font-size: var(--font-size-sm);
+}
+
+.weimo-btn--size-sm {
+  height: var(--control-height-sm);
+  padding: 0 20rpx;
+  font-size: var(--font-size-sm);
+}
+
+.weimo-btn--size-md {
+  height: var(--control-height-toolbar);
+  padding: 0 24rpx;
+  font-size: var(--font-size-base);
+}
+
+.weimo-btn--size-lg {
+  height: var(--control-height-lg);
+  padding: 0 24rpx;
+  font-size: var(--font-size-base);
+}
+
+.weimo-btn--variant-solid.weimo-btn--tone-brand {
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+}
+
+.weimo-btn--variant-solid.weimo-btn--tone-brand.weimo-btn--hover {
+  background: var(--color-brand-pressed);
+}
+
+.weimo-btn--variant-solid.weimo-btn--tone-danger {
+  background: var(--color-danger);
+  color: var(--color-text-on-brand);
+}
+
+.weimo-btn--variant-solid.weimo-btn--tone-danger.weimo-btn--hover {
+  opacity: 0.9;
+}
+
+.weimo-btn--variant-solid.weimo-btn--tone-neutral {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: 1rpx solid var(--color-border);
+}
+
+.weimo-btn--variant-solid.weimo-btn--tone-neutral.weimo-btn--hover {
+  background: var(--color-bg-card);
+}
+
+.weimo-btn--variant-outline {
+  background: var(--color-bg-card);
+  border: 1rpx solid var(--color-border);
+}
+
+.weimo-btn--variant-outline.weimo-btn--tone-brand {
+  color: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+.weimo-btn--variant-outline.weimo-btn--tone-neutral {
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.weimo-btn--variant-outline.weimo-btn--tone-danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.weimo-btn--variant-outline.weimo-btn--hover {
+  background: var(--color-bg-elevated);
+}
+
+.weimo-btn--variant-soft {
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+}
+
+.weimo-btn--variant-soft.weimo-btn--hover {
+  opacity: 0.85;
+}
+
+.weimo-btn--variant-text {
+  height: auto;
+  padding: 8rpx 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.weimo-btn--variant-text.weimo-btn--tone-brand {
+  color: var(--color-brand);
+}
+
+.weimo-btn--variant-text.weimo-btn--tone-neutral {
+  color: var(--color-text-primary);
+}
+
+.weimo-btn--variant-text.weimo-btn--tone-danger {
+  color: var(--color-danger);
+}
+
+.weimo-btn--variant-text.weimo-btn--hover {
+  opacity: 0.72;
+}
+
+.weimo-btn--variant-card {
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+.weimo-btn--variant-card.weimo-btn--tone-brand {
+  color: var(--color-brand);
+}
+
+.weimo-btn--variant-card.weimo-btn--tone-neutral {
+  color: var(--color-text-primary);
+}
+
+.weimo-btn--variant-card.weimo-btn--tone-danger {
+  color: var(--color-danger);
+}
+
+.weimo-btn--disabled {
+  opacity: 0.55;
+}
+
+.weimo-btn__content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weimo-btn__spinner {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 12rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--color-border);
+  border-top-color: currentColor;
+  animation: weimo-btn-spin 0.8s linear infinite;
+}
+
+.weimo-btn__spinner--light {
+  border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: currentColor;
+}
+
+.weimo-btn__spinner--dark {
+  border-color: var(--color-border);
+  border-top-color: currentColor;
+}
+
+@keyframes weimo-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

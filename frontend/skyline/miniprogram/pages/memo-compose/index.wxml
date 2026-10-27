@@ -1,0 +1,138 @@
+<view
+  class="compose-shell ds-page-inline-shell"
+  style="padding-top: {{navOverlayHeight}}px; padding-bottom: {{keyboardHeight > 0 ? keyboardHeight : safeAreaBottom}}px;"
+>
+  <textarea
+    class="editor-textarea"
+    value="{{content}}"
+    focus="{{textareaFocus}}"
+    maxlength="-1"
+    placeholder="写点什么..."
+    placeholder-class="editor-placeholder"
+    adjust-position="{{false}}"
+    cursor-spacing="16"
+    show-confirm-bar="{{false}}"
+    disable-default-padding="{{true}}"
+    hold-keyboard="{{true}}"
+    selection-start="{{selectionStart}}"
+    selection-end="{{selectionEnd}}"
+    bindinput="handleContentInput"
+    bind:selectionchange="handleSelectionChange"
+    bind:keyboardcompositionstart="handleCompositionStart"
+    bind:keyboardcompositionend="handleCompositionEnd"
+    bindkeyboardheightchange="handleKeyboardHeightChange"
+  />
+  <view class="editor-tags">
+    <weimo-chip
+      wx:for="{{tagChipsForEditor}}"
+      wx:key="*this"
+      wx:for-item="tag"
+      value="{{tag}}"
+      prefix="#"
+      variant="glass"
+      size="sm"
+      data-index="{{index}}"
+      bind:tap="handleTagChipTap"
+    />
+    <weimo-chip
+      prefix="+"
+      value="标签"
+      variant="glass"
+      size="sm"
+      bind:tap="handleAddTagTap"
+    />
+  </view>
+  <view wx:if="{{referenceId !== null}}" class="editor-reference" catch:tap="handleReferenceTap">
+    <text class="iconfont iconfont--arrow-left-up-circle-filled memo-reference-inline__icon"></text>
+    <text class="memo-reference-inline__text" overflow="ellipsis" max-lines="1">{{referencePreviewText}}</text>
+  </view>
+
+  <view class="compose-toolbar">
+    <view class="md-toolbar ds-surface-floating ds-surface-frosted">
+      <view
+        class="md-toolbar__slider{{toolbarSliderAnimated ? ' md-toolbar__slider--animated' : ''}}"
+        style="transform: translateX({{toolbarActiveIndex * 88}}rpx); opacity: {{toolbarActiveIndex >= 0 ? 1 : 0}}"
+      ></view>
+      <weimo-toggle-button
+        icon="page-head"
+        label="标题"
+        selected="{{headingActive}}"
+        ariaLabel="标题"
+        bind:tap="handleHeadingTap"
+      />
+      <weimo-toggle-button
+        icon="bulletpoint"
+        label="列表"
+        selected="{{listActive}}"
+        ariaLabel="项目列表"
+        bind:tap="handleListTap"
+      />
+      <weimo-toggle-button
+        icon="indent-right"
+        label="引用"
+        selected="{{quoteActive}}"
+        ariaLabel="引用块"
+        bind:tap="handleQuoteTap"
+      />
+      <weimo-toggle-button
+        icon="format-vertical-align-center"
+        label="居中"
+        selected="{{centerQuoteActive}}"
+        ariaLabel="居中引用"
+        bind:tap="handleCenterQuoteTap"
+      />
+    </view>
+    <weimo-icon-button
+      icon="{{mode === 'edit' ? 'check' : 'send-filled'}}"
+      variant="glass"
+      tone="brand"
+      size="lg"
+      captureTap="{{false}}"
+      disabled="{{!canSave}}"
+      loading="{{saving}}"
+      ariaLabel="{{saving ? '保存中' : '保存'}}"
+      bind:tap="handleSave"
+    />
+  </view>
+
+  <view class="memo-compose-nav-overlay">
+    <view class="memo-compose-nav-mask" style="height: {{navStatusMaskHeight}}px;"></view>
+    <navigation-bar
+      title="{{pageTitle}}"
+      modal="{{true}}"
+      compact="{{true}}"
+      background="transparent"
+      back="{{false}}"
+    >
+      <view slot="left" class="memo-compose-nav-back-slot">
+        <weimo-icon-button
+          icon="chevron-left"
+          variant="glass"
+          tone="neutral"
+          feedbackStyle="nav-glass"
+          size="md"
+          iconSize="var(--nav-bar-icon-size)"
+          ariaLabel="返回"
+          bind:tap="handleBack"
+        />
+      </view>
+    </navigation-bar>
+  </view>
+</view>
+
+<!-- 错误态：edit 模式缺少初始化数据 -->
+<view wx:if="{{initError}}" class="init-error-overlay">
+  <view class="init-error">
+    <text class="init-error__title">无法加载笔记</text>
+    <text class="init-error__desc">编辑数据未正确传入，请返回首页重试</text>
+    <weimo-button
+      variant="solid"
+      tone="brand"
+      size="md"
+      shape="pill"
+      bind:tap="handleBack"
+    >
+      返回首页
+    </weimo-button>
+  </view>
+</view>

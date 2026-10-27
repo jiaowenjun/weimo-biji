@@ -1,0 +1,11 @@
+@import './styles/tokens.wxss';
+@import './styles/patterns.wxss';
+@import './styles/iconfont.wxss';
+
+page {
+  height: 100vh;
+  background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}

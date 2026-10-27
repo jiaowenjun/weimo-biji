@@ -1,0 +1,467 @@
+@import '../../styles/memo-markdown.wxss';
+
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-page);
+}
+
+/* 与 memo-compose-tag-picker：scroll 撑满剩余高度，底部工具栏绝对定位悬浮层 */
+.memo-share-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.memo-share-nav-overlay {
+  position: absolute;
+  top: 0;
+  left: calc(0rpx - var(--page-inline-shell-margin));
+  right: calc(0rpx - var(--page-inline-shell-margin));
+  z-index: 5;
+  pointer-events: none;
+}
+
+.memo-share-nav-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    0deg,
+    var(--color-nav-status-mask-start) 0%,
+    var(--color-nav-status-mask-mid) 45%,
+    var(--color-nav-status-mask-end) 100%
+  );
+}
+
+.memo-share-nav-overlay .weui-navigation-bar {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.memo-share-nav-back-slot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.memo-share-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.memo-share-scroll__content {
+  min-height: 100%;
+  box-sizing: border-box;
+  padding-bottom: 176rpx;
+}
+
+.memo-share-status {
+  min-height: 240rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.memo-share-status-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.memo-share-live-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 686rpx;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.memo-share-toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  min-height: var(--floating-action-size);
+  padding: 0 var(--memo-layout-gutter) var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+/* 与首页 .fab：bottom = env(safe-area-inset-bottom) + 48rpx（--spacing-xl） */
+.memo-share-toolbar--rest {
+  padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+}
+
+/* 透明布局容器；磨砂玻璃仅由 weimo-icon-button variant=glass 承担 */
+.memo-share-toolbar__shell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.memo-share-nav-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  height: 100%;
+}
+
+.memo-share-nav-actions__hit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memo-share-toolbar__font-ring {
+  position: relative;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(
+    var(--color-brand) calc(var(--ring-progress, 0) * 3.6deg),
+    var(--color-border) calc(var(--ring-progress, 0) * 3.6deg)
+  );
+}
+
+.memo-share-toolbar__font-ring-inner {
+  position: relative;
+  z-index: 1;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memo-share-toolbar__font-ring-icon {
+  font-size: 40rpx;
+  color: var(--color-text-placeholder);
+  line-height: 1;
+}
+
+.memo-share-toolbar__font-ring-icon--spin {
+  animation: font-ring-icon-spin 1s linear infinite;
+}
+
+@keyframes font-ring-icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.memo-share-toolbar__font-error {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: var(--floating-action-size);
+}
+
+.memo-share-toolbar__font-error-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.memo-share-snapshot-host {
+  position: fixed;
+  left: -2000px;
+  top: 0;
+  width: 686rpx;
+  pointer-events: none;
+}
+
+.memo-share-snapshot {
+  display: block;
+}
+
+.memo-share-paper {
+  /* 纸面 --memo-share-paper-surface；标签 knock-out 字色同纸面，衬底用 --memo-share-paper-chip-mask */
+  --memo-share-paper-surface: #eee8e8;
+  --memo-share-paper-chip-mask: #111816;
+  position: relative;
+  font-size: var(--font-size-base);
+  padding: 1.5em 40rpx;
+  box-sizing: border-box;
+  background: var(--memo-share-paper-surface);
+  color: var(--color-text-primary);
+}
+
+/* 2026-05-02 修复：Skyline snapshot 导出 PNG 右侧边缘会出现 1px 透明/白线，
+   在暗色主题下特别明显。覆盖条向右超出 8rpx 共 16rpx，同色背景吃掉该边缘像素。
+   见 docs/20260502/d-memo-share-image-report.md 第 9 节。 */
+.memo-share-paper__edge-cover {
+  position: absolute;
+  top: 0;
+  right: -8rpx;
+  bottom: 0;
+  width: 16rpx;
+  background: var(--memo-share-paper-surface);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.memo-share-paper__content {
+  margin-bottom: 1em;
+}
+
+.memo-share-paper__rich,
+.memo-share-paper__plain {
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.memo-share-paper__tags {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+/* Skyline snapshot 下 emoji 字形边界仍可能撑高 chip；分享图内固定根节点高度保持同排一致 */
+.memo-share-paper__tags weimo-chip .weimo-chip {
+  height: 38rpx;
+  overflow: hidden;
+}
+
+.memo-share-paper__tags weimo-chip .weimo-chip.weimo-chip--size-sm {
+  height: 44rpx;
+}
+
+.memo-share-paper__tags weimo-chip .weimo-chip.weimo-chip--variant-soft.weimo-chip--tone-brand {
+  background: var(--memo-share-paper-chip-mask);
+}
+
+/* 特异性需高于组件内 .weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__* 的 brand 字色，否则会显示品牌橙 */
+.memo-share-paper__tags weimo-chip .weimo-chip.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__prefix,
+.memo-share-paper__tags weimo-chip .weimo-chip.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__text {
+  color: var(--memo-share-paper-surface);
+}
+
+.memo-share-paper__tags weimo-chip .weimo-chip.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__prefix,
+.memo-share-paper__tags weimo-chip .weimo-chip.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__text {
+  color: var(--memo-share-paper-surface);
+}
+
+.memo-share-paper__footer {
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8rpx;
+}
+
+.memo-share-paper__footer-dateline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.memo-share-paper__footer-dateline-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.memo-share-paper__nickname {
+  font-size: var(--font-size-sm);
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* 与日期同字号、同字重；图标 + 「维摩笔记」 */
+.memo-share-paper__brand {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.memo-share-paper__brand-icon {
+  flex-shrink: 0;
+  font-size: 26rpx;
+  line-height: 1;
+  color: var(--color-text-placeholder);
+}
+
+.memo-share-paper__brand-label {
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+  font-weight: 400;
+  color: var(--color-text-placeholder);
+}
+
+/* 日期：小于昵称，非粗体 */
+.memo-share-paper__date {
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+  font-weight: 400;
+  color: var(--color-text-primary);
+}
+
+/* 大字号：正文/页脚整体抬一档，可与印刷体叠用 */
+.memo-share-paper--large-text {
+  font-size: var(--font-size-md);
+}
+
+.memo-share-paper--large-text .memo-share-paper__rich,
+.memo-share-paper--large-text .memo-share-paper__plain {
+  font-size: var(--font-size-md);
+}
+
+.memo-share-paper--large-text .memo-share-paper__nickname {
+  font-size: var(--font-size-base);
+}
+
+.memo-share-paper--large-text .memo-share-paper__date,
+.memo-share-paper--large-text .memo-share-paper__brand-label {
+  font-size: var(--font-size-sm);
+}
+
+.memo-share-paper--large-text .memo-share-paper__brand-icon {
+  font-size: 30rpx;
+}
+
+.memo-share-paper--large-text .memo-markdown__heading--h1 {
+  font-size: var(--font-size-md);
+}
+
+.memo-share-paper--large-text .memo-markdown__heading--h2,
+.memo-share-paper--large-text .memo-markdown__heading--h3 {
+  font-size: var(--font-size-lg);
+}
+
+.memo-share-paper--large-text .memo-markdown__heading--h4,
+.memo-share-paper--large-text .memo-markdown__heading--h5,
+.memo-share-paper--large-text .memo-markdown__heading--h6 {
+  font-size: var(--font-size-md);
+}
+
+.memo-share-paper--large-text .memo-markdown__code--block {
+  font-size: var(--font-size-base);
+}
+
+.memo-share-paper--large-text .memo-markdown__table-head .memo-markdown__table-cell,
+.memo-share-paper--large-text .memo-markdown__table-cell {
+  font-size: var(--font-size-base);
+}
+
+/*
+ * rich-text 内部节点的祖先不含 .memo-share-paper（只有宿主 class）：用 .memo-share-paper__rich
+ * 前缀保证分享纸专用 markdown 间距能命中 compat 渲染树；
+ * 同时清零标题块级外边距，避免宿主/UA 下边距与下一块 margin-top 叠成双份。
+ */
+.memo-share-paper__rich .memo-markdown__heading {
+  margin: 0;
+}
+
+/* 分享纸内 markdown 块间距统一 1em */
+.memo-share-paper__rich .memo-markdown__heading+.memo-markdown__p,
+.memo-share-paper__rich .memo-markdown__heading+.memo-markdown__list,
+.memo-share-paper__rich .memo-markdown__heading+.memo-markdown__blockquote,
+.memo-share-paper__rich .memo-markdown__heading+.memo-markdown__pre,
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__heading,
+.memo-share-paper__rich .memo-markdown__list+.memo-markdown__heading,
+.memo-share-paper__rich .memo-markdown__blockquote+.memo-markdown__heading,
+.memo-share-paper__rich .memo-markdown__pre+.memo-markdown__p,
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__pre,
+.memo-share-paper__rich .memo-markdown__pre+.memo-markdown__heading,
+.memo-share-paper__rich .memo-markdown__pre+.memo-markdown__list,
+.memo-share-paper__rich .memo-markdown__list+.memo-markdown__pre,
+.memo-share-paper__rich .memo-markdown__pre+.memo-markdown__blockquote,
+.memo-share-paper__rich .memo-markdown__blockquote+.memo-markdown__pre,
+.memo-share-paper__rich .memo-markdown__hr+.memo-markdown__p,
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__hr,
+.memo-share-paper__rich .memo-markdown__hr+.memo-markdown__heading,
+.memo-share-paper__rich .memo-markdown__heading+.memo-markdown__hr,
+.memo-share-paper__rich .memo-markdown__hr+.memo-markdown__list,
+.memo-share-paper__rich .memo-markdown__list+.memo-markdown__hr,
+.memo-share-paper__rich .memo-markdown__hr+.memo-markdown__blockquote,
+.memo-share-paper__rich .memo-markdown__blockquote+.memo-markdown__hr {
+  margin-top: 1em;
+}
+
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__p,
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__list,
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__blockquote,
+.memo-share-paper__rich .memo-markdown__list+.memo-markdown__p,
+.memo-share-paper__rich .memo-markdown__list+.memo-markdown__list,
+.memo-share-paper__rich .memo-markdown__blockquote+.memo-markdown__p,
+.memo-share-paper__rich .memo-markdown__blockquote+.memo-markdown__list {
+  margin-top: 1em;
+}
+
+.memo-share-paper__rich .memo-markdown__p+.memo-markdown__blockquote,
+.memo-share-paper__rich .memo-markdown__blockquote+.memo-markdown__p {
+  margin-top: 1em;
+}
+
+.memo-share-paper__rich .memo-markdown__blockquote--tight-lines .memo-markdown__p+.memo-markdown__p {
+  margin-top: 0;
+}
+
+/* 印刷字体（JingHuaLaoSong），与默认字体共用同一套纸张视觉模版 */
+.memo-share-paper--print {
+  font-family: JingHuaLaoSong, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .memo-share-paper {
+    --memo-share-paper-surface: #2e2e29;
+    /* 暗色衬底逐级抬亮，衬 knock-out 字（与 --memo-share-paper-surface 同色） */
+    --memo-share-paper-chip-mask: #939388;
+    background: var(--memo-share-paper-surface);
+    color: var(--color-text-primary);
+  }
+
+  .memo-share-paper__rich,
+  .memo-share-paper__plain,
+  .memo-share-paper__nickname,
+  .memo-share-paper__date {
+    color: var(--color-text-primary);
+  }
+
+  .memo-share-paper__brand-icon,
+  .memo-share-paper__brand-label {
+    color: var(--color-text-placeholder);
+  }
+}

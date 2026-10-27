@@ -1,0 +1,207 @@
+.weimo-popover-menu__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.weimo-popover-menu__overlay--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.weimo-popover-menu {
+  position: fixed;
+  z-index: 201;
+  min-width: 220rpx;
+  /* 列布局 + 拉伸：每行菜单与容器同宽，折叠领衔行可把 chevron 顶到气泡右内边距内沿 */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 8rpx 16rpx;
+  border-radius: var(--radius-lg);
+  transform-origin: top right;
+  opacity: 0;
+  transform: scale(0.7);
+  pointer-events: none;
+  transition: opacity 130ms cubic-bezier(0.4, 0, 1, 1),
+              transform 130ms cubic-bezier(0.4, 0, 1, 1);
+  will-change: transform, opacity;
+}
+
+.weimo-popover-menu--up {
+  transform-origin: bottom right;
+}
+
+/* 标签胶囊等左对齐场景：缩放点改到左侧，向右展开 */
+.weimo-popover-menu--anchor-start {
+  transform-origin: top left;
+}
+
+.weimo-popover-menu--anchor-start.weimo-popover-menu--up {
+  transform-origin: bottom left;
+}
+
+.weimo-popover-menu--active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.weimo-popover-menu__header {
+  padding: 12rpx 28rpx 8rpx;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-placeholder);
+}
+
+.weimo-popover-menu__header text {
+  display: block;
+  width: 100%;
+}
+
+.weimo-popover-menu__item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  /* 不传 gap：Skyline 下部分机型对 flex gap 支持不完整；用图标槽 margin 统一图标与正文间距 */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rpx 28rpx;
+  background-color: rgba(255, 255, 255, 0);
+  border-radius: var(--radius-md);
+}
+
+.weimo-popover-menu__item--disabled {
+  opacity: 0.56;
+}
+
+/* 分组标题：无折叠组时整行不接收事件；有折叠组时由 .item--collapse-lead 恢复可点 */
+.weimo-popover-menu__item--section-header {
+  pointer-events: none;
+}
+
+/* 折叠组领衔行：恢复 pointer-events；双行文案时与左右图标同轴垂直居中 */
+.weimo-popover-menu__item--collapse-lead {
+  pointer-events: auto;
+  align-items: center;
+}
+
+.weimo-popover-menu__item--collapse-lead .weimo-popover-menu__item-icon-slot {
+  padding-top: 0;
+}
+
+.weimo-popover-menu__collapse-trigger {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  /* 领衔行已 align-items:center，与左侧 icon 同基准；保留以兼容部分渲染差异 */
+  align-self: center;
+  /* 领衔行铺满整宽时由中间列 flex:1 顶到最右；兜底避免 auto margin 在部分渲染下失效 */
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+.weimo-popover-menu__collapse-chevron {
+  font-size: 1em;
+  color: var(--color-text-primary);
+  transition: transform 0.2s ease;
+}
+
+.weimo-popover-menu__collapse-chevron--expanded {
+  transform: rotate(90deg);
+}
+
+.weimo-popover-menu__collapse-body {
+  overflow: hidden;
+  opacity: 1;
+  transition: height 200ms ease, opacity 200ms ease;
+  width: 100%;
+}
+
+.weimo-popover-menu__collapse-body--collapsed {
+  height: 0 !important;
+  opacity: 0;
+}
+
+.weimo-popover-menu__item-icon-slot {
+  flex: none;
+  width: 32rpx;
+  min-height: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 6rpx;
+  margin-right: 24rpx;
+  /* iconfont 1em 盒以此为准，避免领衔行等与导航栏等同层时字形受继承链偏小 */
+  font-size: 32rpx;
+}
+
+.weimo-popover-menu__item-text-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.weimo-popover-menu__item-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-placeholder);
+  line-height: 1.35;
+}
+
+.weimo-popover-menu__item-icon {
+  flex: none;
+  font-size: 1em;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+/* 逆时针 45°（CSS 正角度为顺时针，故使用负值） */
+.weimo-popover-menu__item-icon--rot-ccw-45 {
+  transform: rotate(-45deg);
+}
+
+.weimo-popover-menu__item-icon--rot-cw-90 {
+  transform: rotate(90deg);
+}
+
+.weimo-popover-menu__item-icon--danger {
+  color: var(--color-danger);
+}
+
+.weimo-popover-menu__item-icon--disabled {
+  color: var(--color-text-placeholder);
+}
+
+.weimo-popover-menu__item--hover {
+  background-color: var(--color-pressable-hover);
+}
+
+.weimo-popover-menu__item-text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.weimo-popover-menu__item-text--danger {
+  color: var(--color-danger);
+}
+
+.weimo-popover-menu__item-text--disabled {
+  color: var(--color-text-placeholder);
+}
+
+.weimo-popover-menu__divider {
+  height: 1rpx;
+  background: var(--color-divider);
+  margin: 0 16rpx;
+}

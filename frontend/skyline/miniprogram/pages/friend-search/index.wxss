@@ -1,0 +1,140 @@
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-page);
+}
+
+.friend-search-shell {
+  position: relative;
+}
+
+.friend-search-results-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.friend-search-results-scroll__content {
+  min-height: 100%;
+  box-sizing: border-box;
+  padding-bottom: 176rpx;
+}
+
+.friend-search-status {
+  padding: var(--spacing-lg) 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.friend-search-status__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.friend-search-status__retry {
+  margin-left: var(--spacing-sm);
+}
+
+.friend-search-results {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-search-result {
+  min-height: 92rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1rpx solid var(--color-border-light);
+  box-sizing: border-box;
+}
+
+.friend-search-result:last-child {
+  border-bottom: 0;
+}
+
+.friend-search-result__avatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  flex: none;
+  background: var(--color-bg-elevated);
+}
+
+.friend-search-result__avatar--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.friend-search-result__avatar-icon {
+  font-size: 30rpx;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+.friend-search-result__body {
+  flex: 1;
+  min-width: 0;
+  margin: 0 var(--spacing-md);
+}
+
+.friend-search-result__nickname {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.friend-search-toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  min-height: var(--icon-button-size-lg);
+  padding: 0 var(--memo-layout-gutter) var(--spacing-md);
+  box-sizing: border-box;
+  transition: bottom 0.25s ease;
+}
+
+.friend-search-toolbar--rest {
+  padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+}
+
+.friend-search-toolbar__input-shell {
+  flex: 1;
+  min-width: 0;
+  height: 80rpx;
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+}
+
+.friend-search-toolbar__input-icon {
+  flex: none;
+  font-size: var(--input-inner-icon-size);
+  margin-right: 14rpx;
+  color: var(--color-text-placeholder);
+  line-height: 1;
+}
+
+.friend-search-toolbar__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.friend-search-toolbar__input-placeholder {
+  color: var(--color-text-placeholder);
+}

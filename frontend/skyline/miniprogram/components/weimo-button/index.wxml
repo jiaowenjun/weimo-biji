@@ -1,0 +1,27 @@
+<block wx:if="{{openType}}">
+  <button
+    class="{{rootClass}}"
+    hover-class="{{hoverClass}}"
+    hover-stay-time="80"
+    disabled="{{disabled || loading}}"
+    open-type="{{openType}}"
+    bindtap="onTap"
+    bindgetuserinfo="onGetUserInfo"
+    bindgetphonenumber="onGetPhoneNumber"
+  >
+    <view wx:if="{{loading}}" class="{{spinnerClass}}" />
+    <view class="weimo-btn__content"><slot /></view>
+  </button>
+</block>
+<block wx:else>
+  <view
+    class="{{rootClass}}"
+    hover-class="{{hoverClass}}"
+    hover-stay-time="80"
+    aria-role="button"
+    bindtap="onTap"
+  >
+    <view wx:if="{{loading}}" class="{{spinnerClass}}" />
+    <view class="weimo-btn__content"><slot /></view>
+  </view>
+</block>

@@ -1,0 +1,173 @@
+page {
+  --color-bg-page: #f6f4f1;
+  --color-bg-card: #ffffff;
+  /* 与 card 同色相（#fff），半透明 + backdrop-filter 磨砂侧栏 */
+  --color-bg-sidebar-panel: rgba(255, 255, 255, 0.9);
+  --color-bg-elevated: #ffffff;
+  /* 磨砂浮层：底透明，仅靠 backdrop-filter + 描边/阴影界定 */
+  --color-bg-floating-panel: transparent;
+  --color-bg-mask: rgba(0, 0, 0, 0.4);
+
+  --color-text-primary: rgba(0, 0, 0, 0.9);
+  --color-text-secondary: rgba(0, 0, 0, 0.6);
+  --color-text-placeholder: rgba(0, 0, 0, 0.26);
+  --color-text-disabled: rgba(0, 0, 0, 0.26);
+
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-light: rgba(0, 0, 0, 0.04);
+  --color-divider: rgba(0, 0, 0, 0.06);
+
+  /* popover 菜单锚点按钮（ghost neutral × feedback-default）：按下 / pressed 背景 */
+  --color-menu-trigger-highlight-bg: var(--color-border);
+
+  --color-brand: #ca5421;
+  --color-brand-light: #faece5;
+  /* 比 brand-light 更淡，专用于 weimo-chip 等「小面积品牌底」避免过实 */
+  --color-brand-chip-surface: #fef7f3;
+  --color-brand-pressed: rgba(202, 84, 33, 0.85);
+  /* 磨砂浮层边缘：黑色极淡半透明，亮底可见 */
+  --color-brand-soft-border: rgba(0, 0, 0, 0.06);
+  --color-text-on-brand: #ffffff;
+  --color-nav-status-mask-start: rgba(246, 244, 241, 0);
+  --color-nav-status-mask-mid: rgba(246, 244, 241, 0.7);
+  --color-nav-status-mask-end: rgba(246, 244, 241, 0.9);
+
+  --color-heat-1: rgba(202, 84, 33, 0.2);
+  --color-heat-2: rgba(202, 84, 33, 0.4);
+  --color-heat-3: rgba(202, 84, 33, 0.65);
+  --color-heat-4: rgba(202, 84, 33, 0.9);
+
+  /* 侧栏热力图「今日」格子 inset 描边（与 heat 同系，避开半透明白在亮底不可见） */
+  --color-heatmap-today-ring: rgba(202, 84, 33, 0.55);
+
+  --color-highlight: #fff3b0;
+  --color-danger: #d54941;
+  --color-success: #2ba471;
+  --color-warning: #e37318;
+
+  --surface-card-bg: var(--color-bg-card);
+  --surface-card-radius: var(--radius-md);
+  --surface-card-border: var(--color-border-light);
+  --surface-card-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.035);
+
+  --shadow-card: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  /* 磨砂浮层：内顶高光 + 贴边中阴影 + 柔和大阴影 */
+  --shadow-float-elevated: inset 0 2rpx 0 rgba(255, 255, 255, 0.6), 0 4rpx 16rpx rgba(0, 0, 0, 0.06), 0 20rpx 50rpx rgba(0, 0, 0, 0.12);
+
+  /* 磨砂 backdrop-filter：悬浮单档，与透明底 + 品牌软描边搭配 */
+  --blur-frosted: 28rpx;
+
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 26rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+  --page-shell-inline-padding: 28rpx;
+  --memo-layout-gutter: var(--spacing-md);
+  --memo-reference-relation-panel-gap: calc(2 * var(--memo-layout-gutter));
+  --memo-card-section-gap: 1em;
+
+  --control-height-xs: 56rpx;
+  --control-height-sm: 64rpx;
+  --control-height-input: 80rpx;
+  --control-height-toolbar: 84rpx;
+  --control-height-lg: 88rpx;
+  /* 搜索页、标签选择页等底部悬浮栏内输入磨砂胶囊高度（与同行 lg 图标按钮对齐用 min-height 配合） */
+  --floating-toolbar-input-shell-height: 84rpx;
+
+  --icon-button-size-xs: 48rpx;
+  --icon-button-size-sm: 56rpx;
+  --icon-button-size-md: 64rpx;
+  --icon-button-size-lg: 88rpx;
+  --icon-button-size-xl: 104rpx;
+
+  --floating-action-size: 104rpx;
+  --sidebar-panel-width: 580rpx;
+  --sidebar-row-height: 76rpx;
+  --page-inline-shell-margin: var(--spacing-md);
+  --page-inline-shell-padding-top: var(--spacing-xs);
+  --page-inline-shell-padding-inline: var(--memo-layout-gutter);
+  --state-stack-padding-y: 120rpx;
+  --page-shell-safe-bottom-space: var(--spacing-xl);
+
+  --radius-sm: 12rpx;
+  --radius-md: 32rpx;
+  --radius-lg: 40rpx;
+  --radius-round: 999rpx;
+
+  --font-size-xs: 24rpx;
+  --font-size-sm: 26rpx;
+  --font-size-base: 30rpx;
+  --font-size-md: 34rpx;
+  --font-size-lg: 38rpx;
+  --font-size-xl: 46rpx;
+  --font-size-xxl: 54rpx;
+
+  --line-height-base: 1.5;
+  --line-height-reading: 1.6;
+  --line-height-relaxed: 1.7;
+
+  --nav-bar-icon-size: 36rpx;
+  /* 输入行内/旁配套图标（如左侧搜索、右侧清除等）；较正文 30rpx 略大便于辨认 */
+  --input-inner-icon-size: 34rpx;
+  --nav-search-btn-size: 70rpx;
+  --color-brand-ghost-transparent: rgba(250, 236, 229, 0);
+  --color-pressable-hover: rgba(255, 255, 255, 0.55);
+  /* 工具栏 toggle 选中底：与笔记卡「更多」ghost neutral pressed（--color-menu-trigger-highlight-bg）一致 */
+  --color-toggle-selected-surface: var(--color-menu-trigger-highlight-bg);
+  --color-toggle-rest-surface: var(--color-brand-ghost-transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    --color-bg-page: #111111;
+    --color-bg-card: #1e1e1e;
+    --color-bg-sidebar-panel: rgba(30, 30, 30, 0.9);
+    --color-bg-elevated: #2a2a2a;
+    --color-bg-floating-panel: transparent;
+    --color-bg-mask: rgba(0, 0, 0, 0.6);
+
+    --color-text-primary: rgba(255, 255, 255, 0.9);
+    --color-text-secondary: rgba(255, 255, 255, 0.55);
+    --color-text-placeholder: rgba(255, 255, 255, 0.26);
+    --color-text-disabled: rgba(255, 255, 255, 0.26);
+
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-light: rgba(255, 255, 255, 0.05);
+    --color-divider: rgba(255, 255, 255, 0.08);
+
+    --color-menu-trigger-highlight-bg: var(--color-border);
+
+    --color-brand: #f08646;
+    --color-brand-light: #3a2a20;
+    --color-brand-chip-surface: #3e3228;
+    --color-brand-pressed: rgba(240, 134, 70, 0.85);
+    --color-brand-soft-border: rgba(255, 255, 255, 0.1);
+    --shadow-float-elevated: inset 0 2rpx 0 rgba(255, 255, 255, 0.15), 0 20rpx 50rpx rgba(0, 0, 0, 0.3);
+    --color-text-on-brand: #ffffff;
+    --color-nav-status-mask-start: rgba(17, 17, 17, 0);
+    --color-nav-status-mask-mid: rgba(17, 17, 17, 0.72);
+    --color-nav-status-mask-end: rgba(17, 17, 17, 0.96);
+    --color-brand-ghost-transparent: rgba(58, 42, 32, 0);
+    --color-pressable-hover: rgba(255, 255, 255, 0.22);
+    --color-toggle-selected-surface: var(--color-menu-trigger-highlight-bg);
+    /* 与 #3e3228（chip surface）同 RGB，仅 alpha=0；勿用 brand-ghost（#3a2a20）否则过渡会串色 */
+    --color-toggle-rest-surface: rgba(62, 50, 40, 0);
+
+    --color-heat-1: rgba(240, 134, 70, 0.2);
+    --color-heat-2: rgba(240, 134, 70, 0.4);
+    --color-heat-3: rgba(240, 134, 70, 0.65);
+    --color-heat-4: rgba(240, 134, 70, 0.9);
+
+    --color-heatmap-today-ring: rgba(255, 255, 255, 0.38);
+
+    --color-highlight: rgba(240, 134, 70, 0.38);
+    --color-danger: #e34d59;
+    --color-success: #3ac57a;
+    --color-warning: #f5a623;
+
+    --shadow-card: none;
+    --surface-card-border: var(--color-border);
+    --surface-card-shadow: none;
+  }
+}

@@ -1,0 +1,191 @@
+.weimo-chip {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--radius-round);
+  transition:
+    opacity 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.weimo-chip:not(.weimo-chip--variant-glass) {
+  border: 1rpx solid transparent;
+}
+
+.weimo-chip--variant-soft.weimo-chip--tone-brand {
+  background: var(--color-brand-chip-surface);
+}
+
+.weimo-chip--variant-soft.weimo-chip--tone-neutral {
+  background: var(--color-bg-elevated);
+}
+
+.weimo-chip--variant-outline {
+  background: var(--color-bg-elevated);
+}
+
+.weimo-chip--variant-outline.weimo-chip--tone-brand {
+  border-color: var(--color-brand);
+}
+
+.weimo-chip--variant-outline.weimo-chip--tone-neutral {
+  border-color: var(--color-border);
+}
+
+.weimo-chip--variant-outline.weimo-chip--selected {
+  border-color: var(--color-brand);
+  background: var(--color-brand-chip-surface);
+}
+
+.weimo-chip--size-xs {
+  padding: 6rpx 16rpx;
+}
+
+.weimo-chip--size-sm {
+  padding: 8rpx 16rpx;
+}
+
+.weimo-chip--size-md {
+  min-height: 64rpx;
+  padding: 0 24rpx;
+}
+
+.weimo-chip--closable {
+  padding-right: 4rpx;
+}
+
+.weimo-chip--disabled {
+  opacity: 0.55;
+}
+
+.weimo-chip__icon,
+.weimo-chip__prefix,
+.weimo-chip__text,
+.weimo-chip__slot {
+  line-height: 1;
+}
+
+.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__icon,
+.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__prefix,
+.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__text,
+.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__slot,
+.weimo-chip--variant-soft.weimo-chip--tone-brand .weimo-chip__close-icon {
+  color: var(--color-brand);
+}
+
+.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__icon,
+.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__prefix,
+.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__text,
+.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__slot,
+.weimo-chip--variant-soft.weimo-chip--tone-neutral .weimo-chip__close-icon {
+  color: var(--color-text-secondary);
+}
+
+.weimo-chip--variant-outline.weimo-chip--tone-brand .weimo-chip__icon,
+.weimo-chip--variant-outline.weimo-chip--tone-brand .weimo-chip__prefix,
+.weimo-chip--variant-outline.weimo-chip--tone-brand .weimo-chip__text,
+.weimo-chip--variant-outline.weimo-chip--tone-brand .weimo-chip__slot,
+.weimo-chip--variant-outline.weimo-chip--tone-brand .weimo-chip__close-icon {
+  color: var(--color-brand);
+}
+
+.weimo-chip--variant-outline.weimo-chip--tone-neutral .weimo-chip__icon,
+.weimo-chip--variant-outline.weimo-chip--tone-neutral .weimo-chip__prefix,
+.weimo-chip--variant-outline.weimo-chip--tone-neutral .weimo-chip__text,
+.weimo-chip--variant-outline.weimo-chip--tone-neutral .weimo-chip__slot,
+.weimo-chip--variant-outline.weimo-chip--tone-neutral .weimo-chip__close-icon {
+  color: var(--color-text-secondary);
+}
+
+.weimo-chip--variant-outline.weimo-chip--selected .weimo-chip__icon,
+.weimo-chip--variant-outline.weimo-chip--selected .weimo-chip__prefix,
+.weimo-chip--variant-outline.weimo-chip--selected .weimo-chip__text,
+.weimo-chip--variant-outline.weimo-chip--selected .weimo-chip__slot,
+.weimo-chip--variant-outline.weimo-chip--selected .weimo-chip__close-icon {
+  color: var(--color-text-primary);
+}
+
+.weimo-chip__icon {
+  flex: none;
+  margin-right: 6rpx;
+}
+
+.weimo-chip__prefix {
+  flex: none;
+}
+
+.weimo-chip__text,
+.weimo-chip__slot {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.weimo-chip__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weimo-chip__slot {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.weimo-chip__close {
+  flex: none;
+  width: 32rpx;
+  height: 32rpx;
+  margin-left: 4rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-round);
+}
+
+.weimo-chip__close-icon {
+  font-size: 20rpx;
+  line-height: 1;
+}
+
+.weimo-chip--size-xs .weimo-chip__icon,
+.weimo-chip--size-xs .weimo-chip__prefix,
+.weimo-chip--size-xs .weimo-chip__text,
+.weimo-chip--size-xs .weimo-chip__slot {
+  font-size: var(--font-size-xs);
+}
+
+.weimo-chip--size-sm .weimo-chip__icon,
+.weimo-chip--size-sm .weimo-chip__prefix,
+.weimo-chip--size-sm .weimo-chip__text,
+.weimo-chip--size-sm .weimo-chip__slot {
+  font-size: var(--font-size-sm);
+}
+
+.weimo-chip--size-md .weimo-chip__icon,
+.weimo-chip--size-md .weimo-chip__prefix,
+.weimo-chip--size-md .weimo-chip__text,
+.weimo-chip--size-md .weimo-chip__slot {
+  font-size: var(--font-size-sm);
+}
+
+.weimo-chip--variant-glass.weimo-chip--tone-brand .weimo-chip__icon,
+.weimo-chip--variant-glass.weimo-chip--tone-brand .weimo-chip__prefix,
+.weimo-chip--variant-glass.weimo-chip--tone-brand .weimo-chip__text,
+.weimo-chip--variant-glass.weimo-chip--tone-brand .weimo-chip__slot,
+.weimo-chip--variant-glass.weimo-chip--tone-brand .weimo-chip__close-icon {
+  color: var(--color-brand);
+}
+
+.weimo-chip--variant-glass.weimo-chip--tone-neutral .weimo-chip__icon,
+.weimo-chip--variant-glass.weimo-chip--tone-neutral .weimo-chip__prefix,
+.weimo-chip--variant-glass.weimo-chip--tone-neutral .weimo-chip__text,
+.weimo-chip--variant-glass.weimo-chip--tone-neutral .weimo-chip__slot,
+.weimo-chip--variant-glass.weimo-chip--tone-neutral .weimo-chip__close-icon {
+  color: var(--color-text-primary);
+}

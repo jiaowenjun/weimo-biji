@@ -1,0 +1,15 @@
+@layer components {
+  .workspace-memo-quote-dialog {
+    width: min(100%, 680px);
+  }
+
+  .workspace-memo-quote-dialog__panel {
+    padding: var(--space-gutter);
+  }
+
+  .workspace-memo-quote-dialog__editor {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-gutter);
+  }
+}

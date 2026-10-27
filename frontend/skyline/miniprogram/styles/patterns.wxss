@@ -1,0 +1,63 @@
+.ds-surface-card {
+  background: var(--surface-card-bg);
+  border-radius: var(--surface-card-radius);
+  border: 1rpx solid var(--surface-card-border);
+  box-shadow: var(--surface-card-shadow);
+}
+
+.ds-surface-floating {
+  border: 1rpx solid var(--color-brand-soft-border);
+  background: var(--color-bg-floating-panel);
+  box-shadow: var(--shadow-float-elevated);
+}
+
+.ds-surface-frosted {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.22));
+  backdrop-filter: blur(var(--blur-frosted)) saturate(180%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ds-surface-frosted {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  }
+}
+
+.ds-page-inline-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0 var(--page-inline-shell-margin);
+  padding: var(--page-inline-shell-padding-top) var(--page-inline-shell-padding-inline) 0;
+  gap: 0;
+  transition: padding-bottom 250ms ease;
+}
+
+.ds-field-shell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: var(--control-height-input);
+  padding: 0 var(--spacing-sm);
+  box-sizing: border-box;
+}
+
+.ds-status-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--state-stack-padding-y) var(--spacing-lg);
+}
+
+.ds-list-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md) 0 var(--spacing-lg);
+}
+
+.ds-skeleton-card {
+  padding: var(--spacing-md);
+}

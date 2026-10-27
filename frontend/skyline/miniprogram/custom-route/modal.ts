@@ -1,0 +1,58 @@
+import { Colors, CurveAnimation, Curves } from './util'
+
+interface CustomRouteContext {
+  primaryAnimation: SkylineSharedValue<number>
+  primaryAnimationStatus: SkylineSharedValue<number>
+  userGestureInProgress: SkylineSharedValue<boolean>
+}
+
+const Modal = (customRouteContext: CustomRouteContext) => {
+  const menuRect = wx.getMenuButtonBoundingClientRect()
+
+  const { primaryAnimation, primaryAnimationStatus, userGestureInProgress } = customRouteContext
+
+  const topRadius = 12
+  const offsetToMenu = 2
+  const prevPageVisibleOffset = 10
+  const prevPageTop = menuRect.bottom + offsetToMenu
+  const nextPageTop = prevPageTop + prevPageVisibleOffset
+
+  const _curvePrimaryAnimation = CurveAnimation({
+    animation: primaryAnimation,
+    animationStatus: primaryAnimationStatus,
+    curve: Curves.linearToEaseOut,
+    reverseCurve: Curves.easeInToLinear,
+  })
+
+  const handlePrimaryAnimation = () => {
+    'worklet'
+    let t = primaryAnimation.value
+    if (!userGestureInProgress.value) {
+      t = _curvePrimaryAnimation.value
+    }
+
+    return {
+      overflow: 'hidden',
+      borderRadius: `${topRadius}px ${topRadius}px 0px 0px`,
+      marginTop: `${nextPageTop}px`,
+      transform: `translateY(${(1 - t) * 100}%)`,
+    }
+  }
+
+  const handlePreviousPageAnimation = () => {
+    'worklet'
+    return {}
+  }
+
+  return {
+    opaque: false,
+    barrierColor: Colors.black87,
+    barrierDismissible: true,
+    transitionDuration: 400,
+    reverseTransitionDuration: 400,
+    handlePrimaryAnimation,
+    handlePreviousPageAnimation,
+  }
+}
+
+export default Modal

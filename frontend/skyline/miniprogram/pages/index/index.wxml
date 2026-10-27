@@ -1,0 +1,209 @@
+<horizontal-drag-gesture-handler
+  worklet:ongesture="handleSidebarPageDrag"
+  worklet:should-accept-gesture="shouldAcceptSidebarPageDrag"
+>
+  <view class="page-gesture-root">
+    <view class="page-scroll-shell">
+      <scroll-view
+        id="index-page-scroll"
+        class="page-scroll"
+        scroll-y="{{!cardMenuActive}}"
+        type="custom"
+        show-scrollbar="{{false}}"
+        bindscrolltolower="handleScrollToLower"
+        bindscroll="handlePageScroll"
+        lower-threshold="200"
+        cache-extent="500"
+      >
+        <view class="page-nav-spacer" style="height: {{navBarOverlayHeight}}px;"></view>
+        <view class="memo-list-top-gap"></view>
+
+        <view class="filter-bar memo-list-filter--scroll-root {{(homeMemoScope.kind === 'friend' ? friendMemoDateLabel : memoDateLabel) || (homeMemoScope.kind === 'friend' ? friendMemoFacetLabel : memoFacetLabel) ? '' : 'filter-bar--collapsed'}}">
+          <filter-summary
+            wx:if="{{homeMemoScope.kind === 'friend' ? friendMemoDateLabel : memoDateLabel}}"
+            value="{{homeMemoScope.kind === 'friend' ? friendMemoDateLabel : memoDateLabel}}"
+            bind:clear="handleClearDate"
+          />
+          <filter-summary
+            wx:if="{{homeMemoScope.kind === 'friend' ? friendMemoFacetLabel : memoFacetLabel}}"
+            value="{{homeMemoScope.kind === 'friend' ? friendMemoFacetLabel : memoFacetLabel}}"
+            bind:clear="handleClearFacet"
+          />
+        </view>
+
+        <view wx:if="{{!memoListInitialized}}" class="memo-list memo-list--scroll-content">
+          <view wx:for="{{[1, 2, 3]}}" wx:key="*this" class="memo-skeleton ds-surface-card ds-skeleton-card" list-item>
+            <view class="memo-skeleton__header" />
+            <view class="memo-skeleton__body">
+              <view class="memo-skeleton__line" />
+              <view class="memo-skeleton__line memo-skeleton__line--mid" />
+              <view class="memo-skeleton__line memo-skeleton__line--short" />
+            </view>
+            <view class="memo-skeleton__tags">
+              <view class="memo-skeleton__tag" />
+              <view class="memo-skeleton__tag memo-skeleton__tag--narrow" />
+            </view>
+          </view>
+        </view>
+
+        <error-state
+          wx:elif="{{memoListInitialLoadFailed && memoCards.length === 0}}"
+          message="{{homeMemoScope.kind === 'friend' ? (friendMemoQuery.selectedTag || friendMemoDateLabel ? '筛选结果加载失败' : '好友笔记列表加载失败') : (memoQuery.keyword || memoQuery.selectedTag || memoDateLabel ? '筛选结果加载失败' : '笔记列表加载失败')}}"
+          retry-text="重新加载"
+          bind:retry="handleRetryLoad"
+        />
+
+        <empty-state
+          wx:elif="{{memoCards.length === 0}}"
+          title="{{emptyTitle}}"
+          description="{{emptyDescription}}"
+          action-text="{{emptyActionText}}"
+          bind:action="handleEmptyAction"
+        />
+
+        <block wx:else>
+          <list-builder
+            class="memo-list memo-list-builder--scroll-root"
+            type="dynamic"
+            list="{{memoRenderCards}}"
+            child-count="{{memoRenderCards.length}}"
+            initial-child-count="12"
+          >
+            <view slot:item slot:index class="memo-list__item memo-list__item--scroll-root">
+              <view wx:if="{{item.tombstone}}" class="memo-list__item-tombstone"></view>
+              <memo-card
+                wx:else
+                memo-id="{{item.id}}"
+                created-at-text="{{item.createdAtText}}"
+                content="{{item.content}}"
+                content-nodes="{{item.contentNodes}}"
+                render-rich-text="{{item.renderRichText}}"
+                tags="{{item.tags}}"
+                reference-preview="{{item.referencePreview}}"
+                referenced-by-previews="{{item.referencedByPreviews}}"
+                exiting="{{item.exiting}}"
+                entering="{{enteringCardMap[item.id]}}"
+                external-menu="{{true}}"
+                external-menu-active="{{singletonMenuActive && singletonMenuMemoId === item.id}}"
+                external-popover-mode="{{singletonMenuMode}}"
+                selected-tag="{{homeMemoScope.kind === 'friend' ? friendMemoQuery.selectedTag : memoQuery.selectedTag}}"
+                viewer-role="{{viewerRole}}"
+                owner-username="{{homeMemoScope.kind === 'friend' ? homeMemoScope.targetFriend.username : ''}}"
+                bind:tap="handleMemoCardTap"
+                bind:edit="handleMemoEdit"
+                bind:quote="handleMemoQuote"
+                bind:referencetap="handleMemoReferenceTap"
+                bind:delete="handleMemoDelete"
+                bind:modifytag="handleMemoModifyTag"
+                bind:tagadd="handleMemoTagAdd"
+                bind:tagremove="handleMemoTagRemove"
+                bind:share="handleMemoShare"
+                bind:copy="handleMemoCopy"
+                bind:tagtap="handleMemoTagTap"
+                bind:menuchange="handleCardMenuChange"
+                bind:menuopen="onCardMenuOpen"
+              />
+            </view>
+          </list-builder>
+
+          <view class="memo-list__footer ds-list-footer">
+            <text wx:if="{{memoListLoadingMore}}" class="memo-list__footer-text">正在加载更多笔记...</text>
+            <weimo-button
+              wx:elif="{{memoListLoadMoreFailed}}"
+              variant="outline"
+              tone="brand"
+              size="sm"
+              shape="pill"
+              bind:tap="handleLoadMore"
+            >
+              重试加载更多
+            </weimo-button>
+            <text wx:elif="{{!memoHasMore && memoCards.length > 0}}" class="memo-list__footer-text">已加载全部笔记</text>
+          </view>
+        </block>
+
+        <view class="page-shell__safe-bottom"></view>
+      </scroll-view>
+
+      <weimo-popover-menu
+        visible="{{singletonMenuActive}}"
+        trigger-rect="{{singletonMenuAnchorRect}}"
+        header="{{singletonMenuHeader}}"
+        items="{{singletonMenuItems}}"
+        estimated-height="{{singletonMenuEstimatedHeight}}"
+        placement-priority="{{singletonMenuPlacementPriority}}"
+        horizontal-align="{{singletonMenuHorizontalAlign}}"
+        scale-anchor="{{singletonMenuScaleAnchor}}"
+        bind:select="onSingletonMenuSelect"
+        bind:close="closeSingletonMenu"
+      />
+
+      <page-nav-chrome
+        ext-class="weui-navigation-bar--title-base"
+        title="{{navBarTitle}}"
+        title-leading-icon="{{navBarTitleLeadingIcon}}"
+        back="{{false}}"
+        menu="{{true}}"
+        title-menu-items="{{titleMenuItems}}"
+        transparent="{{navChromeTransparent}}"
+        status-mask-height="{{navBarStatusMaskHeight}}"
+        bind:titlemenuselect="handleTitleMenuSelect"
+        bind:menu="handleMenuTap"
+      >
+        <view
+          slot="left"
+          class="nav-search-btn"
+          catch:tap="handleSearchTap"
+          hover-class="nav-search-btn--hover"
+          aria-role="button"
+          aria-label="搜索笔记"
+        >
+          <text class="iconfont iconfont--search nav-search-btn__icon"></text>
+        </view>
+      </page-nav-chrome>
+    </view>
+
+    <view
+      wx:if="{{homeMemoScope.kind === 'self'}}"
+      class="fab ds-surface-floating ds-surface-frosted {{fabCompact ? 'fab--compact' : ''}}"
+      bind:tap="handleFabTap"
+      hover-class="fab--hover"
+    >
+      <text class="iconfont iconfont--add fab__icon"></text>
+    </view>
+  </view>
+</horizontal-drag-gesture-handler>
+
+<home-sidebar
+  id="sidebar"
+  visible="{{sidebarVisible}}"
+  authenticated="{{!!session.accessToken}}"
+  auth-action-text="{{session.user ? '' : '登录/注册'}}"
+  user-nickname="{{homeMemoScope.kind === 'friend' ? (homeMemoScope.targetFriend.nickname || homeMemoScope.targetFriend.username) : (session.user ? session.user.nickname : '')}}"
+  unread-count="{{friendUnreadCount}}"
+  stats="{{homeMemoScope.kind === 'friend' ? friendStats : stats}}"
+  stats-loading="{{homeMemoScope.kind === 'friend' ? friendStatsLoading : statsLoading}}"
+  active-date="{{homeMemoScope.kind === 'friend' ? (friendMemoQuery.dateMode === 'day' ? friendMemoQuery.dateValue : '') : (memoQuery.dateMode === 'day' ? memoQuery.dateValue : '')}}"
+  tag-tree-nodes="{{homeMemoScope.kind === 'friend' ? friendTagTreeNodes : tagTreeNodes}}"
+  tag-tree-untagged-count="{{tagTreeUntaggedCount}}"
+  tag-tree-loading="{{homeMemoScope.kind === 'friend' ? friendTagTreeLoading : tagTreeLoading}}"
+  tag-tree-initialized="{{homeMemoScope.kind === 'friend' ? friendTagTreeInitialized : tagTreeInitialized}}"
+  tag-tree-load-failed="{{homeMemoScope.kind === 'friend' ? friendTagTreeLoadFailed : tagTreeLoadFailed}}"
+  selected-tag="{{homeMemoScope.kind === 'friend' ? friendMemoQuery.selectedTag : memoQuery.selectedTag}}"
+  tag-menu-enabled="{{homeMemoScope.kind === 'self' && !!session.accessToken}}"
+  list-facet="{{homeMemoScope.kind === 'friend' ? (friendMemoQuery.listFacet || 'none') : (memoQuery.listFacet || 'none')}}"
+  bind:auth="handleSidebarAuth"
+  bind:close="handleSidebarClose"
+  bind:visiblechange="handleSidebarVisibleChange"
+  bind:logout="handleLogout"
+  bind:heatmapselect="handleHeatmapDateSelect"
+  bind:tagselect="handleSidebarTagSelect"
+  bind:showall="handleSidebarShowAll"
+  bind:selectfacet="handleSidebarSelectFacet"
+  bind:todayreview="handleSidebarTodayReview"
+  bind:tagretry="syncTagTree"
+  bind:settings="handleSidebarSettings"
+  bind:notifications="handleSidebarNotifications"
+  bind:edittag="handleSidebarEditTag"
+  bind:deletetag="handleSidebarDeleteTag"
+/>

@@ -1,0 +1,16 @@
+<view class="empty-state ds-status-stack">
+  <text wx:if="{{icon}}" class="empty-state__icon">{{icon}}</text>
+  <text wx:if="{{title}}" class="empty-state__title">{{title}}</text>
+  <text wx:if="{{description}}" class="empty-state__desc">{{description}}</text>
+  <view wx:if="{{actionText}}" class="empty-state__action">
+    <weimo-button
+      variant="solid"
+      tone="brand"
+      size="md"
+      shape="pill"
+      bind:tap="onAction"
+    >
+      {{actionText}}
+    </weimo-button>
+  </view>
+</view>

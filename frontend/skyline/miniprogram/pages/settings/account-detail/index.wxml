@@ -1,0 +1,59 @@
+<navigation-bar title="账户" modal="{{true}}" compact="{{true}}" />
+
+<scroll-view class="page-scroll" scroll-y type="list">
+  <page-shell padding="{{true}}">
+    <view wx:if="{{profile}}" class="account-card ds-surface-card">
+      <view class="account-row">
+        <view class="account-row__content">
+          <text class="account-row__label">用户ID</text>
+          <text class="account-row__value account-row__value--readonly">{{profile.username}}</text>
+        </view>
+      </view>
+
+      <view
+        class="account-row account-row--border"
+        hover-class="account-row--active"
+        hover-stay-time="70"
+        bindtap="handleEditNicknameTap"
+      >
+        <view class="account-row__content">
+          <text class="account-row__label">昵称</text>
+          <text class="account-row__value">{{profile.nickname}}</text>
+        </view>
+        <view class="account-row__action">
+          <text class="iconfont iconfont--chevron-right account-row__chevron" aria-hidden="true"></text>
+        </view>
+      </view>
+
+      <view
+        class="account-row account-row--border"
+        hover-class="account-row--active"
+        hover-stay-time="70"
+        bindtap="handleEditLoginNameTap"
+      >
+        <view class="account-row__content">
+          <text class="account-row__label">网页端登录名</text>
+          <text class="account-row__value">{{profile.login_name}}</text>
+        </view>
+        <view class="account-row__action">
+          <text class="iconfont iconfont--chevron-right account-row__chevron" aria-hidden="true"></text>
+        </view>
+      </view>
+
+      <view
+        class="account-row account-row--border"
+        hover-class="account-row--active"
+        hover-stay-time="70"
+        bindtap="handleEditPasswordTap"
+      >
+        <view class="account-row__content">
+          <text class="account-row__label">网页端登录密码</text>
+          <text class="account-row__value">{{profile.has_login_password ? '已设置' : '未设置'}}</text>
+        </view>
+        <view class="account-row__action">
+          <text class="iconfont iconfont--chevron-right account-row__chevron" aria-hidden="true"></text>
+        </view>
+      </view>
+    </view>
+  </page-shell>
+</scroll-view>

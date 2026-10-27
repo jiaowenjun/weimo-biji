@@ -1,0 +1,26 @@
+<view class="page-nav-overlay">
+  <view class="page-nav-overlay__surface {{transparent ? 'page-nav-overlay__surface--hidden' : ''}}"></view>
+  <view
+    class="page-nav-overlay__status-mask {{transparent ? 'page-nav-overlay__status-mask--visible' : ''}}"
+    style="height: {{statusMaskHeight}}px;"
+  ></view>
+  <view class="page-nav-overlay__content {{transparent ? 'page-nav-overlay__content--hidden' : ''}}">
+    <navigation-bar
+      extClass="{{extClass}}"
+      title="{{title}}"
+      title-leading-icon="{{titleLeadingIcon}}"
+      back="{{back}}"
+      home-button="{{homeButton}}"
+      menu="{{menu}}"
+      title-menu-items="{{titleMenuItems}}"
+      bind:back="handleBack"
+      bind:home="handleHome"
+      bind:menu="handleMenu"
+      bind:titlemenuselect="handleTitleMenuSelect"
+    >
+      <view slot="left"><slot name="left"></slot></view>
+      <view slot="center"><slot name="center"></slot></view>
+      <view slot="right"><slot name="right"></slot></view>
+    </navigation-bar>
+  </view>
+</view>

@@ -1,0 +1,9 @@
+<weimo-chip
+  value="{{value}}"
+  variant="glass"
+  tone="brand"
+  size="sm"
+  closable
+  bind:tap="handleAction"
+  bind:clear="handleAction"
+/>

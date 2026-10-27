@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "styleIsolation": "apply-shared",
+  "usingComponents": {
+    "tag-tree": "/components/tag-tree/index",
+    "weimo-icon-button": "/components/weimo-icon-button/index"
+  }
+}

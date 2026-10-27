@@ -1,0 +1,123 @@
+<view
+  class="picker-shell ds-page-inline-shell"
+  style="padding-bottom: {{keyboardHeight > 0 ? keyboardHeight : 0}}px;"
+>
+  <scroll-view
+    class="tag-list-scroll"
+    scroll-y
+    type="list"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+  >
+    <view class="tag-list-scroll__content" style="padding-top: {{navOverlayHeight}}px;">
+      <view wx:if="{{loading}}" class="tag-list-status">
+        <text class="tag-list-status__text">加载标签中...</text>
+      </view>
+      <view wx:elif="{{loadFailed}}" class="tag-list-status">
+        <text class="tag-list-status__text">加载失败</text>
+        <view class="tag-list-status__retry">
+          <weimo-button
+            variant="outline"
+            tone="brand"
+            size="xs"
+            shape="pill"
+            bind:tap="handleRetry"
+          >
+            重试
+          </weimo-button>
+        </view>
+      </view>
+      <view wx:elif="{{options.length === 0 && initialized}}" class="tag-list-status">
+        <text wx:if="{{mode === 'pick'}}" class="tag-list-status__text">未找到匹配标签，仅可选择已有标签</text>
+        <text wx:else class="tag-list-status__text">可直接输入新标签</text>
+      </view>
+      <view wx:else class="tag-list">
+        <view
+          wx:for="{{options}}"
+          wx:key="tag"
+          class="tag-list__option {{item.disabled ? 'tag-list__option--disabled' : ''}}"
+          data-tag="{{item.tag}}"
+          bind:tap="handleOptionTap"
+        >
+          <text class="tag-list__option-text">{{item.tag}}</text>
+          <view class="tag-list__option-meta">
+            <text
+              wx:if="{{draft && draft === item.tag && !item.optionBadge}}"
+              class="iconfont iconfont--check tag-list__option-check"
+            ></text>
+            <text wx:if="{{item.optionBadge}}" class="tag-list__option-badge">{{item.optionBadge}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view
+    class="picker-toolbar {{keyboardHeight > 0 ? '' : 'picker-toolbar--rest'}}"
+    style="bottom: {{keyboardHeight > 0 ? keyboardHeight : 0}}px;"
+  >
+    <view class="picker-toolbar__input-shell ds-field-shell ds-surface-floating ds-surface-frosted">
+      <text wx:if="{{mode === 'pick'}}" class="iconfont iconfont--search picker-toolbar__input-icon"></text>
+      <input
+        class="picker-toolbar__input"
+        value="{{draft}}"
+        placeholder="{{mode === 'pick' ? '搜索标签名' : (mode === 'update' ? (allowEmptyRemove ? '留空可删除该标签' : '输入新标签名') : '输入标签名')}}"
+        placeholder-class="picker-toolbar__input-placeholder"
+        focus="{{inputFocus}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="16"
+        adjust-position="{{false}}"
+        confirm-type="done"
+        bindinput="handleDraftInput"
+        bindconfirm="handleConfirm"
+        bindkeyboardheightchange="handleKeyboardHeightChange"
+      />
+      <weimo-icon-button
+        wx:if="{{draft}}"
+        icon="close-circle-filled"
+        variant="plain"
+        tone="neutral"
+        size="sm"
+        iconSize="var(--input-inner-icon-size)"
+        hoverable="{{false}}"
+        customStyle="margin-left: 8rpx;"
+        ariaLabel="清除输入"
+        bind:tap="handleClearDraft"
+      />
+    </view>
+    <weimo-icon-button
+      icon="check"
+      variant="glass"
+      tone="brand"
+      size="lg"
+      disabled="{{confirmDisabled}}"
+      customStyle="margin-left: var(--spacing-sm);"
+      ariaLabel="确认"
+      bind:tap="handleConfirm"
+    />
+  </view>
+
+  <view class="tag-picker-nav-overlay">
+    <view class="tag-picker-nav-mask" style="height: {{navStatusMaskHeight}}px;"></view>
+    <navigation-bar
+      title="{{mode === 'pick' ? '选择标签' : (mode === 'update' ? ('编辑 #' + targetTag) : '新增标签')}}"
+      modal="{{true}}"
+      compact="{{true}}"
+      background="transparent"
+      back="{{false}}"
+    >
+      <view slot="left" class="tag-picker-nav-back-slot">
+        <weimo-icon-button
+          icon="chevron-left"
+          variant="glass"
+          tone="neutral"
+          feedbackStyle="nav-glass"
+          size="md"
+          iconSize="var(--nav-bar-icon-size)"
+          ariaLabel="返回"
+          bind:tap="handleClose"
+        />
+      </view>
+    </navigation-bar>
+  </view>
+</view>

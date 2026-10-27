@@ -1,0 +1,71 @@
+<navigation-bar title="weimo" back="{{allowBack}}"></navigation-bar>
+
+<scroll-view class="page-scroll" scroll-y type="list">
+  <page-shell>
+    <view class="auth-page">
+      <view class="auth-hero">
+        <text class="auth-brand">WEIMO</text>
+        <view class="auth-title-block">
+          <text class="auth-title">微小的记录，</text>
+          <text class="auth-title">也能清净思绪。</text>
+        </view>
+        <text class="auth-subtitle">
+          以极轻的方式承接每个微小念头，让记录回到清净本心，思绪自然流入答案。
+        </text>
+      </view>
+
+      <view class="auth-actions">
+        <weimo-button
+          variant="solid"
+          tone="brand"
+          block
+          loading="{{loading}}"
+          disabled="{{loading}}"
+          bindtap="handleMainAction"
+        >
+          微信快捷登录
+        </weimo-button>
+      </view>
+    </view>
+  </page-shell>
+</scroll-view>
+
+<view wx:if="{{showProfilePanel}}" class="profile-overlay" bindtap="closeProfilePanel"></view>
+<view class="profile-panel {{showProfilePanel ? 'profile-panel--visible' : ''}}" style="bottom: {{keyboardHeight}}px">
+  <view class="profile-header">
+    <text class="profile-title">完善个人信息</text>
+    <text class="profile-desc">首次使用，请确认昵称（可从微信昵称获取）。</text>
+  </view>
+
+  <view wx:if="{{!hasProfileReady}}" class="profile-form">
+    <view class="profile-nickname-row">
+      <text class="profile-nickname-label">昵称</text>
+      <input
+        type="nickname"
+        class="profile-nickname-input"
+        placeholder="请输入昵称"
+        value="{{nickname}}"
+        adjust-position="{{false}}"
+        bindinput="onNicknameInput"
+        bindkeyboardheightchange="onKeyboardHeightChange"
+      />
+    </view>
+  </view>
+
+  <view wx:else class="profile-preview">
+    <text class="profile-preview-name">{{nickname}}</text>
+  </view>
+
+  <view class="profile-actions">
+    <weimo-button
+      variant="solid"
+      tone="brand"
+      block
+      loading="{{loading}}"
+      disabled="{{loading || !hasProfileReady}}"
+      bindtap="submitRegistration"
+    >
+      确认并注册
+    </weimo-button>
+  </view>
+</view>

@@ -1,0 +1,4 @@
+<view class="page-shell {{padding ? 'page-shell--padded' : ''}}">
+  <slot></slot>
+  <view class="page-shell__safe-bottom"></view>
+</view>

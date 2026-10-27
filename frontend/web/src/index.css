@@ -1,0 +1,292 @@
+@import "tailwindcss";
+@import "weimo-ui/styles/tokens.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: 34 18% 95%;        /* 暖白底 */
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --primary: 0 0% 15%;
+  --primary-foreground: 0 0% 98%;
+  --muted: 34 10% 93%;
+  --muted-foreground: 0 0% 28%;
+  --border: 0 0% 80%;
+  --radius: 16px;
+  --color-bg-page: hsl(var(--background));
+  --color-bg-card: hsl(var(--card));
+  --color-bg-raised: hsl(var(--muted));
+  --color-bg-chip: hsl(34 12% 95%);
+  --color-bg-hover: hsl(34 12% 95%);
+
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.035);
+
+  color-scheme: light dark;
+}
+
+.dark {
+  /* === 新 HSL 暗色 === */
+  --background: 0 0% 7%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 98%;
+  --primary: 0 0% 96%;
+  --primary-foreground: 0 0% 9%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 64%;
+  --border: 0 0% 38%;
+
+  --color-bg-page: hsl(var(--background));
+  --color-bg-card: hsl(var(--card));
+  --color-bg-raised: hsl(var(--muted));
+  --color-bg-chip: hsl(0 0% 13%);
+  --color-bg-hover: hsl(0 0% 20%);
+
+  --shadow-card: none;
+}
+
+@theme inline {
+  --breakpoint-md: 700px;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background-color: hsl(var(--background));
+}
+
+.app-shell {
+  box-sizing: border-box;
+  min-height: 100svh;
+  width: 100%;
+  max-width: var(--size-layout-max-width);
+  padding: var(--space-main-offset-top) var(--space-gutter) var(--space-gutter);
+  background: transparent;
+}
+
+.app-shell__layout {
+  display: flex;
+  gap: calc(var(--space-gutter) * 1.6);
+}
+
+.app-shell__sidebar-space {
+  display: none;
+  width: var(--size-sidebar-width);
+  flex: none;
+  overflow: hidden;
+}
+
+.app-shell__content {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  color: var(--color-text-primary);
+}
+
+.app-shell__content > * + * {
+  margin-top: var(--space-gutter);
+}
+
+.app-shell__content > .weimo-card-composer + * {
+  margin-top: 0;
+}
+
+.workspace-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--size-content-max-width);
+  margin: 0 0 var(--space-gutter);
+  padding: 0 4px;
+  color: var(--color-primary);
+}
+
+.workspace-filter-bar .chip {
+  max-width: 100%;
+}
+
+.workspace-filter-bar__close {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin: -2px -4px -2px 0;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-round);
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.workspace-filter-bar__close svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .workspace-filter-bar__close:hover {
+    background: var(--color-bg-hover);
+  }
+}
+
+.memo-list-state {
+  display: grid;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 150px;
+  align-content: center;
+  justify-items: start;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-bg-card) 78%, transparent);
+  color: var(--color-text-primary);
+  padding: 20px;
+}
+
+.memo-list-state__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.memo-list-state__body {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.memo-list-state__action {
+  width: auto;
+  margin-top: 4px;
+}
+
+.memo-list-skeleton {
+  display: grid;
+  gap: var(--space-gutter);
+}
+
+.memo-list-skeleton__card {
+  display: grid;
+  gap: 10px;
+  box-sizing: border-box;
+  min-height: 150px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-bg-card) 78%, transparent);
+  padding: 14px;
+}
+
+.memo-list-skeleton__line,
+.memo-list-skeleton__chips span {
+  overflow: hidden;
+  border-radius: var(--radius-round);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-raised),
+    color-mix(in srgb, var(--color-bg-raised) 70%, white 30%),
+    var(--color-bg-raised)
+  );
+  background-size: 200% 100%;
+  animation: memo-list-skeleton-pulse 1400ms ease-in-out infinite;
+}
+
+.memo-list-skeleton__line {
+  height: 12px;
+}
+
+.memo-list-skeleton__line--short {
+  width: 34%;
+}
+
+.memo-list-skeleton__chips {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.memo-list-skeleton__chips span {
+  display: block;
+  width: 52px;
+  height: 22px;
+}
+
+.memo-list-footer {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.memo-list-footer__action {
+  width: auto;
+}
+
+.memo-list-load-more-sentinel {
+  width: 100%;
+  height: 1px;
+}
+
+@keyframes memo-list-skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+#root {
+  display: flex;
+  min-height: 100svh;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 700px) {
+  #root {
+    padding: 0 var(--space-gutter);
+  }
+
+  .app-shell__sidebar-space {
+    display: block;
+  }
+
+  .app-shell__content {
+    max-width: var(--size-content-max-width);
+  }
+
+  .workspace-filter-bar {
+    margin-inline-start: calc(
+      var(--size-sidebar-width) + calc(var(--space-gutter) * 1.6)
+    );
+  }
+
+  .workspace-top-bar .top-bar__slot--left {
+    padding-inline-start: calc(
+      var(--size-sidebar-width) + calc(var(--space-gutter) * 1.6)
+    );
+  }
+}
+
+html {
+  @apply font-sans;
+}

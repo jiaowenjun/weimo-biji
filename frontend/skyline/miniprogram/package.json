@@ -1,0 +1,22 @@
+{
+  "name": "biji-skyline",
+  "version": "1.0.0",
+  "description": "weimo Skyline 小程序",
+  "scripts": {
+    "build:runtime": "node scripts/build-runtime.js",
+    "postinstall": "node scripts/postinstall.js",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "lunar-javascript": "^1.7.7",
+    "pinyin-pro": "^3.28.1"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^5.2.0",
+    "typescript": "^6.0.3"
+  },
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
+}

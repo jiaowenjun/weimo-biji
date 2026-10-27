@@ -1,0 +1,141 @@
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Greeting */
+.settings-greeting {
+  display: block;
+  padding: 0 var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Groups */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.settings-group--gap {
+  margin-top: var(--spacing-md);
+}
+
+.settings-group__title {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+/* Icons：与列表主文案同字号、primary 色（退出登录除外） */
+.settings-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.settings-icon__glyph {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.settings-icon--logout .settings-icon__glyph {
+  color: #e53935;
+}
+
+/* 笔记卡片双击：标题与选项同一行，选项在右侧 */
+.settings-memo-doubletap-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72rpx;
+}
+
+.settings-memo-doubletap-start {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  margin-right: var(--spacing-sm);
+}
+
+.settings-memo-radio-inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  column-gap: var(--spacing-md);
+}
+
+.settings-radio-inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.settings-radio-inline__label {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.settings-radio-slot--inline {
+  width: var(--font-size-base);
+  height: var(--font-size-base);
+  flex-shrink: 0;
+  margin-right: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.settings-radio-native--inline {
+  /* 约 44rpx 默认圆形 → 与 --font-size-base 对齐 */
+  transform: scale(0.68);
+  transform-origin: center center;
+}
+
+/* Menu items */
+.settings-menu-item {
+  min-height: 72rpx;
+  display: flex;
+  align-items: center;
+  padding: 4rpx 0;
+}
+
+.settings-menu-item--border {
+  border-top: 1rpx solid var(--color-border-light);
+}
+
+.settings-menu-item--active {
+  opacity: 0.72;
+}
+
+.settings-menu-item__label {
+  flex: 1;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.settings-menu-item__label--danger {
+  color: #e53935;
+}
+
+.settings-menu-item__chevron {
+  flex-shrink: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-placeholder);
+}

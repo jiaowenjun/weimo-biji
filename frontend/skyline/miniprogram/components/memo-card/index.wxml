@@ -1,0 +1,101 @@
+<view class="memo-card-host {{exiting ? 'memo-card-host--exiting' : ''}} {{exitHostSnapReset ? 'memo-card-host--snap-reset' : ''}}" style="{{exitHostStyle}}">
+  <view
+    class="memo-card ds-surface-card {{entering ? 'memo-card--entering' : ''}} {{pressing ? 'memo-card--pressing' : ''}} {{lifted ? 'memo-card--lifted' : ''}}"
+    style="{{memoCardSurfaceStyle}}"
+    bind:tap="handleContentTap"
+    bind:longpress="handleMoreTap"
+    bind:touchstart="handleLiftTouchStart"
+    bind:touchmove="handleLiftTouchMove"
+    bind:touchend="handleLiftTouchEnd"
+    bind:touchcancel="handleLiftTouchEnd"
+  >
+    <view class="memo-card__header">
+      <text class="memo-card__time">{{createdAtDisplayText}}</text>
+      <weimo-icon-button
+        class="memo-card__more"
+        icon="ellipsis"
+        variant="ghost"
+        tone="neutral"
+        size="sm"
+        iconSize="32rpx"
+        iconColor="var(--color-text-placeholder)"
+        hoverable="{{false}}"
+        pressed="{{(externalMenu ? externalMenuActive : menuActive) && (externalMenu ? externalPopoverMode : popoverMode) === 'card'}}"
+        ariaLabel="更多操作"
+        mark:memoCardControl="more"
+        bind:touchstart="handleMoreButtonTouchStart"
+        bind:tap="handleMoreButtonTap"
+      />
+    </view>
+    <view class="memo-card__body">
+      <rich-text
+        wx:if="{{renderRichText}}"
+        class="memo-card__rich"
+        mode="compat"
+        nodes="{{contentNodes}}"
+      />
+      <text wx:else class="memo-card__plain">{{content}}</text>
+    </view>
+    <view wx:if="{{tags.length}}" class="memo-card__tags-row">
+      <view class="memo-card__tags">
+        <view
+          wx:for="{{tags}}"
+          wx:key="*this"
+          wx:for-item="tag"
+          wx:for-index="tagIdx"
+          id="memo-card-tag-{{memoId}}-{{tagIdx}}"
+          class="memo-card__tag-anchor {{liftedTagIdx === tagIdx ? 'memo-card__tag-anchor--lifted' : ''}} {{pressingTagIdx === tagIdx ? 'memo-card__tag-anchor--pressing' : ''}}"
+          catch:longpress="handleTagLongPress"
+          mark:memoCardControl="tag"
+          bind:touchstart="handleTagTouchStart"
+          bind:touchmove="handleTagTouchMove"
+          bind:touchend="handleTagTouchEnd"
+          bind:touchcancel="handleTagTouchEnd"
+          data-tag="{{tag}}"
+          data-tag-idx="{{tagIdx}}"
+        >
+          <weimo-chip
+            value="{{tag}}"
+            prefix="#"
+            size="sm"
+            bind:tap="handleTagTap"
+          />
+        </view>
+      </view>
+    </view>
+    <view
+      wx:if="{{showReferenceBar && (referencePreview !== null || referencedByPreviews.length)}}"
+      class="memo-card__reference {{referenceDisabled ? 'memo-card__reference--disabled' : ''}}"
+      catch:tap="handleReferenceTap"
+    >
+      <view class="memo-card__reference-inner">
+        <view wx:if="{{referencePreview !== null}}" class="memo-card__reference-line">
+          <text class="iconfont iconfont--arrow-left-up-circle-filled memo-reference-inline__icon"></text>
+          <text class="memo-reference-inline__text" overflow="ellipsis" max-lines="1">{{referencePreview.displayText}}</text>
+        </view>
+        <view
+          wx:for="{{referencedByPreviews}}"
+          wx:key="id"
+          class="memo-card__reference-line"
+        >
+          <text class="iconfont iconfont--arrow-right-down-circle-filled memo-reference-inline__icon"></text>
+          <text class="memo-reference-inline__text" overflow="ellipsis" max-lines="1">{{item.displayText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <weimo-popover-menu
+    wx:if="{{!externalMenu}}"
+    visible="{{menuActive}}"
+    trigger-rect="{{menuAnchorRect}}"
+    header="{{menuPopoverHeader}}"
+    items="{{menuItems}}"
+    estimated-height="{{menuPopoverEstimatedHeight}}"
+    placement-priority="{{popoverMenuPlacementPriority}}"
+    horizontal-align="{{popoverMenuHorizontalAlign}}"
+    scale-anchor="{{popoverScaleAnchor}}"
+    bind:select="handleMenuSelect"
+    bind:close="handleMenuClose"
+  />
+</view>

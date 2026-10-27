@@ -1,0 +1,72 @@
+<view
+  class="weimo-popover-menu__overlay {{visible ? 'weimo-popover-menu__overlay--active' : ''}}"
+  catch:tap="handleOverlayTap"
+  catch:touchmove="handleTouchBlock"
+></view>
+<view
+  class="weimo-popover-menu ds-surface-floating weimo-popover-menu--{{menuPlacement}} {{scaleAnchor === 'start' ? 'weimo-popover-menu--anchor-start' : ''}} {{visible ? 'ds-surface-frosted weimo-popover-menu--active' : ''}}"
+  style="{{menuStyle}}"
+  catch:touchmove="handleTouchBlock"
+>
+  <view wx:if="{{header}}" class="weimo-popover-menu__header">
+    <text overflow="ellipsis" max-lines="1">{{header}}</text>
+  </view>
+  <block wx:for="{{renderItems}}" wx:key="id" wx:for-item="item" wx:for-index="idx">
+    <view
+      wx:if="{{item._showDivider}}"
+      class="weimo-popover-menu__divider"
+    ></view>
+    <view
+      class="weimo-popover-menu__item {{item.disabled ? 'weimo-popover-menu__item--disabled' : ''}} {{item.sectionHeader ? 'weimo-popover-menu__item--section-header' : ''}} {{item.collapseGroupId ? 'weimo-popover-menu__item--collapse-lead' : ''}}"
+      hover-class="{{item.disabled ? 'none' : (item.sectionHeader && !item.collapseGroupId ? 'none' : 'weimo-popover-menu__item--hover')}}"
+      hover-stay-time="80"
+      data-id="{{item.id}}"
+      catch:tap="handleItemTap"
+    >
+      <view class="weimo-popover-menu__item-icon-slot">
+        <text
+          wx:if="{{item.icon}}"
+          class="iconfont weimo-popover-menu__item-icon iconfont--{{item.icon}} {{item.iconExtraClass}} {{item.danger ? 'weimo-popover-menu__item-icon--danger' : ''}} {{item.disabled && !item.sectionHeader ? 'weimo-popover-menu__item-icon--disabled' : ''}}"
+        ></text>
+      </view>
+      <view class="weimo-popover-menu__item-text-col">
+        <text class="weimo-popover-menu__item-text {{item.danger ? 'weimo-popover-menu__item-text--danger' : ''}} {{item.disabled && !item.sectionHeader ? 'weimo-popover-menu__item-text--disabled' : ''}}">{{item.label}}</text>
+        <text
+          wx:if="{{item.description}}"
+          class="weimo-popover-menu__item-desc"
+        >{{item.description}}</text>
+      </view>
+      <view
+        wx:if="{{item.collapseGroupId}}"
+        class="weimo-popover-menu__collapse-trigger"
+      >
+        <text class="iconfont iconfont--chevron-right weimo-popover-menu__collapse-chevron {{item._expanded ? 'weimo-popover-menu__collapse-chevron--expanded' : ''}}"></text>
+      </view>
+    </view>
+    <view
+      wx:if="{{item.collapseGroupId && collapseGroupMembers[item.collapseGroupId]}}"
+      class="weimo-popover-menu__collapse-body {{item._expanded ? '' : 'weimo-popover-menu__collapse-body--collapsed'}}"
+      style="{{collapseGroupStyles[item.collapseGroupId]}}"
+    >
+      <block wx:for="{{collapseGroupMembers[item.collapseGroupId]}}" wx:key="id" wx:for-item="member">
+        <view
+          class="weimo-popover-menu__item"
+          hover-class="weimo-popover-menu__item--hover"
+          hover-stay-time="80"
+          data-id="{{member.id}}"
+          catch:tap="handleItemTap"
+        >
+          <view class="weimo-popover-menu__item-icon-slot">
+            <text
+              wx:if="{{member.icon}}"
+              class="iconfont weimo-popover-menu__item-icon iconfont--{{member.icon}}"
+            ></text>
+          </view>
+          <view class="weimo-popover-menu__item-text-col">
+            <text class="weimo-popover-menu__item-text">{{member.label}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </block>
+</view>

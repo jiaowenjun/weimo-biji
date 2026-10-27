@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/auth/index",
+    "pages/memo-compose/index",
+    "pages/memo-compose-tag-picker/index",
+    "pages/memo-reference-detail/index",
+    "pages/search/index",
+    "pages/settings/index",
+    "pages/settings/account-detail/index",
+    "pages/settings/account-edit-sheet/index",
+    "pages/friend-search/index",
+    "pages/notifications/index",
+    "pages/memo-share-image/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "@navTxtStyle",
+    "navigationStyle": "custom"
+  },
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "style": "v2",
+  "renderer": "skyline",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "disableABTest": true
+    }
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,41 @@
+/* 调试用：删除 index.wxss 中的 @import，并去掉页面上的 compose-toolbar--debug 类即可彻底移除。 */
+
+.compose-toolbar--debug {
+  box-shadow: 0 0 0 2rpx #ff3b30;
+}
+
+.compose-toolbar--debug .md-toolbar {
+  box-shadow: 0 0 0 2rpx #007aff;
+}
+
+.compose-toolbar--debug .md-toolbar__sep {
+  box-shadow: 0 0 0 2rpx #ff9500;
+}
+
+.compose-toolbar--debug weimo-toggle-button {
+  box-shadow: 0 0 0 2rpx #34c759;
+}
+
+.compose-toolbar--debug weimo-toggle-button .weimo-toggle-button {
+  box-shadow: inset 0 0 0 2rpx #30d158;
+}
+
+.compose-toolbar--debug weimo-toggle-button .weimo-toggle-button__icon {
+  box-shadow: 0 0 0 1rpx #bf5af2;
+}
+
+.compose-toolbar--debug weimo-toggle-button .weimo-toggle-button__label {
+  box-shadow: 0 0 0 1rpx #ff2d55;
+}
+
+.compose-toolbar--debug weimo-icon-button {
+  box-shadow: 0 0 0 2rpx #64d2ff;
+}
+
+.compose-toolbar--debug weimo-icon-button .weimo-icon-button {
+  box-shadow: inset 0 0 0 2rpx #5ac8fa;
+}
+
+.compose-toolbar--debug weimo-icon-button .weimo-icon-button__icon {
+  box-shadow: 0 0 0 1rpx #ffd60a;
+}

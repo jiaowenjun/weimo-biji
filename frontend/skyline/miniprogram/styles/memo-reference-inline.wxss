@@ -1,0 +1,21 @@
+/*
+ * 单行「引用预览」图标 + 文案样式：笔记创建页与笔记卡片共用。
+ */
+
+.memo-reference-inline__icon {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-placeholder);
+  line-height: 1.4;
+}
+
+.memo-reference-inline__text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-placeholder);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

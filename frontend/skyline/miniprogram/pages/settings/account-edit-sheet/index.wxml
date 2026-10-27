@@ -1,0 +1,128 @@
+<navigation-bar title="{{title}}" modal="{{true}}" compact="{{true}}" />
+
+<view
+  class="account-edit-page ds-page-inline-shell"
+  style="padding-bottom: {{keyboardHeight > 0 ? keyboardHeight : 0}}px;"
+>
+  <scroll-view
+    class="account-edit-scroll"
+    scroll-y
+    type="list"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+  >
+    <view class="account-edit-form">
+      <view wx:if="{{mode === 'nickname'}}" class="account-edit-field-row">
+        <view class="picker-toolbar__input-shell ds-field-shell ds-surface-floating ds-surface-frosted">
+          <input
+            type="nickname"
+            class="picker-toolbar__input"
+            value="{{draftNickname}}"
+            placeholder="请输入昵称"
+            placeholder-class="picker-toolbar__input-placeholder"
+            focus="{{inputFocus}}"
+            adjust-position="{{false}}"
+            hold-keyboard="{{true}}"
+            cursor-spacing="16"
+            confirm-type="done"
+            bindinput="handleNicknameInput"
+            bindconfirm="handleSaveTap"
+            bindkeyboardheightchange="handleKeyboardHeightChange"
+          />
+        </view>
+        <weimo-icon-button
+          icon="check"
+          variant="glass"
+          tone="brand"
+          size="lg"
+          loading="{{isSaving}}"
+          disabled="{{isSaving || isSaveDisabled}}"
+          customStyle="margin-left: var(--spacing-sm);"
+          ariaLabel="确认"
+          bind:tap="handleSaveTap"
+        />
+      </view>
+
+      <view wx:elif="{{mode === 'login-name'}}" class="account-edit-field-row">
+        <view class="picker-toolbar__input-shell ds-field-shell ds-surface-floating ds-surface-frosted">
+          <input
+            class="picker-toolbar__input"
+            value="{{draftLoginName}}"
+            placeholder="请输入登录名"
+            placeholder-class="picker-toolbar__input-placeholder"
+            focus="{{inputFocus}}"
+            adjust-position="{{false}}"
+            hold-keyboard="{{true}}"
+            cursor-spacing="16"
+            confirm-type="done"
+            bindinput="handleLoginNameInput"
+            bindconfirm="handleSaveTap"
+            bindkeyboardheightchange="handleKeyboardHeightChange"
+          />
+        </view>
+        <weimo-icon-button
+          icon="check"
+          variant="glass"
+          tone="brand"
+          size="lg"
+          loading="{{isSaving}}"
+          disabled="{{isSaving || isSaveDisabled}}"
+          customStyle="margin-left: var(--spacing-sm);"
+          ariaLabel="确认"
+          bind:tap="handleSaveTap"
+        />
+      </view>
+
+      <view wx:else class="account-edit-password-form">
+        <view class="account-edit-field-row">
+          <view class="picker-toolbar__input-shell ds-field-shell ds-surface-floating ds-surface-frosted">
+            <input
+              class="picker-toolbar__input"
+              value="{{draftPassword}}"
+              password="{{!showPassword}}"
+              placeholder="请输入新密码"
+              placeholder-class="picker-toolbar__input-placeholder"
+              focus="{{inputFocus}}"
+              adjust-position="{{false}}"
+              hold-keyboard="{{true}}"
+              cursor-spacing="16"
+              bindinput="handlePasswordInput"
+              bindkeyboardheightchange="handleKeyboardHeightChange"
+            />
+          </view>
+          <view class="account-edit-action-spacer" aria-hidden="true"></view>
+        </view>
+
+        <view class="account-edit-field-row account-edit-field-row--gap">
+          <view class="picker-toolbar__input-shell ds-field-shell ds-surface-floating ds-surface-frosted">
+            <input
+              class="picker-toolbar__input"
+              value="{{draftConfirmPassword}}"
+              password="{{!showConfirmPassword}}"
+              placeholder="请再次输入"
+              placeholder-class="picker-toolbar__input-placeholder"
+              adjust-position="{{false}}"
+              hold-keyboard="{{true}}"
+              cursor-spacing="16"
+              confirm-type="done"
+              bindinput="handleConfirmPasswordInput"
+              bindconfirm="handleSaveTap"
+              bindkeyboardheightchange="handleKeyboardHeightChange"
+            />
+          </view>
+          <weimo-icon-button
+            icon="check"
+            variant="glass"
+            tone="brand"
+            size="lg"
+            loading="{{isSaving}}"
+            disabled="{{isSaving || isSaveDisabled}}"
+            customStyle="margin-left: var(--spacing-sm);"
+            ariaLabel="确认"
+            bind:tap="handleSaveTap"
+          />
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

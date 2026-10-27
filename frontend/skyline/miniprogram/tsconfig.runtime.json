@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../.generated/miniprogram-runtime",
+    "noEmit": false
+  },
+  "include": ["./**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "miniprogram_npm",
+    "scripts",
+    "test-utils",
+    "**/__tests__/**",
+    "**/*.test.ts"
+  ]
+}
