@@ -1,4 +1,8 @@
 @import "tailwindcss";
+/* core tokens 放在 weimo-ui tokens 之前：共享 token 以 weimo-ui 值为准，
+   只补齐 core 独有 token（--color-bg-nested-hover、frosted、press-scale 等），
+   供 weimo-ui-tagtree / weimo-ui-template 内的 core 组件消费。 */
+@import "weimo-ui-core/styles/tokens.css";
 @import "weimo-ui/styles/tokens.css";
 
 @custom-variant dark (&:is(.dark *));
