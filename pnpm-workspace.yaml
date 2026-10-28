@@ -14,3 +14,4 @@ minimumReleaseAgeExclude:
   - weimo-ui-template@0.4.2 || 0.4.3
   - weimo-ui-stats@0.1.0
   - weimo-ui-tagtree@0.2.0
+  - weimo-ui-editor@0.4.0

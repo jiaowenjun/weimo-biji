@@ -24,7 +24,7 @@
     "tailwindcss": "^4.3.0",
     "weimo-ui": "github:jiaowenjun/weimo-ui#18e6da6b4ab1ef3eb83cb8273712cf7b3d8c566b",
     "weimo-ui-core": "~0.2.2",
-    "weimo-ui-editor": "file:vendor/weimo-ui-editor-0.4.0.tgz",
+    "weimo-ui-editor": "^0.4.0",
     "weimo-ui-stats": "^0.1.0",
     "weimo-ui-tagtree": "^0.2.0",
     "weimo-ui-template": "^0.4.3",

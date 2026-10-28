@@ -39,8 +39,12 @@ assert.ok(
 
 // 编辑样式与过渡时长由编辑器包统一编排;biji 侧不再覆盖任何时长
 assert.ok(
-  packageJson.dependencies['weimo-ui-editor']?.startsWith('file:vendor/'),
-  'weimo-ui-editor must be vendored until the npm publish completes.',
+  packageJson.dependencies['weimo-ui-editor']?.startsWith('^'),
+  'weimo-ui-editor must come from the npm registry after 0.4.0 was published.',
+)
+assert.ok(
+  !existsSync(join(root, 'vendor/weimo-ui-editor-0.4.0.tgz')),
+  'the vendored editor tarball must be removed once the registry dependency lands.',
 )
 assert.ok(
   packageJson.dependencies['weimo-wdf']?.startsWith('^'),
