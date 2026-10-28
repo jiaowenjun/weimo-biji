@@ -149,6 +149,7 @@ for (const snippet of [
 for (const snippet of [
   "import { useQueryClient } from '@tanstack/react-query'",
   "import { TagBread } from 'weimo-ui/components/tag-bread'",
+  "import { WorkspaceShell } from '@/features/workspace/workspace-shell'",
   'selectDate',
   'selectFacet',
   'selectTag',
@@ -162,6 +163,7 @@ for (const snippet of [
   'toSidebarTagTree(tagTreeQuery.data)',
   'toTagOptions(tagTreeQuery.data)',
   'formatTagBreadTag(navigation.selectedTag)',
+  'formatWorkspacePageTitle(navigation)',
   'clearWorkspaceQueries(queryClient)',
   'onLogout={handleLogout}',
   'activeDate={navigation.activeDate}',
@@ -172,11 +174,13 @@ for (const snippet of [
   'onShowTodayReview={navigation.showTodayReview}',
   'selectedFacet={navigation.selectedFacet}',
   'selectedTag={navigation.selectedTag}',
-  '{navigation.selectedTag ? (',
+  'sidebar={(api) => (',
+  'onClose={api.close}',
+  'topBarLeading={',
+  'navigation.selectedTag ? (',
   '<TagBread',
   'tag={formatTagBreadTag(navigation.selectedTag)}',
   'onSelect={navigation.selectTag}',
-  'className="workspace-top-bar"',
   'statItems={statItems}',
   'dailyCounts={dailyCounts}',
   'expandedTagTreeTags={expandedTagTreeTags}',
@@ -194,17 +198,12 @@ for (const snippet of [
   )
 }
 
-for (const snippet of [
-  '.workspace-top-bar .top-bar__slot--left',
-  'padding-inline-start:',
-  'var(--size-sidebar-width)',
-  'calc(var(--space-gutter) * 1.6)',
-]) {
-  assert.ok(
-    indexCssSource.includes(snippet),
-    `index.css must keep selected tag breadcrumbs visible in the desktop TopBar: ${snippet}`,
-  )
-}
+// 桌面端标签面包屑由 SiteTemplate 的 topBarLeading 插槽对齐内容列（模板 CSS 负责
+// 侧边栏偏移），app 侧不再自带 workspace-top-bar 样式。
+assert.ok(
+  !indexCssSource.includes('.workspace-top-bar'),
+  'index.css must not keep hand-rolled workspace TopBar offsets superseded by the SiteTemplate shell.',
+)
 
 for (const snippet of [
   "import type { HeatmapDailyCount } from 'weimo-ui/components/heatmap'",

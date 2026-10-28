@@ -524,55 +524,40 @@ assert.ok(
   'demo must rely on shared Card compact edit layout instead of overriding MdEditor internals.',
 )
 
-for (const className of [
-  'app-shell',
-  'app-shell__layout',
-  'app-shell__sidebar-space',
-  'app-shell__content',
+for (const snippet of [
+  '<WorkspaceShell',
+  'sidebar={(api) => (',
+  'onClose={api.close}',
+  'topBarActions={',
+  'topBarLeading={',
 ]) {
   assert.ok(
-    appSource.includes(`className="${className}"`) ||
-      appSource.includes(`className='${className}'`),
-    `demo must reuse the shared app-shell layout class ${className}.`,
+    appSource.includes(snippet),
+    `demo must build the workspace frame through the SiteTemplate shell: ${snippet}`,
   )
 }
 
-const appShellBlock = blockFor(demoIndexCss, '.app-shell')
-const appShellLayoutBlock = blockFor(demoIndexCss, '.app-shell__layout')
-const appShellContentBlock = blockFor(demoIndexCss, '.app-shell__content')
-const appShellSidebarSpaceBlock = blockFor(
+const siteTemplateContentOverrideBlock = blockFor(
   demoIndexCss,
-  '.app-shell__sidebar-space',
+  '.weimo-site-template .weimo-site-template__content',
 )
 
 assert.ok(
-  appShellBlock.includes('max-width: var(--size-layout-max-width);') &&
-    appShellBlock.includes(
-      'padding: var(--space-main-offset-top) var(--space-gutter) var(--space-gutter);',
+  siteTemplateContentOverrideBlock.includes('gap: 0;'),
+  'demo must zero the SiteTemplate content gap so pending create spacing stays app-owned.',
+)
+assert.ok(
+  demoIndexCss.includes('.weimo-site-template__content > * + * {') &&
+    demoIndexCss.includes('margin-top: var(--space-gutter);') &&
+    demoIndexCss.includes(
+      '.weimo-site-template__content > .weimo-card-composer + * {',
     ),
-  'demo app-shell must share the UI shell max-width and page padding contract.',
-)
-assert.ok(
-  appShellLayoutBlock.includes('display: flex;') &&
-    appShellLayoutBlock.includes('gap: calc(var(--space-gutter) * 1.6);'),
-  'demo app-shell layout gap must match --size-layout-max-width so TopBar aligns on wide screens.',
-)
-assert.ok(
-  appShellSidebarSpaceBlock.includes('display: none;') &&
-    appShellSidebarSpaceBlock.includes('width: var(--size-sidebar-width);') &&
-    appShellSidebarSpaceBlock.includes('flex: none;'),
-  'demo app-shell sidebar placeholder must share the UI shell sidebar contract.',
-)
-assert.ok(
-  /\.app-shell__content\s*\{[\s\S]*?max-width:\s*var\(--size-content-max-width\);[\s\S]*?\}/.test(
-    demoIndexCss,
-  ),
-  'demo app-shell content must cap the note list with the shared content max-width.',
+  'demo must own the note list vertical rhythm inside the SiteTemplate content column.',
 )
 assert.ok(
   !appSource.includes('max-w-(--size-layout-max-width)') &&
     !appSource.includes('gap-(--space-gutter)'),
-  'demo must not keep one-off Tailwind layout utilities that drift from the shared app-shell contract.',
+  'demo must not keep one-off Tailwind layout utilities that drift from the shared site shell contract.',
 )
 
 const demoSidebarSource = readProjectFile(root, 'src/components/sidebar.tsx')

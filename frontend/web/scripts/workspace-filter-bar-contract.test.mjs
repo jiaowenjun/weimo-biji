@@ -112,8 +112,6 @@ for (const snippet of [
   '.workspace-filter-bar__close',
   '.workspace-filter-bar__close svg',
   '.workspace-filter-bar .chip',
-  'margin-inline-start: calc(',
-  'var(--size-sidebar-width)',
 ]) {
   assert.ok(
     indexCssSource.includes(snippet),

@@ -1,5 +1,4 @@
 import type { HeatmapDailyCount } from 'weimo-ui/components/heatmap'
-import { SideBar as UiSideBar } from 'weimo-ui/components/sidebar'
 import type { StatGroupItem } from 'weimo-ui/components/stat-group'
 import type { TagTreeNode } from 'weimo-ui/components/tag-tree'
 
@@ -20,7 +19,6 @@ type SideBarProps = {
   onRenameTag: (tag: string) => void
   onShowAllNotes: () => void
   onShowTodayReview: () => void
-  open: boolean
   selectedFacet: string
   selectedTag: string
   statItems: StatGroupItem[]
@@ -34,6 +32,10 @@ type SideBarProps = {
   tagTreeUntaggedCount: number
 }
 
+/**
+ * 工作区侧边栏适配器：抽屉面板由 SiteTemplate 的 sidebar 插槽提供，
+ * 这里负责把每个选中回调包上一层 onClose，保持窄屏抽屉选中即收起。
+ */
 export function SideBar({
   activeDate,
   dailyCounts,
@@ -49,7 +51,6 @@ export function SideBar({
   onRenameTag,
   onShowAllNotes,
   onShowTodayReview,
-  open,
   selectedFacet,
   selectedTag,
   statItems,
@@ -98,33 +99,31 @@ export function SideBar({
   }
 
   return (
-    <UiSideBar ariaLabel="左侧工具栏" onClose={onClose} open={open}>
-      <BijiSideBar
-        activeDate={activeDate}
-        dailyCounts={dailyCounts}
-        displayName={displayName}
-        expandedTagTreeTags={expandedTagTreeTags}
-        onDeleteTag={handleDeleteTag}
-        onExpandedTagTreeTagsChange={onExpandedTagTreeTagsChange}
-        onLogout={onLogout}
-        onSelectDate={handleSelectDate}
-        onSelectFacet={handleSelectFacet}
-        onSelectTag={handleSelectTag}
-        onRenameTag={handleRenameTag}
-        onShowAllNotes={handleShowAllNotes}
-        onShowTodayReview={handleShowTodayReview}
-        selectedFacet={selectedFacet}
-        selectedTag={selectedTag}
-        statItems={statItems}
-        statsLoadFailed={statsLoadFailed}
-        statsLoading={statsLoading}
-        tagMenuEnabled={tagMenuEnabled}
-        tagTreeInitialized={tagTreeInitialized}
-        tagTreeLoadFailed={tagTreeLoadFailed}
-        tagTreeLoading={tagTreeLoading}
-        tagTreeNodes={tagTreeNodes}
-        tagTreeUntaggedCount={tagTreeUntaggedCount}
-      />
-    </UiSideBar>
+    <BijiSideBar
+      activeDate={activeDate}
+      dailyCounts={dailyCounts}
+      displayName={displayName}
+      expandedTagTreeTags={expandedTagTreeTags}
+      onDeleteTag={handleDeleteTag}
+      onExpandedTagTreeTagsChange={onExpandedTagTreeTagsChange}
+      onLogout={onLogout}
+      onSelectDate={handleSelectDate}
+      onSelectFacet={handleSelectFacet}
+      onSelectTag={handleSelectTag}
+      onRenameTag={handleRenameTag}
+      onShowAllNotes={handleShowAllNotes}
+      onShowTodayReview={handleShowTodayReview}
+      selectedFacet={selectedFacet}
+      selectedTag={selectedTag}
+      statItems={statItems}
+      statsLoadFailed={statsLoadFailed}
+      statsLoading={statsLoading}
+      tagMenuEnabled={tagMenuEnabled}
+      tagTreeInitialized={tagTreeInitialized}
+      tagTreeLoadFailed={tagTreeLoadFailed}
+      tagTreeLoading={tagTreeLoading}
+      tagTreeNodes={tagTreeNodes}
+      tagTreeUntaggedCount={tagTreeUntaggedCount}
+    />
   )
 }

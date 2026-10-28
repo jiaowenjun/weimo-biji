@@ -26,7 +26,6 @@ const navigationSource = readProjectFile(
 const guestDataSource = readProjectFile(
   'src/features/workspace/guest-workspace-data.ts',
 )
-const indexCssSource = readProjectFile('src/index.css')
 
 assert.ok(
   packageJson.scripts?.test?.includes('node scripts/guest-home-contract.test.mjs'),
@@ -66,10 +65,11 @@ for (const snippet of [
   "import { TagBread } from 'weimo-ui/components/tag-bread'",
   "import { RefCard } from '@/components/ref-card'",
   "import { SideBar } from '@/components/sidebar'",
-  "import { TopBar } from '@/components/top-bar'",
+  "import { WorkspaceShell } from '@/features/workspace/workspace-shell'",
   'buildMemoReferencePreviews',
   'createMemoReferencePreviewResolver',
   'formatTagBreadTag',
+  'formatWorkspacePageTitle(navigation)',
   'guestMemoCards',
   'guestStats',
   'guestTagTree',
@@ -77,9 +77,12 @@ for (const snippet of [
   'useWorkspacePageNavigation',
   'const { filters: memoFilters, navigation } = useWorkspacePageNavigation()',
   'displayName="游客模式"',
+  'sidebar={(api) => (',
+  'onClose={api.close}',
+  'topBarLeading={',
+  'navigation.selectedTag ? (',
   'tag={formatTagBreadTag(navigation.selectedTag)}',
   'onSelect={navigation.selectTag}',
-  'className="workspace-top-bar"',
   'const memoById = useMemo(',
   'new Map(memos.map((memo) => [memo.id, memo]))',
   'const referencePreviewResolver = useMemo(',
@@ -145,14 +148,10 @@ for (const snippet of [
   )
 }
 
-for (const snippet of [
-  '.workspace-top-bar .top-bar__slot--left',
-  'padding-inline-start:',
-  'var(--size-sidebar-width)',
-  'calc(var(--space-gutter) * 1.6)',
-]) {
-  assert.ok(
-    indexCssSource.includes(snippet),
-    `index.css must keep guest breadcrumbs visible in the desktop TopBar: ${snippet}`,
-  )
-}
+// 桌面端标签面包屑由 SiteTemplate 的 topBarLeading 插槽对齐内容列（模板 CSS 负责
+// 侧边栏偏移），这里只约束页面把 TagBread 挂到该插槽。
+assert.ok(
+  guestPageSource.includes('topBarLeading={') &&
+    guestPageSource.includes('<TagBread'),
+  'guest workspace page must surface the selected tag breadcrumb through the shell topBarLeading slot.',
+)

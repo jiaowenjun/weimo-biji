@@ -112,6 +112,31 @@ export function formatTagBreadTag(tag: string) {
   return tag
 }
 
+const FACET_PAGE_TITLES: Record<string, string> = {
+  annotation: '有批注',
+  heading: '有标题',
+  'unordered-list': '有列表',
+  'markdown-quote': '有引用',
+}
+
+export function formatWorkspacePageTitle(navigation: {
+  activeDate: string
+  selectedFacet: string
+  selectedTag: string
+}) {
+  if (navigation.selectedTag) {
+    return `标签 ${formatTagBreadTag(navigation.selectedTag)}`
+  }
+
+  if (navigation.activeDate) {
+    return `${navigation.activeDate} 笔记`
+  }
+
+  const facetTitle = FACET_PAGE_TITLES[navigation.selectedFacet]
+
+  return facetTitle ?? '全部笔记'
+}
+
 
 export function formatWordMetric(wordCount: number) {
   if (wordCount >= 10000) {

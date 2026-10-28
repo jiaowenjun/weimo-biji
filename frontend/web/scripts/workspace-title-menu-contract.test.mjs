@@ -174,13 +174,13 @@ for (const [name, source] of [
     `${name} must use the shared workspace title menu component.`,
   )
 
-  const rightSlotIndex = source.indexOf('rightSlot={')
+  const rightSlotIndex = source.indexOf('topBarActions={')
   const searchIndex = source.indexOf('aria-label="搜索"', rightSlotIndex)
   const createIndex = source.indexOf('aria-label="新建笔记"', rightSlotIndex)
   const menuIndex = source.indexOf('<WorkspaceTitleMenu', rightSlotIndex)
 
-  assert.ok(rightSlotIndex >= 0, `${name} TopBar rightSlot must exist.`)
-  assert.ok(searchIndex > rightSlotIndex, `${name} search button must stay in rightSlot.`)
+  assert.ok(rightSlotIndex >= 0, `${name} shell topBarActions must exist.`)
+  assert.ok(searchIndex > rightSlotIndex, `${name} search button must stay in topBarActions.`)
   assert.ok(
     createIndex > searchIndex,
     `${name} create button must stay immediately after search before the title menu.`,

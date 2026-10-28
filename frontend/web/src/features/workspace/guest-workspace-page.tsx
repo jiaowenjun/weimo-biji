@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { buildGuestWorkspaceTagTree } from '@weimo/workspace-core/guest-workspace'
-import { PanelLeft, Plus, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
 import { TagBread } from 'weimo-ui/components/tag-bread'
 import { TagPicker } from 'weimo-ui/components/tag-picker'
@@ -8,7 +8,6 @@ import { TagPicker } from 'weimo-ui/components/tag-picker'
 import type { CardDraft } from '@/components/card'
 import { RefCard } from '@/components/ref-card'
 import { SideBar } from '@/components/sidebar'
-import { TopBar } from '@/components/top-bar'
 import { Button } from '@/components/ui/button'
 import {
   buildMemoReferencePreviews,
@@ -18,6 +17,7 @@ import {
 import {
   buildSidebarStatItems,
   formatTagBreadTag,
+  formatWorkspacePageTitle,
   toHeatmapDailyCounts,
   toSidebarTagTree,
   toTagOptions,
@@ -27,6 +27,7 @@ import {
 } from '@/features/workspace/workspace-navigation-store'
 import { useWorkspacePageNavigation } from '@/features/workspace/use-workspace-page-navigation'
 import { WorkspaceFilterBar } from '@/features/workspace/workspace-filter-bar'
+import { WorkspaceShell } from '@/features/workspace/workspace-shell'
 import { PendingCreateCard } from './pending-create-card'
 import { runWorkspaceTitleRefreshActions } from './workspace-title-refresh'
 import {
@@ -49,7 +50,6 @@ function createGuestMemoId(memos: Memo[]) {
 
 export function GuestWorkspacePage() {
   const { filters: memoFilters, navigation } = useWorkspacePageNavigation()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [memos, setMemos] = useState<Memo[]>(guestMemoCards)
   const memoCreate = useGuestMemoCreate({
     memos,
@@ -120,14 +120,6 @@ export function GuestWorkspacePage() {
     () => toSidebarTagTree(liveTagTreeMeta),
     [liveTagTreeMeta],
   )
-
-  const openSidebar = useCallback(() => {
-    setSidebarOpen(true)
-  }, [])
-
-  const closeSidebar = useCallback(() => {
-    setSidebarOpen(false)
-  }, [])
 
   const handleGuestExit = useCallback(() => {
     resetWorkspaceNavigation()
@@ -227,33 +219,6 @@ export function GuestWorkspacePage() {
 
   return (
     <>
-      <SideBar
-        activeDate={navigation.activeDate}
-        dailyCounts={dailyCounts}
-        displayName="游客模式"
-        expandedTagTreeTags={expandedTagTreeTags}
-        onClose={closeSidebar}
-        onDeleteTag={handleDeleteTag}
-        onExpandedTagTreeTagsChange={setExpandedTagTreeTags}
-        onLogout={handleGuestExit}
-        onSelectDate={navigation.selectDate}
-        onSelectFacet={navigation.selectFacet}
-        onSelectTag={navigation.selectTag}
-        onRenameTag={handleRenameTag}
-        onShowAllNotes={navigation.showAllNotes}
-        onShowTodayReview={navigation.showTodayReview}
-        open={sidebarOpen}
-        selectedFacet={navigation.selectedFacet}
-        selectedTag={navigation.selectedTag}
-        statItems={statItems}
-        statsLoadFailed={false}
-        statsLoading={false}
-        tagTreeInitialized
-        tagTreeLoadFailed={false}
-        tagTreeLoading={false}
-        tagTreeNodes={tagTree.nodes}
-        tagTreeUntaggedCount={tagTree.untaggedCount}
-      />
       <TagPicker
         allowEmptyRemove={false}
         initialDraft={renamingTag ?? ''}
@@ -279,27 +244,37 @@ export function GuestWorkspacePage() {
         open={quoteMemo !== null}
         tagOptions={tagOptions}
       />
-      <TopBar
-        className="workspace-top-bar"
-        leftSlot={
-          <>
-            <GlassIconButton
-              aria-label="打开侧栏"
-              className="md:hidden"
-              onClick={openSidebar}
-            >
-              <PanelLeft />
-            </GlassIconButton>
-            {navigation.selectedTag ? (
-              <TagBread
-                aria-label="当前标签"
-                tag={formatTagBreadTag(navigation.selectedTag)}
-                onSelect={navigation.selectTag}
-              />
-            ) : null}
-          </>
-        }
-        rightSlot={
+      <WorkspaceShell
+        pageTitle={formatWorkspacePageTitle(navigation)}
+        sidebar={(api) => (
+          <SideBar
+            activeDate={navigation.activeDate}
+            dailyCounts={dailyCounts}
+            displayName="游客模式"
+            expandedTagTreeTags={expandedTagTreeTags}
+            onClose={api.close}
+            onDeleteTag={handleDeleteTag}
+            onExpandedTagTreeTagsChange={setExpandedTagTreeTags}
+            onLogout={handleGuestExit}
+            onSelectDate={navigation.selectDate}
+            onSelectFacet={navigation.selectFacet}
+            onSelectTag={navigation.selectTag}
+            onRenameTag={handleRenameTag}
+            onShowAllNotes={navigation.showAllNotes}
+            onShowTodayReview={navigation.showTodayReview}
+            selectedFacet={navigation.selectedFacet}
+            selectedTag={navigation.selectedTag}
+            statItems={statItems}
+            statsLoadFailed={false}
+            statsLoading={false}
+            tagTreeInitialized
+            tagTreeLoadFailed={false}
+            tagTreeLoading={false}
+            tagTreeNodes={tagTree.nodes}
+            tagTreeUntaggedCount={tagTree.untaggedCount}
+          />
+        )}
+        topBarActions={
           <>
             <GlassIconButton aria-label="搜索">
               <Search />
@@ -320,84 +295,87 @@ export function GuestWorkspacePage() {
             />
           </>
         }
-      />
-      <main className="app-shell">
+        topBarLeading={
+          navigation.selectedTag ? (
+            <TagBread
+              aria-label="当前标签"
+              tag={formatTagBreadTag(navigation.selectedTag)}
+              onSelect={navigation.selectTag}
+            />
+          ) : undefined
+        }
+      >
         <WorkspaceFilterBar
           activeDate={navigation.activeDate}
           onClearDate={navigation.clearDateFilter}
           onClearFacet={navigation.clearFacetFilter}
           selectedFacet={navigation.selectedFacet}
         />
-        <div className="app-shell__layout">
-          <div aria-hidden="true" className="app-shell__sidebar-space" />
-          <div className="app-shell__content">
-            {!hasVisibleMemoCards ? (
-              <section className="memo-list-state" role="status">
-                <p className="memo-list-state__title">暂无匹配笔记</p>
-                <p className="memo-list-state__body">
-                  当前游客示例数据没有符合筛选条件的笔记。
-                </p>
-                <Button
-                  className="memo-list-state__action"
-                  onClick={navigation.showAllNotes}
-                  size="sm"
-                  variant="outline"
-                >
-                  查看全部
-                </Button>
-              </section>
-            ) : (
-              <>
-                {memoCreate.pendingCreate && memoCreate.pendingCreateNote ? (
-                  <PendingCreateCard
-                    key={memoCreate.pendingCreate.clientId}
-                    clientId={memoCreate.pendingCreate.clientId}
-                    isClosing={memoCreate.pendingCreate.status === 'closing'}
-                    initialMode={
-                      memoCreate.pendingCreate.status === 'editing' ||
-                      memoCreate.pendingCreate.status === 'closing'
-                        ? 'edit'
-                        : 'view'
-                    }
-                    note={memoCreate.pendingCreateNote}
-                    onCancel={memoCreate.cancel}
-                    onExitAnimationEnd={memoCreate.finishExitAnimation}
-                    onSave={memoCreate.save}
-                    onViewTransitionEnd={memoCreate.finishViewTransition}
-                    onTagClick={navigation.selectTag}
-                    tagOptions={tagOptions}
-                  />
-                ) : null}
-                {memoCards.map((memo) => {
-                  const referencePreviews = buildMemoReferencePreviews(
-                    memo,
-                    referencePreviewResolver,
-                  )
+        {!hasVisibleMemoCards ? (
+          <section className="memo-list-state" role="status">
+            <p className="memo-list-state__title">暂无匹配笔记</p>
+            <p className="memo-list-state__body">
+              当前游客示例数据没有符合筛选条件的笔记。
+            </p>
+            <Button
+              className="memo-list-state__action"
+              onClick={navigation.showAllNotes}
+              size="sm"
+              variant="outline"
+            >
+              查看全部
+            </Button>
+          </section>
+        ) : (
+          <>
+            {memoCreate.pendingCreate && memoCreate.pendingCreateNote ? (
+              <PendingCreateCard
+                key={memoCreate.pendingCreate.clientId}
+                clientId={memoCreate.pendingCreate.clientId}
+                isClosing={memoCreate.pendingCreate.status === 'closing'}
+                initialMode={
+                  memoCreate.pendingCreate.status === 'editing' ||
+                  memoCreate.pendingCreate.status === 'closing'
+                    ? 'edit'
+                    : 'view'
+                }
+                note={memoCreate.pendingCreateNote}
+                onCancel={memoCreate.cancel}
+                onExitAnimationEnd={memoCreate.finishExitAnimation}
+                onSave={memoCreate.save}
+                onViewTransitionEnd={memoCreate.finishViewTransition}
+                onTagClick={navigation.selectTag}
+                tagOptions={tagOptions}
+              />
+            ) : null}
+            {memoCards.map((memo) => {
+              const referencePreviews = buildMemoReferencePreviews(
+                memo,
+                referencePreviewResolver,
+              )
 
-                  return (
-                    <RefCard
-                      key={memo.id}
-                      note={toCardNote(memo)}
-                      onCopySelect={() => handleMemoCopy(memo)}
-                      onDelete={() => handleMemoDelete(memo)}
-                      onQuoteSelect={() => setQuoteMemoId(memo.id)}
-                      onReferenceClick={() => setDetailMemoId(memo.id)}
-                      onSave={(draft) => handleMemoSave(memo, draft)}
-                      onTagClick={navigation.selectTag}
-                      referencePreview={referencePreviews.referencePreview}
-                      referencedByPreviews={referencePreviews.referencedByPreviews}
-                      tagOptions={tagOptions}
-                    />
-                  )
-                })}
-                <p className="memo-list-footer">
-                  游客模式 · 已显示 {memoCards.length} 条示例笔记
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      </main>
+              return (
+                <RefCard
+                  key={memo.id}
+                  note={toCardNote(memo)}
+                  onCopySelect={() => handleMemoCopy(memo)}
+                  onDelete={() => handleMemoDelete(memo)}
+                  onQuoteSelect={() => setQuoteMemoId(memo.id)}
+                  onReferenceClick={() => setDetailMemoId(memo.id)}
+                  onSave={(draft) => handleMemoSave(memo, draft)}
+                  onTagClick={navigation.selectTag}
+                  referencePreview={referencePreviews.referencePreview}
+                  referencedByPreviews={referencePreviews.referencedByPreviews}
+                  tagOptions={tagOptions}
+                />
+              )
+            })}
+            <p className="memo-list-footer">
+              游客模式 · 已显示 {memoCards.length} 条示例笔记
+            </p>
+          </>
+        )}
+      </WorkspaceShell>
     </>
   )
 }

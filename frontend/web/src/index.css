@@ -56,40 +56,18 @@ body {
   background-color: hsl(var(--background));
 }
 
-.app-shell {
-  box-sizing: border-box;
-  min-height: 100svh;
-  width: 100%;
-  max-width: var(--size-layout-max-width);
-  padding: var(--space-main-offset-top) var(--space-gutter) var(--space-gutter);
-  background: transparent;
+/* SiteTemplate 内容列默认用 flex gap 排版；笔记列表改为 margin 排版，
+   避免插入待确认卡片时既有卡片先被 gap 顶开再开始高度动画（见
+   workspace-pending-create-animation-contract.test.mjs）。 */
+.weimo-site-template .weimo-site-template__content {
+  gap: 0;
 }
 
-.app-shell__layout {
-  display: flex;
-  gap: calc(var(--space-gutter) * 1.6);
-}
-
-.app-shell__sidebar-space {
-  display: none;
-  width: var(--size-sidebar-width);
-  flex: none;
-  overflow: hidden;
-}
-
-.app-shell__content {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  color: var(--color-text-primary);
-}
-
-.app-shell__content > * + * {
+.weimo-site-template__content > * + * {
   margin-top: var(--space-gutter);
 }
 
-.app-shell__content > .weimo-card-composer + * {
+.weimo-site-template__content > .weimo-card-composer + * {
   margin-top: 0;
 }
 
@@ -101,7 +79,6 @@ body {
   box-sizing: border-box;
   width: 100%;
   max-width: var(--size-content-max-width);
-  margin: 0 0 var(--space-gutter);
   padding: 0 4px;
   color: var(--color-primary);
 }
@@ -264,26 +241,6 @@ body {
 @media (min-width: 700px) {
   #root {
     padding: 0 var(--space-gutter);
-  }
-
-  .app-shell__sidebar-space {
-    display: block;
-  }
-
-  .app-shell__content {
-    max-width: var(--size-content-max-width);
-  }
-
-  .workspace-filter-bar {
-    margin-inline-start: calc(
-      var(--size-sidebar-width) + calc(var(--space-gutter) * 1.6)
-    );
-  }
-
-  .workspace-top-bar .top-bar__slot--left {
-    padding-inline-start: calc(
-      var(--size-sidebar-width) + calc(var(--space-gutter) * 1.6)
-    );
   }
 }
 

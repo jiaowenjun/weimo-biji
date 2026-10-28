@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { PanelLeft, Plus, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
 import { TagBread } from 'weimo-ui/components/tag-bread'
 import { TagPicker } from 'weimo-ui/components/tag-picker'
@@ -9,7 +9,6 @@ import { useInfiniteListSentinel } from 'weimo-ui/lib/use-infinite-list-sentinel
 import type { CardDraft } from '@/components/card'
 import { RefCard } from '@/components/ref-card'
 import { SideBar } from '@/components/sidebar'
-import { TopBar } from '@/components/top-bar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/use-auth'
 import {
@@ -26,6 +25,7 @@ import { WorkspaceFilterBar } from '@/features/workspace/workspace-filter-bar'
 import {
   buildSidebarStatItems,
   formatTagBreadTag,
+  formatWorkspacePageTitle,
   toHeatmapDailyCounts,
   toSidebarTagTree,
   toTagOptions,
@@ -43,6 +43,7 @@ import {
   resetWorkspaceNavigation,
 } from '@/features/workspace/workspace-navigation-store'
 import { useWorkspacePageNavigation } from '@/features/workspace/use-workspace-page-navigation'
+import { WorkspaceShell } from '@/features/workspace/workspace-shell'
 import type { Memo } from '@/features/workspace/workspace-types'
 import { useWorkspaceTagActions } from '@/features/workspace/workspace-tag-actions'
 import { PendingCreateCard } from '@/features/workspace/pending-create-card'
@@ -82,7 +83,6 @@ export function WorkspaceDemoPage() {
   const memoListQuery = useMemoListQuery(memoFilters)
   const deleteMemoMutation = useDeleteMemoMutation()
   const updateMemoMutation = useUpdateMemoMutation()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const memoCreate = useAuthenticatedMemoCreate(navigation.selectedTag)
   const {
     createMemo: createWorkspaceMemo,
@@ -181,14 +181,6 @@ export function WorkspaceDemoPage() {
     [tagTreeQuery.data],
   )
 
-  const openSidebar = useCallback(() => {
-    setSidebarOpen(true)
-  }, [])
-
-  const closeSidebar = useCallback(() => {
-    setSidebarOpen(false)
-  }, [])
-
   const handleLogout = useCallback(() => {
     clearWorkspaceQueries(queryClient)
     resetWorkspaceNavigation()
@@ -275,34 +267,6 @@ export function WorkspaceDemoPage() {
 
   return (
     <>
-      <SideBar
-        activeDate={navigation.activeDate}
-        dailyCounts={dailyCounts}
-        displayName={displayName}
-        expandedTagTreeTags={expandedTagTreeTags}
-        onClose={closeSidebar}
-        onDeleteTag={handleDeleteTag}
-        onExpandedTagTreeTagsChange={setExpandedTagTreeTags}
-        onLogout={handleLogout}
-        onSelectDate={navigation.selectDate}
-        onSelectFacet={navigation.selectFacet}
-        onSelectTag={navigation.selectTag}
-        onRenameTag={handleRenameTag}
-        onShowAllNotes={navigation.showAllNotes}
-        onShowTodayReview={navigation.showTodayReview}
-        open={sidebarOpen}
-        selectedFacet={navigation.selectedFacet}
-        selectedTag={navigation.selectedTag}
-        statItems={statItems}
-        statsLoadFailed={statsQuery.isError}
-        statsLoading={statsQuery.isPending}
-        tagMenuEnabled
-        tagTreeInitialized={tagTreeQuery.isFetched}
-        tagTreeLoadFailed={tagTreeQuery.isError}
-        tagTreeLoading={tagTreeQuery.isPending}
-        tagTreeNodes={tagTree.nodes}
-        tagTreeUntaggedCount={tagTree.untaggedCount}
-      />
       <TagPicker
         allowEmptyRemove={false}
         initialDraft={renamingTag ?? ''}
@@ -329,27 +293,38 @@ export function WorkspaceDemoPage() {
         open={quoteMemo !== null}
         tagOptions={tagOptions}
       />
-      <TopBar
-        className="workspace-top-bar"
-        leftSlot={
-          <>
-            <GlassIconButton
-              aria-label="打开侧栏"
-              className="md:hidden"
-              onClick={openSidebar}
-            >
-              <PanelLeft />
-            </GlassIconButton>
-            {navigation.selectedTag ? (
-              <TagBread
-                aria-label="当前标签"
-                tag={formatTagBreadTag(navigation.selectedTag)}
-                onSelect={navigation.selectTag}
-              />
-            ) : null}
-          </>
-        }
-        rightSlot={
+      <WorkspaceShell
+        pageTitle={formatWorkspacePageTitle(navigation)}
+        sidebar={(api) => (
+          <SideBar
+            activeDate={navigation.activeDate}
+            dailyCounts={dailyCounts}
+            displayName={displayName}
+            expandedTagTreeTags={expandedTagTreeTags}
+            onClose={api.close}
+            onDeleteTag={handleDeleteTag}
+            onExpandedTagTreeTagsChange={setExpandedTagTreeTags}
+            onLogout={handleLogout}
+            onSelectDate={navigation.selectDate}
+            onSelectFacet={navigation.selectFacet}
+            onSelectTag={navigation.selectTag}
+            onRenameTag={handleRenameTag}
+            onShowAllNotes={navigation.showAllNotes}
+            onShowTodayReview={navigation.showTodayReview}
+            selectedFacet={navigation.selectedFacet}
+            selectedTag={navigation.selectedTag}
+            statItems={statItems}
+            statsLoadFailed={statsQuery.isError}
+            statsLoading={statsQuery.isPending}
+            tagMenuEnabled
+            tagTreeInitialized={tagTreeQuery.isFetched}
+            tagTreeLoadFailed={tagTreeQuery.isError}
+            tagTreeLoading={tagTreeQuery.isPending}
+            tagTreeNodes={tagTree.nodes}
+            tagTreeUntaggedCount={tagTree.untaggedCount}
+          />
+        )}
+        topBarActions={
           <>
             <GlassIconButton aria-label="搜索">
               <Search />
@@ -369,123 +344,126 @@ export function WorkspaceDemoPage() {
             />
           </>
         }
-      />
-      <main className="app-shell">
+        topBarLeading={
+          navigation.selectedTag ? (
+            <TagBread
+              aria-label="当前标签"
+              tag={formatTagBreadTag(navigation.selectedTag)}
+              onSelect={navigation.selectTag}
+            />
+          ) : undefined
+        }
+      >
         <WorkspaceFilterBar
           activeDate={navigation.activeDate}
           onClearDate={navigation.clearDateFilter}
           onClearFacet={navigation.clearFacetFilter}
           selectedFacet={navigation.selectedFacet}
         />
-        <div className="app-shell__layout">
-          <div aria-hidden="true" className="app-shell__sidebar-space" />
-          <div className="app-shell__content">
-            {memoListQuery.isPending && !hasVisibleMemoCards ? (
-              <MemoListSkeleton />
-            ) : null}
+        {memoListQuery.isPending && !hasVisibleMemoCards ? (
+          <MemoListSkeleton />
+        ) : null}
 
-            {memoListQuery.isError && !hasVisibleMemoCards ? (
-              <section className="memo-list-state" role="status">
-                <p className="memo-list-state__title">笔记列表加载失败</p>
-                <p className="memo-list-state__body">请稍后重新加载。</p>
-                <Button
-                  className="memo-list-state__action"
-                  onClick={() => void memoListQuery.refetch()}
-                  size="sm"
-                  variant="outline"
-                >
-                  重新加载
-                </Button>
-              </section>
-            ) : null}
+        {memoListQuery.isError && !hasVisibleMemoCards ? (
+          <section className="memo-list-state" role="status">
+            <p className="memo-list-state__title">笔记列表加载失败</p>
+            <p className="memo-list-state__body">请稍后重新加载。</p>
+            <Button
+              className="memo-list-state__action"
+              onClick={() => void memoListQuery.refetch()}
+              size="sm"
+              variant="outline"
+            >
+              重新加载
+            </Button>
+          </section>
+        ) : null}
 
-            {!memoListQuery.isPending &&
-            !memoListQuery.isError &&
-            !hasVisibleMemoCards ? (
-              <section className="memo-list-state" role="status">
-                <p className="memo-list-state__title">暂无笔记</p>
-                <p className="memo-list-state__body">登录账号下还没有可展示的笔记。</p>
-              </section>
-            ) : null}
+        {!memoListQuery.isPending &&
+        !memoListQuery.isError &&
+        !hasVisibleMemoCards ? (
+          <section className="memo-list-state" role="status">
+            <p className="memo-list-state__title">暂无笔记</p>
+            <p className="memo-list-state__body">登录账号下还没有可展示的笔记。</p>
+          </section>
+        ) : null}
 
-            {hasVisibleMemoCards ? (
-              <>
-                {memoCreate.pendingCreate && memoCreate.pendingCreateNote ? (
-                  <PendingCreateCard
-                    key={memoCreate.pendingCreate.clientId}
-                    clientId={memoCreate.pendingCreate.clientId}
-                    isClosing={memoCreate.pendingCreate.status === 'closing'}
-                    initialMode={
-                      memoCreate.pendingCreate.status === 'editing' ||
-                      memoCreate.pendingCreate.status === 'closing'
-                        ? 'edit'
-                        : 'view'
-                    }
-                    note={memoCreate.pendingCreateNote}
-                    onCancel={memoCreate.cancel}
-                    onExitAnimationEnd={memoCreate.finishExitAnimation}
-                    onSave={memoCreate.save}
-                    onViewTransitionEnd={memoCreate.finishViewTransition}
-                    onTagClick={navigation.selectTag}
-                    tagOptions={tagOptions}
-                  />
+        {hasVisibleMemoCards ? (
+          <>
+            {memoCreate.pendingCreate && memoCreate.pendingCreateNote ? (
+              <PendingCreateCard
+                key={memoCreate.pendingCreate.clientId}
+                clientId={memoCreate.pendingCreate.clientId}
+                isClosing={memoCreate.pendingCreate.status === 'closing'}
+                initialMode={
+                  memoCreate.pendingCreate.status === 'editing' ||
+                  memoCreate.pendingCreate.status === 'closing'
+                    ? 'edit'
+                    : 'view'
+                }
+                note={memoCreate.pendingCreateNote}
+                onCancel={memoCreate.cancel}
+                onExitAnimationEnd={memoCreate.finishExitAnimation}
+                onSave={memoCreate.save}
+                onViewTransitionEnd={memoCreate.finishViewTransition}
+                onTagClick={navigation.selectTag}
+                tagOptions={tagOptions}
+              />
+            ) : null}
+            {memoCards.map((memo) => {
+              const referencePreviews = buildMemoReferencePreviews(
+                memo,
+                referencePreviewResolver,
+              )
+
+              return (
+                <RefCard
+                  key={memo.id}
+                  note={toCardNote(memo)}
+                  onCopySelect={() => handleMemoCopy(memo)}
+                  onDelete={() => handleMemoDelete(memo)}
+                  onQuoteSelect={() => setQuoteMemoId(memo.id)}
+                  onSave={(draft) => handleMemoSave(memo, draft)}
+                  onReferenceClick={() => setDetailMemoId(memo.id)}
+                  onTagClick={navigation.selectTag}
+                  referencePreview={referencePreviews.referencePreview}
+                  referencedByPreviews={referencePreviews.referencedByPreviews}
+                  tagOptions={tagOptions}
+                />
+              )
+            })}
+            {hasNextPage && !isFetchNextPageError ? (
+              <div
+                aria-hidden="true"
+                className="memo-list-load-more-sentinel"
+                ref={loadMoreSentinelRef}
+              />
+            ) : null}
+            {isFetchingNextPage ||
+            isFetchNextPageError ||
+            (!hasNextPage && totalMemoCount > 0) ? (
+              <div className="memo-list-footer" role="status">
+                {isFetchingNextPage ? (
+                  <span>正在加载更多笔记...</span>
                 ) : null}
-                {memoCards.map((memo) => {
-                  const referencePreviews = buildMemoReferencePreviews(
-                    memo,
-                    referencePreviewResolver,
-                  )
-
-                  return (
-                    <RefCard
-                      key={memo.id}
-                      note={toCardNote(memo)}
-                      onCopySelect={() => handleMemoCopy(memo)}
-                      onDelete={() => handleMemoDelete(memo)}
-                      onQuoteSelect={() => setQuoteMemoId(memo.id)}
-                      onSave={(draft) => handleMemoSave(memo, draft)}
-                      onReferenceClick={() => setDetailMemoId(memo.id)}
-                      onTagClick={navigation.selectTag}
-                      referencePreview={referencePreviews.referencePreview}
-                      referencedByPreviews={referencePreviews.referencedByPreviews}
-                      tagOptions={tagOptions}
-                    />
-                  )
-                })}
-                {hasNextPage && !isFetchNextPageError ? (
-                  <div
-                    aria-hidden="true"
-                    className="memo-list-load-more-sentinel"
-                    ref={loadMoreSentinelRef}
-                  />
+                {isFetchNextPageError ? (
+                  <Button
+                    className="memo-list-footer__action"
+                    onClick={() => void fetchNextPage()}
+                    size="sm"
+                    variant="outline"
+                  >
+                    重试加载更多
+                  </Button>
                 ) : null}
-                {isFetchingNextPage ||
-                isFetchNextPageError ||
-                (!hasNextPage && totalMemoCount > 0) ? (
-                  <div className="memo-list-footer" role="status">
-                    {isFetchingNextPage ? (
-                      <span>正在加载更多笔记...</span>
-                    ) : null}
-                    {isFetchNextPageError ? (
-                      <Button
-                        className="memo-list-footer__action"
-                        onClick={() => void fetchNextPage()}
-                        size="sm"
-                        variant="outline"
-                      >
-                        重试加载更多
-                      </Button>
-                    ) : null}
-                    {!hasNextPage && totalMemoCount > 0 ? (
-                      <span>已加载全部笔记</span>
-                    ) : null}
-                  </div>
+                {!hasNextPage && totalMemoCount > 0 ? (
+                  <span>已加载全部笔记</span>
                 ) : null}
-              </>
+              </div>
             ) : null}
-          </div>
-        </div>
-      </main>
+          </>
+        ) : null}
+      </WorkspaceShell>
     </>
   )
 }

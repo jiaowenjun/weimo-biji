@@ -62,23 +62,23 @@ function assertPendingCreateAnimationWrapper(source, label) {
 assertPendingCreateAnimationWrapper(workspacePageSource, 'workspace')
 assertPendingCreateAnimationWrapper(guestPageSource, 'guest')
 
-const appContentRuleMatch = indexCss.match(
-  /\.app-shell__content\s*\{[\s\S]*?\n\}/,
+const siteTemplateContentOverrideMatch = indexCss.match(
+  /\.weimo-site-template \.weimo-site-template__content\s*\{[\s\S]*?\n\}/,
 )
 
 assert.ok(
-  appContentRuleMatch,
-  'app shell content rule must exist so pending create spacing can be controlled.',
+  siteTemplateContentOverrideMatch,
+  'the SiteTemplate content column override must exist so pending create spacing stays app-owned.',
 )
 assert.ok(
-  !appContentRuleMatch[0].includes('gap:'),
-  'app shell content must not use flex gap because inserted pending create cards would make existing cards jump by the gap before the height animation starts.',
+  siteTemplateContentOverrideMatch[0].includes('gap: 0;'),
+  'the SiteTemplate content gap must be zeroed because inserted pending create cards would make existing cards jump by the gap before the height animation starts.',
 )
 
 for (const snippet of [
-  '.app-shell__content > * + * {',
+  '.weimo-site-template__content > * + * {',
   'margin-top: var(--space-gutter);',
-  '.app-shell__content > .weimo-card-composer + * {',
+  '.weimo-site-template__content > .weimo-card-composer + * {',
 ]) {
   assert.ok(
     indexCss.includes(snippet),
