@@ -13,6 +13,7 @@ import {
 
 import { Heatmap, type HeatmapDailyCount } from 'weimo-ui-stats/components/heatmap'
 import { StatGroup, type StatGroupItem } from 'weimo-ui-stats/components/stat-group'
+import { TagTree as NavTagTree, type TagTreeNode as NavTagTreeNode } from 'weimo-ui-tagtree/components/tag-tree'
 import { GhostIconButton } from 'weimo-ui/components/ghost-icon-button'
 import { TagTree, type TagTreeMenuAction, type TagTreeNode } from 'weimo-ui/components/tag-tree'
 
@@ -22,7 +23,7 @@ const allNotesNavTag = 'nav/all-notes'
 const todayReviewNavTag = 'nav/today-review'
 const facetNavTagPrefix = 'nav/all-notes/'
 
-const sampleNavNodes: TagTreeNode[] = [
+const sampleNavNodes: NavTagTreeNode[] = [
   {
     tag: allNotesNavTag,
     label: '全部笔记',
@@ -213,7 +214,7 @@ export function BijiSideBar({
         </section>
 
         <nav className="biji-side-bar__nav" aria-label="笔记范围">
-          <TagTree
+          <NavTagTree
             aria-label="笔记范围"
             expandedTags={navExpandedTags}
             nodes={sampleNavNodes}
