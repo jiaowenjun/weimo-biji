@@ -26,6 +26,10 @@ export default defineConfig({
     include: [
       'weimo-ui > use-sync-external-store/shim',
       'weimo-ui > use-sync-external-store/shim/with-selector',
+      // @tiptap/react 用带扩展名的说明符导入（shim/index.js），
+      // 与上面的条目匹配不上，必须单独列出
+      'weimo-ui > use-sync-external-store/shim/index.js',
+      'weimo-ui > use-sync-external-store/shim/with-selector.js',
       'weimo-ui > debug',
       'weimo-ui > extend',
       'weimo-ui > style-to-js',
