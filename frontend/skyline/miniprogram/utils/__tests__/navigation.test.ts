@@ -1,3 +1,5 @@
+import { markdownCompatTextToWdfDocument, renderWdfToNodes } from '../wdf'
+import { wdfDoc } from '../../test-utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserProfile } from '../../models/auth'
 import {
@@ -146,11 +148,10 @@ describe('openMemoShareImage', () => {
   })
 
   it('reparses contentNodes from markdown when list throttled so share shows rich text', async () => {
-    const { renderMemoMarkdownToNodes } = await import('../memo-markdown')
     const card = {
       id: 42,
       createdAtText: '2026-01-01',
-      content: '# 标题',
+      content: markdownCompatTextToWdfDocument('# 标题'),
       contentNodes: [],
       tags: [],
       referenceId: null,
@@ -173,16 +174,15 @@ describe('openMemoShareImage', () => {
     call.success({ eventChannel: { emit: emitSpy } })
     const emitted = emitSpy.mock.calls[0][1] as { card: typeof card }
     expect(emitted.card.renderRichText).toBe(true)
-    expect(emitted.card.contentNodes).toEqual(renderMemoMarkdownToNodes('# 标题'))
+    expect(emitted.card.contentNodes).toEqual(renderWdfToNodes(markdownCompatTextToWdfDocument('# 标题')))
   })
 
   it('reuses existing contentNodes when renderRichText is true and nodes have no search highlight', async () => {
-    const { renderMemoMarkdownToNodes } = await import('../memo-markdown')
-    const existingNodes = renderMemoMarkdownToNodes('hi')
+    const existingNodes = renderWdfToNodes(wdfDoc('hi'))
     const card = {
       id: 77,
       createdAtText: '2026-01-01',
-      content: 'hi',
+      content: wdfDoc('hi'),
       contentNodes: existingNodes,
       tags: [],
       referenceId: null,
@@ -200,12 +200,11 @@ describe('openMemoShareImage', () => {
     expect(emitted.card.contentNodes).toBe(existingNodes)
   })
 
-  it('rebuilds contentNodes from markdown when renderRichText is true so share omits search highlight', async () => {
-    const { renderMemoMarkdownToNodes } = await import('../memo-markdown')
+  it('rebuilds contentNodes when renderRichText is true so share omits search highlight', async () => {
     const card = {
       id: 1,
       createdAtText: '2026-01-01',
-      content: '# 标题',
+      content: markdownCompatTextToWdfDocument('# 标题'),
       contentNodes: [
         {
           name: 'mark',
@@ -226,7 +225,7 @@ describe('openMemoShareImage', () => {
     const emitSpy = vi.fn()
     call.success({ eventChannel: { emit: emitSpy } })
     const emitted = emitSpy.mock.calls[0][1] as { card: typeof card }
-    expect(emitted.card.contentNodes).toEqual(renderMemoMarkdownToNodes('# 标题'))
+    expect(emitted.card.contentNodes).toEqual(renderWdfToNodes(markdownCompatTextToWdfDocument('# 标题')))
     expect(JSON.stringify(emitted.card.contentNodes)).not.toContain('memo-markdown__mark')
   })
 })

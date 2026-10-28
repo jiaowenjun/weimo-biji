@@ -2,7 +2,7 @@ import type { UserProfile } from '../models/auth'
 import type { MemoQueryDraft, MemoRefId } from '../models/memo'
 import { memoShareRichTextNodesContainSearchMark } from './memo-highlight'
 import type { MemoCardItem } from './memo-list-presentation'
-import { renderMemoMarkdownToNodes } from './memo-markdown'
+import { renderWdfToNodes } from './wdf'
 import { ownMemoIdFromRef } from './memo-ref-id'
 import { cloneMemoQueryDraft } from './memo-query'
 import { AppRoutes } from './routes'
@@ -264,10 +264,10 @@ export function openMemoShareImage(payload: MemoShareImageInitPayload, options?:
     sharedCard = {
       ...card,
       renderRichText: true,
-      contentNodes: renderMemoMarkdownToNodes(card.content),
+      contentNodes: renderWdfToNodes(card.content),
     }
   } else if (memoShareRichTextNodesContainSearchMark(card.contentNodes)) {
-    sharedCard = { ...card, contentNodes: renderMemoMarkdownToNodes(card.content) }
+    sharedCard = { ...card, contentNodes: renderWdfToNodes(card.content) }
   } else {
     sharedCard = { ...card }
   }

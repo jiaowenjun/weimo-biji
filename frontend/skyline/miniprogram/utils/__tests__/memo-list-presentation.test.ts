@@ -1,3 +1,5 @@
+import { markdownCompatTextToWdfDocument } from '../wdf'
+import { wdfDoc } from '../../test-utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Memo, MemoSearchPage } from '../../models/memo'
 import type { MemoListEntry } from '../../store/memo-cache-types'
@@ -7,7 +9,7 @@ import {
   type MemoListOnChangeHost,
 } from '../memo-list-presentation'
 
-function makeMemo(id: number, content = `memo-${id}`, overrides: Partial<Memo> = {}): Memo {
+function makeMemo(id: number, content = wdfDoc(`memo-${id}`), overrides: Partial<Memo> = {}): Memo {
   return {
     id,
     content,
@@ -90,8 +92,8 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(10, 'B quotes A', { refs: ['7'] }),
-      makeMemo(7, 'A first line\nA second line', {
+      makeMemo(10, wdfDoc('B quotes A'), { refs: ['7'] }),
+      makeMemo(7, wdfDoc('A first line\nA second line'), {
         createdAt: '2026-04-24T10:30:00',
       }),
     ])]))
@@ -108,7 +110,7 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(11, 'plain memo', { refs: [] }),
+      makeMemo(11, wdfDoc('plain memo'), { refs: [] }),
     ])]))
 
     expect(result.memoCards[0]?.referenceId).toBeNull()
@@ -121,9 +123,9 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(7, 'A is quoted by B and C', { referencedBy: ['99', '100'] }),
-      makeMemo(99, 'B quotes A', { createdAt: '2026-04-24T11:00:00' }),
-      makeMemo(100, 'C quotes A', { createdAt: '2026-04-24T11:05:00' }),
+      makeMemo(7, wdfDoc('A is quoted by B and C'), { referencedBy: ['99', '100'] }),
+      makeMemo(99, wdfDoc('B quotes A'), { createdAt: '2026-04-24T11:00:00' }),
+      makeMemo(100, wdfDoc('C quotes A'), { createdAt: '2026-04-24T11:05:00' }),
     ])]))
 
     expect(result.memoCards[0]?.referencedByPreviews.map((preview) => preview.displayText)).toEqual([
@@ -138,7 +140,7 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(10, 'B quotes A and is quoted by C', { refs: ['7'], referencedBy: ['12'] }),
+      makeMemo(10, wdfDoc('B quotes A and is quoted by C'), { refs: ['7'], referencedBy: ['12'] }),
     ])]))
 
     expect(result.memoCards[0]).toMatchObject({
@@ -154,12 +156,12 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(10, 'B quotes slash ref memo', {
+      makeMemo(10, wdfDoc('B quotes slash ref memo'), {
         refs: ['bob/7'],
         referencedBy: ['carol/12'],
       }),
-      makeMemo(7, 'Own memo 7 should not be used'),
-      makeMemo(12, 'Own memo 12 should not be used'),
+      makeMemo(7, wdfDoc('Own memo 7 should not be used')),
+      makeMemo(12, wdfDoc('Own memo 12 should not be used')),
     ])]))
 
     expect(result.memoCards[0]).toMatchObject({
@@ -175,8 +177,8 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(10, 'B quotes A', { refs: ['7'] }),
-      makeMemo(7, '123456789012345678901234567890', {
+      makeMemo(10, wdfDoc('B quotes A'), { refs: ['7'] }),
+      makeMemo(7, wdfDoc('123456789012345678901234567890'), {
         createdAt: '2026-04-24T10:30:00',
       }),
     ])]))
@@ -481,12 +483,12 @@ describe('memo-list-presentation', () => {
     const result = project(makeEntry([makePage(memos)]))
     for (let i = 100; i < 105; i++) {
       expect(result.memoCards[i].contentNodes).toEqual([])
-      expect(result.memoCards[i].content).toBe(`memo-${i + 1}`)
+      expect(result.memoCards[i].content).toEqual(wdfDoc(`memo-${i + 1}`))
     }
   })
 
   it('keeps highlighted search cards in rich-text mode beyond the threshold', () => {
-    const memos = Array.from({ length: 105 }, (_, i) => makeMemo(i + 1, '命中词\n\n第二段'))
+    const memos = Array.from({ length: 105 }, (_, i) => makeMemo(i + 1, markdownCompatTextToWdfDocument('命中词\n\n第二段')))
     const project = createListProjector({
       getExitingMemoIds: () => new Set<number>(),
       highlightKeyword: '命中',
@@ -517,7 +519,7 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(1, '第一段\n\n命中第二段\n\n第三段'),
+      makeMemo(1, markdownCompatTextToWdfDocument('第一段\n\n命中第二段\n\n第三段')),
     ])]))
     const nodes = result.memoCards[0].contentNodes as Array<{
       attrs?: { class?: string; style?: string }
@@ -536,7 +538,7 @@ describe('memo-list-presentation', () => {
     })
 
     const result = project(makeEntry([makePage([
-      makeMemo(1, '命中第一段\n\n> 引用第二段'),
+      makeMemo(1, markdownCompatTextToWdfDocument('命中第一段\n\n> 引用第二段')),
     ])]))
     const nodes = result.memoCards[0].contentNodes as Array<{
       attrs?: { class?: string; style?: string }

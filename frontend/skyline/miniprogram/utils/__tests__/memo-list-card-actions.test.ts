@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   detectMemoCardDoubleTap,
@@ -213,7 +214,7 @@ describe('openEditComposeForCard', () => {
   })
 
   it('opens compose in edit mode when card exists', () => {
-    const cards = hostWithCards([{ id: 1, content: 'hello', tags: ['a'] }]).data.memoCards
+    const cards = hostWithCards([{ id: 1, content: wdfDoc('hello'), tags: ['a'] }]).data.memoCards
     openEditComposeForCard(cards, 1)
     expect(openMemoCompose).toHaveBeenCalledWith(
       {
@@ -230,7 +231,7 @@ describe('openEditComposeForCard', () => {
   })
 
   it('opens compose in edit mode with reference preview text when card has a ref', () => {
-    const cards = hostWithCards([{ id: 1, content: 'hello', tags: ['a'], referenceId: '7' }]).data.memoCards
+    const cards = hostWithCards([{ id: 1, content: wdfDoc('hello'), tags: ['a'], referenceId: '7' }]).data.memoCards
     cards[0].referencePreview = { id: '7', displayText: '2026-04-24：source memo' }
 
     openEditComposeForCard(cards, 1)
@@ -251,7 +252,7 @@ describe('openEditComposeForCard', () => {
 
   it('passes a save callback for edit compose refreshes', () => {
     const onSaved = vi.fn()
-    const cards = hostWithCards([{ id: 1, content: 'hello', tags: ['a'] }]).data.memoCards
+    const cards = hostWithCards([{ id: 1, content: wdfDoc('hello'), tags: ['a'] }]).data.memoCards
 
     openEditComposeForCard(cards, 1, onSaved)
 
@@ -275,7 +276,7 @@ describe('openQuoteComposeForCard', () => {
   it('opens compose in create mode with initialRefs pointing at the quoted memo', () => {
     const cards = hostWithCards([{
       id: 7,
-      content: 'A first line\nA second line',
+      content: wdfDoc('A first line\nA second line'),
       tags: ['source'],
       createdAtText: '2026-04-24 10:30',
     }]).data.memoCards
@@ -296,7 +297,7 @@ describe('openQuoteComposeForCard', () => {
   it('opens compose with empty initialTags when quoted card has no tags', () => {
     const cards = hostWithCards([{
       id: 7,
-      content: 'x',
+      content: wdfDoc('x'),
       tags: [],
       createdAtText: '2026-04-24 10:30',
     }]).data.memoCards
@@ -315,7 +316,7 @@ describe('openQuoteComposeForCard', () => {
     const onSaved = vi.fn()
     const cards = hostWithCards([{
       id: 7,
-      content: 'quoted',
+      content: wdfDoc('quoted'),
       tags: ['source'],
       createdAtText: '2026-04-24 10:30',
     }]).data.memoCards
@@ -383,7 +384,7 @@ describe('runMemoModifyTag', () => {
   })
 
   it('opens tag picker with single selected tag for default modify path', async () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['old'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['old'] }])
     ;(openMemoComposeTagPicker as any).mockImplementation((_opts: unknown, cb: any) => {
       cb({ selectedTags: ['new'] })
     })
@@ -400,7 +401,7 @@ describe('runMemoModifyTag', () => {
   })
 
   it('allowMultiTag opens picker with full card tags', () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['a', 'b'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['a', 'b'] }])
     ;(openMemoComposeTagPicker as any).mockImplementation(() => {})
     runMemoModifyTag(host, 1, 'b', { allowMultiTag: true })
     expect(openMemoComposeTagPicker).toHaveBeenCalledWith(
@@ -415,13 +416,13 @@ describe('runMemoModifyTag', () => {
   })
 
   it('allowMultiTag skips placeholder 无', () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['无'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['无'] }])
     runMemoModifyTag(host, 1, '无', { allowMultiTag: true })
     expect(openMemoComposeTagPicker).not.toHaveBeenCalled()
   })
 
   it('skips updateMemo when allowMultiTag result is set-equal to existing', () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['a', 'b'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['a', 'b'] }])
     ;(openMemoComposeTagPicker as any).mockImplementation((_opts: unknown, cb: any) => {
       cb({ selectedTags: ['b', 'a'] })
     })
@@ -431,17 +432,17 @@ describe('runMemoModifyTag', () => {
   })
 
   it('opens tag picker in update mode and updates memo when result differs', async () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['old'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['old'] }])
     ;(openMemoComposeTagPicker as any).mockImplementation((_opts: unknown, cb: any) => {
       cb({ selectedTags: ['new'] })
     })
     runMemoModifyTag(host, 1, 'old')
     expect(openMemoComposeTagPicker).toHaveBeenCalledTimes(1)
-    expect(workspaceStore.updateMemo).toHaveBeenCalledWith(1, { content: 'c', tags: ['new'] })
+    expect(workspaceStore.updateMemo).toHaveBeenCalledWith(1, { content: wdfDoc('c'), tags: ['new'] })
   })
 
   it('notifies the host after tag update succeeds', async () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['old'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['old'] }])
     host.onMemoTagsUpdated = vi.fn()
     ;(openMemoComposeTagPicker as any).mockImplementation((_opts: unknown, cb: any) => {
       cb({ selectedTags: ['new'] })
@@ -454,7 +455,7 @@ describe('runMemoModifyTag', () => {
   })
 
   it('skips updateMemo when picker result matches existing tags', () => {
-    const host = hostWithCards([{ id: 1, content: 'c', tags: ['old'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('c'), tags: ['old'] }])
     ;(openMemoComposeTagPicker as any).mockImplementation((_opts: unknown, cb: any) => {
       cb({ selectedTags: ['old'] })
     })
@@ -484,19 +485,19 @@ describe('runMemoRemoveTagFromMemo', () => {
   })
 
   it('shows modal and persists empty tags when last real tag removed', async () => {
-    const host = hostWithCards([{ id: 1, content: 'x', tags: ['work'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('x'), tags: ['work'] }])
     showModalMock.mockImplementation(({ success }: any) => success({ confirm: true }))
     runMemoRemoveTagFromMemo(host, 1, 'work')
     await flushPromises()
 
     expect(workspaceStore.updateMemo).toHaveBeenCalledWith(1, {
-      content: 'x',
+      content: wdfDoc('x'),
       tags: [],
     })
   })
 
   it('does not update when modal cancelled', () => {
-    const host = hostWithCards([{ id: 1, content: 'x', tags: ['work'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('x'), tags: ['work'] }])
     showModalMock.mockImplementation(({ success }: any) => success({ confirm: false }))
     runMemoRemoveTagFromMemo(host, 1, 'work')
     expect(workspaceStore.updateMemo).not.toHaveBeenCalled()
@@ -505,7 +506,7 @@ describe('runMemoRemoveTagFromMemo', () => {
 
 describe('runMemoAddTagFromList', () => {
   it('opens insert picker with stable tags placeholder when card empty', () => {
-    const host = hostWithCards([{ id: 1, content: 'x', tags: [] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('x'), tags: [] }])
     ;(openMemoComposeTagPicker as any).mockImplementation(() => {})
 
     runMemoAddTagFromList(host, 1)
@@ -522,7 +523,7 @@ describe('runMemoAddTagFromList', () => {
   })
 
   it('updates memo after insert result', async () => {
-    const host = hostWithCards([{ id: 1, content: 'x', tags: ['a'] }])
+    const host = hostWithCards([{ id: 1, content: wdfDoc('x'), tags: ['a'] }])
     ;(openMemoComposeTagPicker as any).mockImplementation((_opts: unknown, cb: any) => {
       cb({ selectedTags: ['a', 'new'] })
     })
@@ -531,7 +532,7 @@ describe('runMemoAddTagFromList', () => {
     await flushPromises()
 
     expect(workspaceStore.updateMemo).toHaveBeenCalledWith(1, {
-      content: 'x',
+      content: wdfDoc('x'),
       tags: ['a', 'new'],
     })
   })
@@ -544,7 +545,7 @@ describe('copyMemoContentForCard', () => {
   })
 
   it('copies only the raw card content to the clipboard', () => {
-    const cards = hostWithCards([{ id: 1, content: '# Title\nBody line', tags: ['work'] }]).data.memoCards
+    const cards = hostWithCards([{ id: 1, content: wdfDoc('# Title\nBody line'), tags: ['work'] }]).data.memoCards
 
     copyMemoContentForCard(cards, 1)
 
@@ -561,7 +562,7 @@ describe('copyMemoContentForCard', () => {
 
   it('shows a failure toast when the clipboard API fails', () => {
     setClipboardDataMock.mockImplementation((options: { fail?: () => void }) => options.fail?.())
-    const cards = hostWithCards([{ id: 1, content: 'Body line', tags: ['work'] }]).data.memoCards
+    const cards = hostWithCards([{ id: 1, content: wdfDoc('Body line'), tags: ['work'] }]).data.memoCards
 
     copyMemoContentForCard(cards, 1)
 
@@ -570,7 +571,7 @@ describe('copyMemoContentForCard', () => {
 })
 
 function makeEventHost(role: ViewerRole): MemoCardEventHost {
-  const host = hostWithCards([{ id: 1, content: 'x', tags: ['work'] }]) as unknown as MemoCardEventHost
+  const host = hostWithCards([{ id: 1, content: wdfDoc('x'), tags: ['work'] }]) as unknown as MemoCardEventHost
   host._permissionsFor = vi.fn(() => resolvePermissions(role))
   host._strategy = {
     onCardDoubleTap: vi.fn(),

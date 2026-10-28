@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Memo } from '../../models/memo'
 import {
@@ -20,7 +21,7 @@ function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
   const ts = '2026-05-26T00:00:00.000Z'
   return {
     id,
-    content: `memo ${id}`,
+    content: wdfDoc('memo ${id}'),
     tags: [],
     refs: [],
     referencedBy: [],
@@ -38,15 +39,15 @@ describe('memo-reference-detail-loader', () => {
 
   it('loads the root, relation, and preview memos into a detail projection', async () => {
     const root = makeMemo(7, {
-      content: 'my memo A',
+      content: wdfDoc('my memo A'),
       refs: ['3'],
     })
     const quotedMemo = makeMemo(3, {
-      content: 'my memo B',
+      content: wdfDoc('my memo B'),
       refs: ['5'],
     })
     const nestedMemo = makeMemo(5, {
-      content: 'my memo C',
+      content: wdfDoc('my memo C'),
     })
 
     ensureMemoDetailMock.mockResolvedValue(root)
@@ -69,7 +70,7 @@ describe('memo-reference-detail-loader', () => {
   })
 
   it('skips relation and preview fetches for a memo without relations', async () => {
-    const root = makeMemo(7, { content: 'my memo A' })
+    const root = makeMemo(7, { content: wdfDoc('my memo A')})
 
     ensureMemoDetailMock.mockResolvedValue(root)
 
@@ -83,11 +84,11 @@ describe('memo-reference-detail-loader', () => {
 
   it('builds reference cards for references-only mode while dropping non-own refs', async () => {
     const ownMemo = makeMemo(3, {
-      content: 'my memo B',
+      content: wdfDoc('my memo B'),
       refs: ['5'],
     })
     const ownNestedMemo = makeMemo(5, {
-      content: 'my memo C',
+      content: wdfDoc('my memo C'),
     })
 
     ensureMemoDetailsMock.mockImplementation((memoIds: number[]) => {

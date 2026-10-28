@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Memo } from '../../models/memo'
 import {
@@ -11,7 +12,7 @@ function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
   const createdAt = `2026-04-${day}T10:00:00.000Z`
   return {
     id,
-    content: `memo-${id}`,
+    content: wdfDoc(`memo-${id}`),
     tags: [],
     createdAt,
     updatedAt: createdAt,
@@ -61,9 +62,9 @@ describe('createVisitorWorkspaceServices.searchMemos', () => {
 
   it('filters local memos by descendant tag and text content', async () => {
     const services = createVisitorWorkspaceServices(createSeedState([
-      makeMemo(1, { tags: ['Work/project'], content: 'ship alpha today' }),
-      makeMemo(2, { tags: ['Work/admin'], content: 'expense sheet' }),
-      makeMemo(3, { tags: ['Life/reading'], content: 'alpha notes from book' }),
+      makeMemo(1, { tags: ['Work/project'], content: wdfDoc('ship alpha today') }),
+      makeMemo(2, { tags: ['Work/admin'], content: wdfDoc('expense sheet') }),
+      makeMemo(3, { tags: ['Life/reading'], content: wdfDoc('alpha notes from book') }),
     ]))
 
     const page = await services.searchMemos({
@@ -92,14 +93,14 @@ describe('createVisitorWorkspaceServices.createMemo', () => {
     const services = createVisitorWorkspaceServices(createSeedState([
       makeMemo(10, {
         tags: ['Work/project'],
-        content: 'alpha beta',
+        content: wdfDoc('alpha beta'),
         createdAt: '2026-04-21T08:00:00.000Z',
         updatedAt: '2026-04-21T08:00:00.000Z',
       }),
     ]))
 
     const newId = await services.createMemo({
-      content: 'new visitor memo',
+      content: wdfDoc('new visitor memo'),
       tags: ['Ideas/brainstorm'],
     })
 
@@ -153,14 +154,14 @@ describe('createVisitorWorkspaceServices.createMemo', () => {
     const services = createVisitorWorkspaceServices(createSeedState([
       makeMemo(1, {
         tags: ['Source'],
-        content: 'A',
+        content: wdfDoc('A'),
         createdAt: '2026-04-21T08:00:00.000Z',
         updatedAt: '2026-04-21T08:00:00.000Z',
       }),
     ]))
 
     const id = await services.createMemo({
-      content: 'B',
+      content: wdfDoc('B'),
       tags: ['Reply'],
       refs: ['1'],
     })
@@ -169,7 +170,7 @@ describe('createVisitorWorkspaceServices.createMemo', () => {
     expect(page.items.find((memo) => memo.id === id)?.refs).toEqual(['1'])
 
     await services.updateMemo(id, {
-      content: 'B updated',
+      content: wdfDoc('B updated'),
       tags: ['Reply'],
       refs: ['1'],
     })
@@ -180,17 +181,17 @@ describe('createVisitorWorkspaceServices.createMemo', () => {
 
   it('maintains referencedBy for visitor-created and visitor-updated refs', async () => {
     const services = createVisitorWorkspaceServices(createSeedState([
-      makeMemo(1, { content: 'A' }),
-      makeMemo(2, { content: 'C' }),
+      makeMemo(1, { content: wdfDoc('A') }),
+      makeMemo(2, { content: wdfDoc('C') }),
     ]))
 
-    const id = await services.createMemo({ content: 'B', tags: [], refs: ['1'] })
+    const id = await services.createMemo({ content: wdfDoc('B'), tags: [], refs: ['1'] })
 
     let page = await services.searchMemos({}, null, 10)
     expect(page.items.find((memo) => memo.id === 1)?.referencedBy).toEqual([String(id)])
     expect(page.items.find((memo) => memo.id === id)?.referencedBy).toEqual([])
 
-    await services.updateMemo(id, { content: 'B retargeted', tags: [], refs: ['2'] })
+    await services.updateMemo(id, { content: wdfDoc('B retargeted'), tags: [], refs: ['2'] })
 
     page = await services.searchMemos({}, null, 10)
     expect(page.items.find((memo) => memo.id === 1)?.referencedBy).toEqual([])

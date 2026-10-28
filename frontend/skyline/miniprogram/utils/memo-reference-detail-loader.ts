@@ -1,3 +1,4 @@
+import { createEmptyWdfDocument } from './wdf'
 import type { Memo, MemoRefId } from '../models/memo'
 import { workspaceStore } from '../store/store-bindings/workspace-store.instance'
 import type { MemoCardItem } from './memo-list-presentation'
@@ -36,7 +37,7 @@ function createReferenceListRoot(refs: MemoRefId[]): Memo {
     createdAt: ts,
     updatedAt: ts,
     tags: [],
-    content: '',
+    content: createEmptyWdfDocument(),
     refs: [...refs],
     referencedBy: [],
   }

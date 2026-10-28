@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { describe, expect, it } from 'vitest'
 import type { Memo } from '../../models/memo'
 import {
@@ -15,7 +16,7 @@ import type { MemoCardItem } from '../memo-list-presentation'
 function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
   return {
     id,
-    content: `memo-${id}`,
+    content: wdfDoc(`memo-${id}`),
     tags: [],
     createdAt: '2026-04-24T10:00:00.000Z',
     updatedAt: '2026-04-24T10:00:00.000Z',
@@ -29,7 +30,7 @@ function makeCard(id: number, overrides: Partial<MemoCardItem> = {}): MemoCardIt
   return {
     id,
     createdAtText: '2026-04-24',
-    content: `card-${id}`,
+    content: wdfDoc('card-${id}'),
     contentNodes: [],
     tags: [],
     referenceId: null,
@@ -56,15 +57,15 @@ describe('memo-reference-detail projection', () => {
 
   it('builds root, reference, and referenced-by card groups with relation bars intact', () => {
     const root = makeMemo(10, {
-      content: 'Root',
+      content: wdfDoc('Root'),
       refs: ['1', 'bob/7'],
       referencedBy: ['11', 'bob/9'],
     })
     const memos = [
       root,
-      makeMemo(1, { content: 'Quoted', referencedBy: ['10', '21'] }),
-      makeMemo(11, { content: 'Referrer', refs: ['10'] }),
-      makeMemo(21, { content: 'Other referrer' }),
+      makeMemo(1, { content: wdfDoc('Quoted'), referencedBy: ['10', '21'] }),
+      makeMemo(11, { content: wdfDoc('Referrer'), refs: ['10'] }),
+      makeMemo(21, { content: wdfDoc('Other referrer')}),
     ]
 
     const projection = buildMemoReferenceDetailProjection(root, memos)
@@ -79,11 +80,11 @@ describe('memo-reference-detail projection', () => {
 
   it('keeps relation card referenced-by previews date formatted in self detail', () => {
     const root = makeMemo(10, {
-      content: 'Root memo',
+      content: wdfDoc('Root memo'),
       refs: ['1'],
     })
     const ownQuotedMemo = makeMemo(1, {
-      content: 'Own quoted memo',
+      content: wdfDoc('Own quoted memo'),
       referencedBy: ['10'],
     })
 
@@ -98,8 +99,8 @@ describe('memo-reference-detail projection', () => {
     const root = makeMemo(10, {
       refs: ['1', 'bob/7', '2'],
     })
-    const ownMemoA = makeMemo(1, { content: 'Own quoted A' })
-    const ownMemoB = makeMemo(2, { content: 'Own quoted B' })
+    const ownMemoA = makeMemo(1, { content: wdfDoc('Own quoted A')})
+    const ownMemoB = makeMemo(2, { content: wdfDoc('Own quoted B')})
 
     const projection = buildMemoReferenceDetailProjection(root, [
       root,
@@ -114,8 +115,8 @@ describe('memo-reference-detail projection', () => {
     const root = makeMemo(10, {
       referencedBy: ['11', 'bob/9', '12'],
     })
-    const ownMemoA = makeMemo(11, { content: 'Own referrer A' })
-    const ownMemoB = makeMemo(12, { content: 'Own referrer B' })
+    const ownMemoA = makeMemo(11, { content: wdfDoc('Own referrer A')})
+    const ownMemoB = makeMemo(12, { content: wdfDoc('Own referrer B')})
 
     const projection = buildMemoReferenceDetailProjection(root, [
       root,
@@ -128,12 +129,12 @@ describe('memo-reference-detail projection', () => {
 
   it('builds standalone reference cards for unsaved compose refs with relation bars intact', () => {
     const referenceMemos = [
-      makeMemo(1, { content: 'Quoted A', referencedBy: ['10', '21'] }),
-      makeMemo(2, { content: 'Quoted B', refs: ['3', 'bob/7'] }),
+      makeMemo(1, { content: wdfDoc('Quoted A'), referencedBy: ['10', '21'] }),
+      makeMemo(2, { content: wdfDoc('Quoted B'), refs: ['3', 'bob/7'] }),
     ]
     const previewMemos = [
-      makeMemo(21, { content: 'Other referrer' }),
-      makeMemo(3, { content: 'Nested quoted memo' }),
+      makeMemo(21, { content: wdfDoc('Other referrer')}),
+      makeMemo(3, { content: wdfDoc('Nested quoted memo')}),
     ]
 
     expect(collectMemoReferenceListPreviewFetchIds(referenceMemos)).toEqual([10, 21, 3])
@@ -226,7 +227,7 @@ describe('buildMemoCardItemFromMemo', () => {
   function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
     return {
       id,
-      content: `memo-${id}`,
+      content: wdfDoc(`memo-${id}`),
       tags: [],
       createdAt: '2026-04-30T10:00:00.000Z',
       updatedAt: '2026-04-30T10:00:00.000Z',
@@ -237,20 +238,20 @@ describe('buildMemoCardItemFromMemo', () => {
   }
 
   it('builds a card item with reference previews resolved from allMemos', () => {
-    const baseMemo = makeMemo(42, { tags: ['工作'], content: 'Hello world', refs: ['10'], referencedBy: ['20'] })
-    const refMemo = makeMemo(10, { content: 'Referenced memo', referencedBy: ['42'] })
-    const byMemo = makeMemo(20, { content: 'Referencing memo', refs: ['42'] })
+    const baseMemo = makeMemo(42, { tags: ['工作'], content: wdfDoc('Hello world'), refs: ['10'], referencedBy: ['20'] })
+    const refMemo = makeMemo(10, { content: wdfDoc('Referenced memo'), referencedBy: ['42'] })
+    const byMemo = makeMemo(20, { content: wdfDoc('Referencing memo'), refs: ['42'] })
 
     const card = buildMemoCardItemFromMemo(baseMemo, [baseMemo, refMemo, byMemo])
     expect(card.id).toBe(42)
     expect(card.tags).toEqual(['工作'])
-    expect(card.content).toBe('Hello world')
+    expect(card.content).toEqual(wdfDoc('Hello world'))
     expect(card.referencePreview).not.toBeNull()
     expect(card.referencedByPreviews).toHaveLength(1)
   })
 
   it('uses the 无 placeholder for tag-less memos and empty previews without relations', () => {
-    const simpleMemo = makeMemo(5, { content: 'Plain memo' })
+    const simpleMemo = makeMemo(5, { content: wdfDoc('Plain memo')})
     const card = buildMemoCardItemFromMemo(simpleMemo, [simpleMemo])
     expect(card.tags).toEqual(['无'])
     expect(card.referencePreview).toBeNull()

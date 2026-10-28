@@ -1,3 +1,4 @@
+import { isWdfDocument } from '../utils/wdf'
 import type { Memo, MemoSearchPage, MemoSearchQuery } from '../models/memo'
 
 export interface CacheEntryBase {
@@ -23,7 +24,7 @@ export function isMemo(value: unknown): value is Memo {
   const v = value as Partial<Memo>
   return (
     typeof v.id === 'number' &&
-    typeof v.content === 'string' &&
+    isWdfDocument(v.content) &&
     typeof v.createdAt === 'string' &&
     typeof v.updatedAt === 'string' &&
     Array.isArray(v.tags) &&

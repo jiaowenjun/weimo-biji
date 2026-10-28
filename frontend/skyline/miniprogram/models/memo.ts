@@ -1,3 +1,5 @@
+import type { WdfDocument } from '../utils/wdf'
+
 export type Tag = string
 export type MemoRefId = string
 
@@ -18,7 +20,7 @@ export interface MemoDto {
   ct_utc: MemoUtcArray
   mt_utc: MemoUtcArray
   tags: Tag[]
-  content: string
+  content: WdfDocument
   refs?: MemoRefId[]
   referenced_by?: MemoRefId[]
 }
@@ -28,7 +30,7 @@ export interface Memo {
   createdAt: string
   updatedAt: string
   tags: Tag[]
-  content: string
+  content: WdfDocument
   refs: MemoRefId[]
   referencedBy: MemoRefId[]
 }
@@ -84,7 +86,7 @@ export interface MemoSearchRequest extends MemoSearchQuery {
 }
 
 export interface MemoWriteRequest {
-  content: string
+  content: WdfDocument
   tags: string[]
   refs?: MemoRefId[]
 }

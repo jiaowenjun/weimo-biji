@@ -8,14 +8,13 @@ import {
   findSingleDeleteIndex,
 } from '../store/store-bindings/memo-cards-patch'
 import { workspaceStore } from '../store/store-bindings/workspace-store.instance'
-import { renderMemoMarkdownToNodes } from './memo-markdown'
+import { renderWdfToNodes, wdfDocumentToPlainText, type RichTextNode, type WdfDocument } from './wdf'
 import {
   applyMemoParagraphSpacingForHighlight,
   highlightMemoNodes,
 } from './memo-highlight'
 import { formatMemoTimestamp } from './memo-mapper'
 import { buildEnteringCardMap, computeEnteringCardIds } from './entering-cards'
-import type { RichTextNode } from './markdown/index'
 
 const MEMO_CARD_ENTERING_CLEANUP_MS = 300
 export const REFERENCE_SUMMARY_MAX_LENGTH = 28
@@ -37,7 +36,7 @@ export interface MemoReferencePreview {
 export interface MemoCardItem {
   id: number
   createdAtText: string
-  content: string
+  content: WdfDocument
   contentNodes: RichTextNode[]
   tags: string[]
   referenceId: MemoRefId | null
@@ -193,8 +192,8 @@ function isEntryUnavailableForRender(entry: MemoListEntry | undefined): boolean 
   )
 }
 
-export function summarizeMemoContent(content: string): string {
-  const oneLine = content.replace(/\s+/g, ' ').trim()
+export function summarizeMemoContent(content: WdfDocument): string {
+  const oneLine = wdfDocumentToPlainText(content).replace(/\s+/g, ' ').trim()
   if (oneLine.length <= REFERENCE_SUMMARY_MAX_LENGTH) return oneLine
   return `${oneLine.slice(0, REFERENCE_SUMMARY_MAX_LENGTH)}...`
 }
@@ -207,7 +206,7 @@ function toReferenceDateText(dateText: string): string {
   return dateText.trim().split(/\s+/)[0] ?? ''
 }
 
-export function buildMemoReferenceDisplayText(dateText: string, content: string): string {
+export function buildMemoReferenceDisplayText(dateText: string, content: WdfDocument): string {
   const dateOnlyText = toReferenceDateText(dateText)
   const summary = summarizeMemoContent(content)
   if (!dateOnlyText && !summary) return ''
@@ -261,7 +260,7 @@ export function buildMemoCardItem(
     )
   })
 
-  const contentNodes = richText ? renderMemoMarkdownToNodes(memo.content) : []
+  const contentNodes = richText ? renderWdfToNodes(memo.content) : []
 
   return {
     id: memo.id,

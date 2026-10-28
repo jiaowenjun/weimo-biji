@@ -1,4 +1,4 @@
-import type { RichTextNode, RichTextElementNode, RichTextTextNode } from './markdown/index'
+import type { RichTextNode, RichTextElementNode, RichTextTextNode } from './wdf'
 
 const TAG_SPLIT_RE = /(<[^>]*>)/
 

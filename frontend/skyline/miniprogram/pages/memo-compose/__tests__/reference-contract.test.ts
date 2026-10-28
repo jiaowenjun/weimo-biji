@@ -80,8 +80,8 @@ describe('memo-compose reference contract', () => {
 
   it('sends refs in create and edit save payloads', () => {
     expect(ts).toContain('refs: [...this.data.refs]')
-    expect(ts).toContain('workspaceStore.createMemo({ content: trimmed, tags, refs: [...this.data.refs] })')
-    expect(ts).toContain('workspaceStore.updateMemo(memoId, { content: trimmed, tags, refs: [...this.data.refs] })')
+    expect(ts).toContain('workspaceStore.createMemo({ content: markdownCompatTextToWdfDocument(trimmed), tags, refs: [...this.data.refs] })')
+    expect(ts).toContain('workspaceStore.updateMemo(memoId, { content: markdownCompatTextToWdfDocument(trimmed), tags, refs: [...this.data.refs] })')
   })
 
   it('renders the reference bar below the tag row only when referenceId exists', () => {

@@ -1,4 +1,5 @@
 import type { Memo, MemoDateFilter, MemoSearchQuery } from '../models/memo'
+import { wdfDocumentToPlainText } from '../utils/wdf'
 
 function matchesDateFilter(memo: Memo, filter?: MemoDateFilter): boolean {
   if (!filter) return true
@@ -22,7 +23,9 @@ function matchesTagFilter(memo: Memo, tag?: string): boolean {
 function matchesTextFilter(memo: Memo, contains?: string): boolean {
   const t = contains?.trim()
   if (!t) return true
-  return memo.content.includes(t)
+  return wdfDocumentToPlainText(memo.content)
+    .toLowerCase()
+    .includes(t.toLowerCase())
 }
 
 function matchesAnnotationFilter(memo: Memo, hasAnnotation?: boolean): boolean {
@@ -34,45 +37,17 @@ function matchesAnnotationFilter(memo: Memo, hasAnnotation?: boolean): boolean {
 
 function matchesMarkdownQuoteFilter(memo: Memo, hasMarkdownQuote?: boolean): boolean {
   if (!hasMarkdownQuote) return true
-  return memo.content.split('\n').some((line) => {
-    const t = line.trimStart()
-    return t === '>' || t.startsWith('> ') || t === '>=' || t.startsWith('>= ')
-  })
+  return memo.content.root.content.some((block) => block.type === 'blockquote')
 }
 
 function matchesHeadingFilter(memo: Memo, hasHeading?: boolean): boolean {
   if (!hasHeading) return true
-  return memo.content.split('\n').some((line) => {
-    const t = line.trimStart()
-    let hashes = 0
-    while (hashes < t.length && t[hashes] === '#') hashes++
-    if (hashes < 1 || hashes > 6) return false
-    const after = t.slice(hashes)
-    return after.length === 0 || after.startsWith(' ')
-  })
-}
-
-function isHorizontalRule(line: string, marker: string): boolean {
-  if (marker !== '*' && marker !== '-') return false
-  let count = 0
-  for (const c of line) {
-    if (c === marker) count++
-    else if (c !== ' ' && c !== '\t') return false
-  }
-  return count >= 3
+  return memo.content.root.content.some((block) => block.type === 'heading')
 }
 
 function matchesUnorderedListFilter(memo: Memo, hasUnorderedList?: boolean): boolean {
   if (!hasUnorderedList) return true
-  return memo.content.split('\n').some((line) => {
-    const t = line.trimStart()
-    if (t.length < 2) return false
-    const marker = t[0]
-    if (marker !== '*' && marker !== '+' && marker !== '-') return false
-    const next = t[1]
-    if (next !== ' ' && next !== '\t') return false
-    return !isHorizontalRule(t, marker)
-  })
+  return memo.content.root.content.some((block) => block.type === 'bullet_list')
 }
 
 export function memoMatchesFilters(memo: Memo, filters: MemoSearchQuery): boolean {

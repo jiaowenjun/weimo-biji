@@ -1,3 +1,4 @@
+import { wdfDocumentToMarkdownCompatText, wdfDocumentToPlainText } from './wdf'
 import {
   buildMemoReferenceDisplayText,
   buildMemoReferenceFallbackText,
@@ -98,7 +99,7 @@ export function openEditComposeForCard(
   const payload: MemoComposeInitPayload = {
     mode: 'edit',
     memoId: card.id,
-    initialContent: card.content,
+    initialContent: wdfDocumentToMarkdownCompatText(card.content),
     initialTags: [...card.tags],
     initialRefs: card.referenceId != null ? [card.referenceId] : [],
     initialReferencePreview,
@@ -316,7 +317,7 @@ export function copyMemoContentForCard(cards: MemoCardItem[], memoId: number): v
   const card = cards.find((c) => c.id === memoId)
   if (!card) return
   wx.setClipboardData({
-    data: card.content,
+    data: wdfDocumentToPlainText(card.content),
     fail: () => {
       wx.showToast({ title: '复制失败', icon: 'none' })
     },

@@ -1,5 +1,6 @@
 import { workspaceStore } from '../../store/store-bindings/workspace-store.instance'
 import { hapticTap } from '../../utils/haptic'
+import { markdownCompatTextToWdfDocument } from '../../utils/wdf'
 import { computeCompactNavigationBarLayout } from '../../utils/navigation-bar-layout'
 import { openMemoComposeTagPicker, openMemoReferenceList, openMemoReferences } from '../../utils/navigation'
 import {
@@ -487,9 +488,9 @@ Page<MemoComposePageData, MemoComposePageCustom>({
           this.setData({ saving: false })
           return
         }
-        await workspaceStore.updateMemo(memoId, { content: trimmed, tags, refs: [...this.data.refs] })
+        await workspaceStore.updateMemo(memoId, { content: markdownCompatTextToWdfDocument(trimmed), tags, refs: [...this.data.refs] })
       } else {
-        await workspaceStore.createMemo({ content: trimmed, tags, refs: [...this.data.refs] })
+        await workspaceStore.createMemo({ content: markdownCompatTextToWdfDocument(trimmed), tags, refs: [...this.data.refs] })
       }
     } catch (error) {
       wx.showToast({ title: toErrorMessage(error, '保存笔记失败'), icon: 'none' })

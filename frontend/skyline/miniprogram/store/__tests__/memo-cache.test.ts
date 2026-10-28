@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { describe, expect, it } from 'vitest'
 import { memoMatchesFilters, remapMemoTagPath } from '../memo-cache-filters'
 import {
@@ -75,7 +76,7 @@ describe('memo-cache type guards', () => {
   it('accepts a well-formed memo', () => {
     expect(isMemo({
       id: 1,
-      content: 'hi',
+      content: wdfDoc('hi'),
       tags: ['x'],
       createdAt: '2026-04-21T00:00:00.000Z',
       updatedAt: '2026-04-21T00:00:00.000Z',
@@ -87,7 +88,9 @@ describe('memo-cache type guards', () => {
   it('rejects malformed memos', () => {
     expect(isMemo(null)).toBe(false)
     expect(isMemo({})).toBe(false)
-    expect(isMemo({ id: '1', content: 'x', tags: [], createdAt: '', updatedAt: '' })).toBe(false)
+    // 字符串 id 与旧版字符串 content 都应被拒绝(WDF 迁移后的缓存防线)
+    expect(isMemo({ id: '1', content: wdfDoc('x'), tags: [], createdAt: '', updatedAt: '' })).toBe(false)
+    expect(isMemo({ id: 1, content: 'legacy-string', tags: [], createdAt: '', updatedAt: '' })).toBe(false)
   })
 
   it('isMemoArray reflects element check', () => {
@@ -99,7 +102,7 @@ describe('memo-cache type guards', () => {
 describe('memo-cache filter matching / tag remap', () => {
   const memo = makeMemo({
     id: 1,
-    content: '一个想法',
+    content: wdfDoc('一个想法'),
     tags: ['项目/重构'],
     createdAt: '2026-04-21T03:00:00.000Z',
     updatedAt: '2026-04-21T03:00:00.000Z',
@@ -221,7 +224,7 @@ describe('memo-cache page transforms', () => {
 describe('memo-cache cross-entry mutations', () => {
   const memo = makeMemo({
     id: 1,
-    content: 'a',
+    content: wdfDoc('a'),
     tags: ['项目'],
     createdAt: 't',
     updatedAt: 't',
@@ -234,7 +237,7 @@ describe('memo-cache cross-entry mutations', () => {
 
     const newMemo = makeMemo({
       id: 2,
-      content: 'b',
+      content: wdfDoc('b'),
       tags: ['项目'],
       createdAt: 't',
       updatedAt: 't',
@@ -314,7 +317,7 @@ describe('memo-cache cross-entry mutations', () => {
     const state = emptyState()
     const nestedTagMemo = makeMemo({
       id: 1,
-      content: 'a',
+      content: wdfDoc('a'),
       tags: ['项目/重构'],
       createdAt: 't',
       updatedAt: 't',

@@ -1,3 +1,4 @@
+import { createEmptyWdfDocument, isWdfDocument } from './wdf'
 import type {
   Memo,
   MemoDto,
@@ -85,7 +86,7 @@ export function mapMemo(dto: MemoDto): Memo {
     createdAt: memoUtcArrayToIso(dto.ct_utc) ?? '',
     updatedAt: memoUtcArrayToIso(dto.mt_utc) ?? '',
     tags: dto.tags,
-    content: dto.content,
+    content: isWdfDocument(dto.content) ? dto.content : createEmptyWdfDocument(),
     refs: normalizeMemoRefs(dto.refs),
     referencedBy: normalizeMemoRefs(dto.referenced_by),
   }

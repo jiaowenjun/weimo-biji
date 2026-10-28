@@ -1,3 +1,4 @@
+import { markdownCompatTextToWdfDocument } from '../../../utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createMemoMock = vi.fn()
@@ -279,7 +280,7 @@ describe('memo-compose draft lifecycle', () => {
     pageConfig.onHide?.call(instance)
 
     expect(createMemoMock).toHaveBeenCalledWith({
-      content: 'final content',
+      content: markdownCompatTextToWdfDocument('final content'),
       tags: ['新标签'],
       refs: ['7'],
     })

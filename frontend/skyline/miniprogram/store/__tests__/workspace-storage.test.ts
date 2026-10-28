@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Memo, MemoSearchPage } from '../../models/memo'
 import { createEmptyWorkspaceState } from '../workspace-store'
@@ -11,7 +12,7 @@ function makeMemo(id: number, overrides: Partial<Memo> = {}): Memo {
   const ts = '2026-04-21T00:00:00Z'
   return {
     id,
-    content: `memo-${id}`,
+    content: wdfDoc(`memo-${id}`),
     tags: ['tag/a'],
     createdAt: ts,
     updatedAt: ts,

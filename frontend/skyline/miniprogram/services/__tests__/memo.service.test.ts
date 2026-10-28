@@ -1,3 +1,4 @@
+import { wdfDoc } from '../../test-utils/wdf'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MemoDto, MemoUtcArray } from '../../models/memo'
 
@@ -50,8 +51,8 @@ describe('memo service detail APIs', () => {
 
   it('fetches multiple memos by ids through the batch endpoint', async () => {
     requestMock.mockResolvedValue([
-      dto(1, { content: 'A' }),
-      dto(2, { content: 'B', refs: ['1'] }),
+      dto(1, { content: wdfDoc('A') }),
+      dto(2, { content: wdfDoc('B'), refs: ['1'] }),
     ])
 
     const memos = await getMemos([1, 2])
@@ -62,8 +63,8 @@ describe('memo service detail APIs', () => {
       data: [1, 2],
     })
     expect(memos.map((memo) => ({ id: memo.id, content: memo.content, refs: memo.refs }))).toEqual([
-      { id: 1, content: 'A', refs: [] },
-      { id: 2, content: 'B', refs: ['1'] },
+      { id: 1, content: wdfDoc('A'), refs: [] },
+      { id: 2, content: wdfDoc('B'), refs: ['1'] },
     ])
   })
 })

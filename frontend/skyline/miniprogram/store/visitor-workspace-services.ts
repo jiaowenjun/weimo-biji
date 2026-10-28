@@ -2,6 +2,7 @@ import type { Memo, MemoRefId, MemoSearchPage, MemoSearchQuery, MemoWriteRequest
 import type { TagTreeMeta } from '../models/tag'
 import type { WorkspaceStats } from '../models/workspace'
 import { appendMemoRefId, ownMemoIdFromRef, removeMemoRefId } from '../utils/memo-ref-id'
+import { wdfDocumentToPlainText } from '../utils/wdf'
 import { compareTagTreeMetaSiblings } from '../utils/tag-sort'
 import { memoMatchesFilters } from './memo-cache-filters'
 import type { WorkspaceServices, WorkspaceState } from './workspace-store'
@@ -91,7 +92,7 @@ function buildVisitorStats(memos: Iterable<Memo>): WorkspaceStats {
 
   memoList.forEach((memo) => {
     memo.tags.forEach((tag) => tags.add(tag))
-    wordCount += countWords(memo.content)
+    wordCount += countWords(wdfDocumentToPlainText(memo.content))
 
     const date = new Date(memo.createdAt)
     if (!Number.isNaN(date.getTime())) {
