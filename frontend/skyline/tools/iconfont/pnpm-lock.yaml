@@ -9,14 +9,14 @@ importers:
   .:
     devDependencies:
       tdesign-miniprogram:
-        specifier: ^1.13.2
-        version: 1.13.2
+        specifier: ^1.17.0
+        version: 1.17.0
 
 packages:
 
-  tdesign-miniprogram@1.13.2:
-    resolution: {integrity: sha512-d6kth6wGChny1zGLsswBVCJz1V2Xb7F9NdAQOLRK0tMWuIrPMS6Wm9D19WOhuFECM/ZfTPe1ClmObwrk7/ftwg==}
+  tdesign-miniprogram@1.17.0:
+    resolution: {integrity: sha512-r/MsvadJDq8OPLNE8prV/akEiOe9L6PGF0knjMHuqt/SmVJV+4P5bxq8o3HLs2H8GexEavE3TKVZPqqTEyvlUg==}
 
 snapshots:
 
-  tdesign-miniprogram@1.13.2: {}
+  tdesign-miniprogram@1.17.0: {}

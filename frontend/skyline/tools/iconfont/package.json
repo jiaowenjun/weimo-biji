@@ -6,6 +6,6 @@
     "font": "python build-font.py"
   },
   "devDependencies": {
-    "tdesign-miniprogram": "^1.13.2"
+    "tdesign-miniprogram": "^1.17.0"
   }
 }

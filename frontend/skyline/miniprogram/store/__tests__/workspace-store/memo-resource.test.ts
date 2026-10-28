@@ -376,9 +376,13 @@ describe('workspaceStore memo mutation contract', () => {
 
   it('writes created memo through to all matching list caches', async () => {
     const search = vi.fn().mockResolvedValue(makePage())
+    // stats 刷新是 fire-and-forget；用永不 resolve 的请求让
+    // “createMemo 不等待 stats 刷新完成” 的断言不依赖微任务时序
+    const getWorkspaceStats = vi.fn(() => new Promise(() => {}))
     const store = createWorkspaceStore({
       services: makeServices({
         searchMemos: search,
+        getWorkspaceStats,
         createMemo: vi.fn().mockResolvedValue(99),
       }),
     })
@@ -388,6 +392,7 @@ describe('workspaceStore memo mutation contract', () => {
     const list = store.getState().memos.list.get('k')!
 
     expect(list.pages[0]?.items[0]?.id).toBe(memo.id)
+    expect(getWorkspaceStats).toHaveBeenCalledTimes(1)
     expect(store.getState().stats.dataUpdatedAt).toBe(0)
   })
 

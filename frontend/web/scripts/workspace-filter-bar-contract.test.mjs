@@ -126,8 +126,11 @@ assert.equal(
   false,
   'tsconfig.app.json must resolve weimo-ui through the installed package interface.',
 )
+// optimizeDeps.include 允许出现 "weimo-ui > 包名" 条目（源码态发布的预构建需要），
+// 契约只约束 resolve.alias 不得别名 weimo-ui 内部路径绕过包接口
+const viteAliasBlock = viteConfigSource.match(/alias:\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? ''
 assert.equal(
-  viteConfigSource.includes('weimo-ui'),
+  viteAliasBlock.includes('weimo-ui'),
   false,
   'vite.config.ts must not alias weimo-ui internals.',
 )

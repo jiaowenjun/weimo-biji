@@ -13,12 +13,12 @@ homepage = "https://weimo.cc"
 [workspace.dependencies]
 async-trait = "0.1.89"
 axum = { version = "0.8.8", features = ["json", "multipart"] }
-base64 = "0.22.1"
-bcrypt = "0.18.0"
+base64 = "0.23.1"
+bcrypt = "0.19.3"
 clap = { version = "4.5.54", features = ["derive", "env"] }
 http = "1.4.0"
-jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
-noyalib = { version = "=0.0.15", default-features = false, features = ["std", "fast-int", "fast-float"] }
+jsonwebtoken = { version = "11.1.0", features = ["rust_crypto"] }
+noyalib = { version = "0.0.58", default-features = false, features = ["std", "fast-int", "fast-float"] }
 reqwest = { version = "0.13.1", features = ["blocking", "cookies", "json", "multipart", "stream"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
@@ -28,7 +28,7 @@ thiserror = "2.0.18"
 time = { version = "0.3.45", features = ["local-offset", "serde-well-known"] }
 tokio = { version = "1.49.0", features = ["full"] }
 tower-cookies = "0.11.0"
-tower-http = { version = "0.6.8", features = ["cors"] }
+tower-http = { version = "0.7.1", features = ["cors"] }
 tower = "0.5.2"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }

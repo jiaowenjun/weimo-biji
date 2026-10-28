@@ -448,7 +448,7 @@ mod tests {
             refs: vec![],
         };
 
-        let expected = "---\nid: 42\nct: \"2021-01-01T00:00:00Z\"\nmt: \"2021-01-02T12:34:56Z\"\ntags:\n  - tag1\n  - tag2\nrefs: []\n---\n\n内容正文";
+        let expected = "---\nid: 42\nct: 2021-01-01T00:00:00Z\nmt: 2021-01-02T12:34:56Z\ntags:\n  - tag1\n  - tag2\nrefs: []\n---\n\n内容正文";
         assert_eq!(memo.to_markdown(), expected);
     }
 
@@ -464,7 +464,7 @@ mod tests {
             refs: vec![],
         };
 
-        let expected = "---\nid: 7\nct: \"2022-05-01T08:00:00Z\"\nmt: \"2022-05-01T08:00:00Z\"\ntags: []\nrefs: []\n---\n\n无标签内容";
+        let expected = "---\nid: 7\nct: 2022-05-01T08:00:00Z\nmt: 2022-05-01T08:00:00Z\ntags: []\nrefs: []\n---\n\n无标签内容";
         assert_eq!(memo.to_markdown(), expected);
     }
 
@@ -581,7 +581,7 @@ mod tests {
             refs: vec![MemoRef(7), MemoRef(12)],
             content: "正文".to_string(),
         };
-        let expected = "---\nid: 42\nct: \"2026-01-01T00:00:00Z\"\nmt: \"2026-01-02T00:00:00Z\"\ntags:\n  - t1\nrefs:\n  - \"7\"\n  - \"12\"\n---\n\n正文";
+        let expected = "---\nid: 42\nct: 2026-01-01T00:00:00Z\nmt: 2026-01-02T00:00:00Z\ntags:\n  - t1\nrefs:\n  - \"7\"\n  - \"12\"\n---\n\n正文";
         assert_eq!(memo.to_markdown(), expected);
     }
 
@@ -596,7 +596,7 @@ mod tests {
             refs: vec![],
             content: "x".to_string(),
         };
-        let expected = "---\nid: 7\nct: \"2026-01-01T00:00:00Z\"\nmt: \"2026-01-01T00:00:00Z\"\ntags: []\nrefs: []\n---\n\nx";
+        let expected = "---\nid: 7\nct: 2026-01-01T00:00:00Z\nmt: 2026-01-01T00:00:00Z\ntags: []\nrefs: []\n---\n\nx";
         assert_eq!(memo.to_markdown(), expected);
     }
 
