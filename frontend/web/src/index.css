@@ -87,35 +87,20 @@ body {
   color: var(--color-primary);
 }
 
-.workspace-filter-bar .chip {
+.workspace-filter-bar .capsule-button {
   max-width: 100%;
 }
 
-.workspace-filter-bar__close {
+.tag-bread {
   display: inline-flex;
-  width: 16px;
-  height: 16px;
-  margin: -2px -4px -2px 0;
-  padding: 0;
+  max-width: 100%;
   align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: var(--radius-round);
-  appearance: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
+  gap: 4px;
 }
 
-.workspace-filter-bar__close svg {
-  width: 12px;
-  height: 12px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .workspace-filter-bar__close:hover {
-    background: var(--color-bg-hover);
-  }
+.tag-bread__separator {
+  flex: none;
+  color: var(--color-secondary);
 }
 
 .memo-list-state {

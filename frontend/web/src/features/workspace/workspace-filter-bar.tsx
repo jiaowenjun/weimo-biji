@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef } from 'react'
 import { X } from 'lucide-react'
-import { Chip } from 'weimo-ui/components/chip'
+import { CapsuleButton } from 'weimo-ui-core/components/capsule-button'
 
 import type { WorkspaceNavigationFacet } from './workspace-navigation-store'
 
@@ -36,6 +36,8 @@ function getFacetFilterLabel(facet: WorkspaceNavigationFacet) {
   return FACET_FILTER_LABELS[facet]
 }
 
+// 筛选胶囊整体即清除按钮；胶囊按钮的 suffix 插槽会拦截点击不透传，
+// 因此 X 图标自带 onClick 保证点 X 也能清除。
 export function WorkspaceFilterBar({
   activeDate,
   className,
@@ -78,22 +80,15 @@ export function WorkspaceFilterBar({
       role={role ?? 'toolbar'}
     >
       {chips.map((item) => (
-        <Chip
-          content={item.label}
+        <CapsuleButton
+          aria-label={item.clearLabel}
           key={item.key}
-          suffix={
-            <button
-              aria-label={item.clearLabel}
-              className="workspace-filter-bar__close"
-              onClick={item.onClear}
-              type="button"
-            >
-              <X aria-hidden="true" />
-            </button>
-          }
-          textSize="sm"
-          variant="glass"
-        />
+          onClick={item.onClear}
+          prefix={null}
+          suffix={<X aria-hidden="true" onClick={item.onClear} />}
+        >
+          {item.label}
+        </CapsuleButton>
       ))}
     </div>
   )

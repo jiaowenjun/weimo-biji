@@ -148,7 +148,7 @@ for (const snippet of [
 
 for (const snippet of [
   "import { useQueryClient } from '@tanstack/react-query'",
-  "import { TagBread } from 'weimo-ui/components/tag-bread'",
+  "import { TagBread } from '@/components/tag-bread'",
   "import { WorkspaceShell } from '@/features/workspace/workspace-shell'",
   'selectDate',
   'selectFacet',

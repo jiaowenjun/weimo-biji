@@ -62,7 +62,7 @@ for (const snippet of [
 }
 
 for (const snippet of [
-  "import { TagBread } from 'weimo-ui/components/tag-bread'",
+  "import { TagBread } from '@/components/tag-bread'",
   "import { RefCard } from '@/components/ref-card'",
   "import { SideBar } from '@/components/sidebar'",
   "import { WorkspaceShell } from '@/features/workspace/workspace-shell'",

@@ -39,7 +39,7 @@ assert.ok(
 
 for (const snippet of [
   "import { X } from 'lucide-react'",
-  "import { Chip } from 'weimo-ui/components/chip'",
+  "import { CapsuleButton } from 'weimo-ui-core/components/capsule-button'",
   "import type { WorkspaceNavigationFacet } from './workspace-navigation-store'",
   'export type WorkspaceFilterBarProps',
   'activeDate: string',
@@ -57,12 +57,11 @@ for (const snippet of [
   'if (chips.length === 0) return null',
   "className={['workspace-filter-bar', className].filter(Boolean).join(' ')}",
   "aria-label={ariaLabel ?? '当前筛选条件'}",
-  'content={item.label}',
-  'variant="glass"',
-  'textSize="sm"',
-  'className="workspace-filter-bar__close"',
+  '<CapsuleButton',
+  'onClick={item.onClear}',
+  'prefix={null}',
   'aria-label={item.clearLabel}',
-  '<X aria-hidden="true" />',
+  '<X aria-hidden="true" onClick={item.onClear} />',
 ]) {
   assert.ok(
     filterBarSource.includes(snippet),
@@ -109,9 +108,7 @@ for (const snippet of [
   'flex-wrap: wrap',
   'gap: 8px',
   'max-width: var(--size-content-max-width)',
-  '.workspace-filter-bar__close',
-  '.workspace-filter-bar__close svg',
-  '.workspace-filter-bar .chip',
+  '.workspace-filter-bar .capsule-button',
 ]) {
   assert.ok(
     indexCssSource.includes(snippet),
