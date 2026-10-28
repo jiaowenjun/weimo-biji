@@ -1,3 +1,6 @@
+import { renderPlain } from 'weimo-wdf'
+import type { WdfBlock, WdfDocument } from 'weimo-wdf'
+
 import { UNTAGGED_TAG } from './sidebar-data.ts'
 import type {
   Memo,
@@ -6,6 +9,38 @@ import type {
   TagTreeMeta,
   WorkspaceStats,
 } from './workspace-types'
+
+/** --- 游客示例数据的 WDF 构造助手 --- */
+
+function textRun(text: string): { type: 'text'; text: string } {
+  return { type: 'text', text }
+}
+
+function paragraphBlock(text: string): WdfBlock {
+  return { type: 'paragraph', content: [textRun(text)] }
+}
+
+function headingBlock(text: string): WdfBlock {
+  return { type: 'heading', attrs: { level: 1 }, content: [textRun(text)] }
+}
+
+function blockquoteBlock(text: string): WdfBlock {
+  return { type: 'blockquote', content: [{ type: 'paragraph', content: [textRun(text)] }] }
+}
+
+function bulletListBlock(items: string[]): WdfBlock {
+  return {
+    type: 'bullet_list',
+    content: items.map((item) => ({
+      type: 'list_item' as const,
+      content: [{ type: 'paragraph' as const, content: [textRun(item)] }],
+    })),
+  }
+}
+
+function wdfDocument(content: WdfBlock[]): WdfDocument {
+  return { schema: 'weimo.document', version: 1, root: { type: 'doc', content } }
+}
 
 export const guestStats: WorkspaceStats = {
   note_count: 5,
@@ -70,8 +105,11 @@ export const guestTagTree: TagTreeMeta = {
 export const guestMemoCards: Memo[] = [
   {
     id: 1,
-    content:
-      '# 游客模式调试\n\n无需登录也能检查工作台布局、TopBar 标签面包屑和侧栏筛选。\n\n- 点击左侧标签树\n- 观察顶部当前标签',
+    content: wdfDocument([
+      headingBlock('游客模式调试'),
+      paragraphBlock('无需登录也能检查工作台布局、TopBar 标签面包屑和侧栏筛选。'),
+      bulletListBlock(['点击左侧标签树', '观察顶部当前标签']),
+    ]),
     createdAt: '2026-06-25T09:30:00.000+08:00',
     updatedAt: '2026-06-25T09:30:00.000+08:00',
     tags: ['开发/调试'],
@@ -80,8 +118,10 @@ export const guestMemoCards: Memo[] = [
   },
   {
     id: 2,
-    content:
-      '> 山气日夕佳，飞鸟相与还。\n\n这条笔记用于检查嵌套标签 `文学/古代/诗词` 在 TagBread 中拆分展示。',
+    content: wdfDocument([
+      blockquoteBlock('山气日夕佳，飞鸟相与还。'),
+      paragraphBlock('这条笔记用于检查嵌套标签 文学/古代/诗词 在 TagBread 中拆分展示。'),
+    ]),
     createdAt: '2026-06-25T08:20:00.000+08:00',
     updatedAt: '2026-06-25T08:20:00.000+08:00',
     tags: ['文学/古代/诗词'],
@@ -90,8 +130,9 @@ export const guestMemoCards: Memo[] = [
   },
   {
     id: 3,
-    content:
-      'React 调试记录：TagBread 点击上级标签时，应复用同一套 `selectTag` 状态，不创建第二份导航状态。',
+    content: wdfDocument([
+      paragraphBlock('React 调试记录：TagBread 点击上级标签时，应复用同一套 selectTag 状态，不创建第二份导航状态。'),
+    ]),
     createdAt: '2026-06-21T16:45:00.000+08:00',
     updatedAt: '2026-06-21T16:45:00.000+08:00',
     tags: ['开发/React'],
@@ -100,8 +141,9 @@ export const guestMemoCards: Memo[] = [
   },
   {
     id: 4,
-    content:
-      '诗词摘录旁边可以放一点批注 ==这里用来触发有批注筛选==，方便看导航筛选和列表状态是否同步。',
+    content: wdfDocument([
+      paragraphBlock('诗词摘录旁边可以放一点批注，方便看导航筛选和列表状态是否同步。'),
+    ]),
     createdAt: '2026-06-20T11:12:00.000+08:00',
     updatedAt: '2026-06-20T11:12:00.000+08:00',
     tags: ['文学/古代/诗词'],
@@ -110,7 +152,9 @@ export const guestMemoCards: Memo[] = [
   },
   {
     id: 5,
-    content: '这是一条未标签笔记，用于调试侧栏底部的未标签入口。',
+    content: wdfDocument([
+      paragraphBlock('这是一条未标签笔记，用于调试侧栏底部的未标签入口。'),
+    ]),
     createdAt: '2026-06-19T20:05:00.000+08:00',
     updatedAt: '2026-06-19T20:05:00.000+08:00',
     tags: [],
@@ -163,23 +207,30 @@ export function filterGuestMemos(
       return false
     }
 
-    if (filters.text?.contains && !memo.content.includes(filters.text.contains)) {
+    // WDF 结构化内容:文本过滤走纯文本,块过滤按块类型判断
+    if (
+      filters.text?.contains &&
+      !renderPlain(memo.content).includes(filters.text.contains)
+    ) {
       return false
     }
 
-    if (filters.has_annotation && !memo.content.includes('==')) {
+    // WDF v0.1 没有批注标记,该过滤无可命中内容(与后端语义一致)
+    if (filters.has_annotation) {
       return false
     }
 
-    if (filters.has_heading && !/^#\s/m.test(memo.content)) {
+    const blockTypes = new Set(memo.content.root.content.map((block) => block.type))
+
+    if (filters.has_heading && !blockTypes.has('heading')) {
       return false
     }
 
-    if (filters.has_unordered_list && !/^-\s/m.test(memo.content)) {
+    if (filters.has_unordered_list && !blockTypes.has('bullet_list')) {
       return false
     }
 
-    if (filters.has_markdown_quote && !/^>\s/m.test(memo.content)) {
+    if (filters.has_markdown_quote && !blockTypes.has('blockquote')) {
       return false
     }
 

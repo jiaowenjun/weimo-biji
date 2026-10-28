@@ -49,6 +49,7 @@ impl MemoSearchQuery {
             && self.matches_no_tag(memo)
             && self.matches_created_at(memo)
             && self.matches_text(memo)
+            && self.matches_annotation(memo)
             && self.matches_markdown_quote(memo)
             && self.matches_heading(memo)
             && self.matches_unordered_list(memo)
@@ -87,61 +88,62 @@ impl MemoSearchQuery {
             return true;
         };
 
-        text.matches(memo.content())
+        let Some(document) = memo.wdf_document() else {
+            return false;
+        };
+        text.matches(&weimo_wdf::render_plain(&document))
     }
 
+    /// 块类型过滤:WDF 结构化内容直接按块类型判断,不再解析 markdown 行
     fn matches_markdown_quote(&self, memo: &Memo) -> bool {
-        match self.has_markdown_quote {
-            Some(true) => memo.content().lines().any(|line| {
-                let trimmed = line.trim_start();
-                trimmed == ">"
-                    || trimmed.starts_with("> ")
-                    || trimmed == ">="
-                    || trimmed.starts_with(">= ")
-            }),
-            _ => true,
+        if self.has_markdown_quote != Some(true) {
+            return true;
         }
+        memo.wdf_document()
+            .map(|document| {
+                document
+                    .root
+                    .content
+                    .iter()
+                    .any(|block| matches!(block, weimo_wdf::WdfBlock::Blockquote { .. }))
+            })
+            .unwrap_or(false)
     }
 
     fn matches_heading(&self, memo: &Memo) -> bool {
-        match self.has_heading {
-            Some(true) => memo.content().lines().any(|line| {
-                let trimmed = line.trim_start();
-                let hashes = trimmed.chars().take_while(|c| *c == '#').count();
-                if !(1..=6).contains(&hashes) {
-                    return false;
-                }
-                let after = &trimmed[hashes..];
-                after.is_empty() || after.starts_with(' ')
-            }),
-            _ => true,
+        if self.has_heading != Some(true) {
+            return true;
         }
+        memo.wdf_document()
+            .map(|document| {
+                document
+                    .root
+                    .content
+                    .iter()
+                    .any(|block| matches!(block, weimo_wdf::WdfBlock::Heading { .. }))
+            })
+            .unwrap_or(false)
     }
 
     fn matches_unordered_list(&self, memo: &Memo) -> bool {
-        match self.has_unordered_list {
-            Some(true) => memo.content().lines().any(|line| {
-                let trimmed = line.trim_start();
-                let mut chars = trimmed.chars();
-                let marker = match chars.next() {
-                    Some(c) if c == '*' || c == '+' || c == '-' => c,
-                    _ => return false,
-                };
-                // Require space after marker so plain dashes / horizontal rules don't match
-                matches!(chars.next(), Some(' ') | Some('\t'))
-                    && !is_horizontal_rule(trimmed, marker)
-            }),
-            _ => true,
+        if self.has_unordered_list != Some(true) {
+            return true;
         }
+        memo.wdf_document()
+            .map(|document| {
+                document
+                    .root
+                    .content
+                    .iter()
+                    .any(|block| matches!(block, weimo_wdf::WdfBlock::BulletList { .. }))
+            })
+            .unwrap_or(false)
     }
-}
 
-fn is_horizontal_rule(line: &str, marker: char) -> bool {
-    if marker != '*' && marker != '-' {
-        return false;
+    /// WDF v0.1 没有批注标记,该过滤暂无可命中内容;保留管线待模型扩展
+    fn matches_annotation(&self, _memo: &Memo) -> bool {
+        self.has_annotation != Some(true)
     }
-    let count = line.chars().filter(|c| *c == marker).count();
-    count >= 3 && line.chars().all(|c| c == marker || c == ' ' || c == '\t')
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -379,6 +381,57 @@ impl MemoTextFilter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
+
+    /// 单段纯文本的 WDF 存储文本
+    fn paragraph_doc(text: &str) -> String {
+        json!({
+            "schema": "weimo.document",
+            "version": 1,
+            "root": { "type": "doc", "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": text }] }
+            ]}
+        })
+        .to_string()
+    }
+
+    /// 指定块类型 + 一段正文的最小 WDF 存储文本
+    fn block_doc(block_type: &str, text: &str) -> String {
+        let text_run = json!([{ "type": "text", "text": text }]);
+        let block = match block_type {
+            "blockquote" => json!({
+                "type": "blockquote",
+                "content": [{ "type": "paragraph", "content": text_run }]
+            }),
+            "heading" => json!({
+                "type": "heading",
+                "attrs": { "level": 2 },
+                "content": text_run
+            }),
+            "bullet_list" => json!({
+                "type": "bullet_list",
+                "content": [{
+                    "type": "list_item",
+                    "content": [{ "type": "paragraph", "content": text_run }]
+                }]
+            }),
+            "ordered_list" => json!({
+                "type": "ordered_list",
+                "attrs": { "start": 1 },
+                "content": [{
+                    "type": "list_item",
+                    "content": [{ "type": "paragraph", "content": text_run }]
+                }]
+            }),
+            _ => panic!("未知测试块类型: {block_type}"),
+        };
+        json!({
+            "schema": "weimo.document",
+            "version": 1,
+            "root": { "type": "doc", "content": [block] }
+        })
+        .to_string()
+    }
 
     fn test_memo(id: u32, ct: &str, tags: &[&str], content: &str) -> Memo {
         let tags = if tags.is_empty() {
@@ -392,14 +445,14 @@ mod tests {
             format!("tags:\n{items}")
         };
 
-        let markdown = format!("---\nid: {id}\nct: {ct}\nmt: {ct}\n{tags}\n---\n\n{content}");
+        let stored = format!("---\nid: {id}\nct: {ct}\nmt: {ct}\n{tags}\n---\n\n{content}");
 
-        Memo::parse_markdown(&markdown).expect("测试数据应能解析为 Memo")
+        Memo::parse_stored(&stored).expect("测试数据应能解析为 Memo")
     }
 
     #[test]
     fn test_empty_query_matches_all() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery::default();
 
         assert!(query.matches(&memo));
@@ -408,7 +461,7 @@ mod tests {
 
     #[test]
     fn test_day_filter_matches() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             created_at: Some(MemoDateFilter::Day {
                 year: 2026,
@@ -423,7 +476,7 @@ mod tests {
 
     #[test]
     fn test_month_filter_matches() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             created_at: Some(MemoDateFilter::Month {
                 year: 2026,
@@ -437,7 +490,7 @@ mod tests {
 
     #[test]
     fn test_year_filter_matches() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             created_at: Some(MemoDateFilter::Year { year: 2026 }),
             ..MemoSearchQuery::default()
@@ -471,7 +524,7 @@ mod tests {
 
     #[test]
     fn test_text_filter_is_case_insensitive() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             text: Some(MemoTextFilter {
                 contains: "axum".to_string(),
@@ -483,8 +536,35 @@ mod tests {
     }
 
     #[test]
+    fn test_text_filter_searches_plain_text_not_json_syntax() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("hello world"));
+        let query = MemoSearchQuery {
+            text: Some(MemoTextFilter {
+                contains: "paragraph".to_string(),
+            }),
+            ..MemoSearchQuery::default()
+        };
+
+        // WDF JSON 的类型键不是正文,纯文本搜索不得命中
+        assert!(!query.matches(&memo));
+    }
+
+    #[test]
+    fn test_text_filter_matches_heading_text() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &block_doc("heading", "季度总结"));
+        let query = MemoSearchQuery {
+            text: Some(MemoTextFilter {
+                contains: "总结".to_string(),
+            }),
+            ..MemoSearchQuery::default()
+        };
+
+        assert!(query.matches(&memo));
+    }
+
+    #[test]
     fn test_combined_filters_use_and() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             tag: Some("work".to_string()),
             created_at: Some(MemoDateFilter::Month {
@@ -502,7 +582,7 @@ mod tests {
 
     #[test]
     fn test_tag_filter_matches_nested_tags() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             tag: Some("work".to_string()),
             ..MemoSearchQuery::default()
@@ -513,7 +593,7 @@ mod tests {
 
     #[test]
     fn test_empty_text_filter_is_ignored() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], "Axum Search");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &["work/rust"], &paragraph_doc("Axum Search"));
         let query = MemoSearchQuery {
             text: Some(MemoTextFilter {
                 contains: String::new(),
@@ -570,10 +650,10 @@ mod tests {
     #[test]
     fn test_paginate_uses_cursor() {
         let memos = [
-            test_memo(4, "2026-03-28T08:00:00Z", &["work"], "latest"),
-            test_memo(3, "2026-03-27T08:00:00Z", &["work"], "newer"),
-            test_memo(2, "2026-03-26T08:00:00Z", &["work"], "older"),
-            test_memo(1, "2026-03-25T08:00:00Z", &["work"], "oldest"),
+            test_memo(4, "2026-03-28T08:00:00Z", &["work"], &paragraph_doc("latest")),
+            test_memo(3, "2026-03-27T08:00:00Z", &["work"], &paragraph_doc("newer")),
+            test_memo(2, "2026-03-26T08:00:00Z", &["work"], &paragraph_doc("older")),
+            test_memo(1, "2026-03-25T08:00:00Z", &["work"], &paragraph_doc("oldest")),
         ];
         let hits: Vec<MemoSearchHit> = memos.iter().map(MemoSearchHit::from_memo).collect();
 
@@ -603,10 +683,10 @@ mod tests {
     #[test]
     fn test_paginate_uses_cursor_asc() {
         let memos = [
-            test_memo(1, "2026-03-25T08:00:00Z", &["work"], "oldest"),
-            test_memo(2, "2026-03-26T08:00:00Z", &["work"], "older"),
-            test_memo(3, "2026-03-27T08:00:00Z", &["work"], "newer"),
-            test_memo(4, "2026-03-28T08:00:00Z", &["work"], "latest"),
+            test_memo(1, "2026-03-25T08:00:00Z", &["work"], &paragraph_doc("oldest")),
+            test_memo(2, "2026-03-26T08:00:00Z", &["work"], &paragraph_doc("older")),
+            test_memo(3, "2026-03-27T08:00:00Z", &["work"], &paragraph_doc("newer")),
+            test_memo(4, "2026-03-28T08:00:00Z", &["work"], &paragraph_doc("latest")),
         ];
         let hits: Vec<MemoSearchHit> = memos.iter().map(MemoSearchHit::from_memo).collect();
 
@@ -631,6 +711,7 @@ mod tests {
             },
             cursor: first_slice.next_cursor,
             page_size: Some(2),
+            ..MemoSearchRequest::default()
         }
         .paginate_hits(hits)
         .expect("应能拿到下一页");
@@ -642,10 +723,10 @@ mod tests {
     #[test]
     fn test_paginate_rejects_cursor_when_sort_order_mismatch() {
         let memos = [
-            test_memo(4, "2026-03-28T08:00:00Z", &["work"], "latest"),
-            test_memo(3, "2026-03-27T08:00:00Z", &["work"], "newer"),
-            test_memo(2, "2026-03-26T08:00:00Z", &["work"], "older"),
-            test_memo(1, "2026-03-25T08:00:00Z", &["work"], "oldest"),
+            test_memo(4, "2026-03-28T08:00:00Z", &["work"], &paragraph_doc("latest")),
+            test_memo(3, "2026-03-27T08:00:00Z", &["work"], &paragraph_doc("newer")),
+            test_memo(2, "2026-03-26T08:00:00Z", &["work"], &paragraph_doc("older")),
+            test_memo(1, "2026-03-25T08:00:00Z", &["work"], &paragraph_doc("oldest")),
         ];
         let hits: Vec<MemoSearchHit> = memos.iter().map(MemoSearchHit::from_memo).collect();
 
@@ -665,6 +746,7 @@ mod tests {
             },
             cursor: Some(desc_cursor),
             page_size: Some(2),
+            ..MemoSearchRequest::default()
         }
         .paginate_hits(hits)
         .expect_err("升序请求不得复用降序游标");
@@ -687,17 +769,7 @@ mod tests {
 
     #[test]
     fn test_has_markdown_quote_matches_blockquote() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "hello\n> quoted line\nend");
-        let query = MemoSearchQuery {
-            has_markdown_quote: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_markdown_quote_matches_centered_quote() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "hello\n>= centered\nend");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &block_doc("blockquote", "quoted line"));
         let query = MemoSearchQuery {
             has_markdown_quote: Some(true),
             ..MemoSearchQuery::default()
@@ -707,12 +779,7 @@ mod tests {
 
     #[test]
     fn test_has_markdown_quote_rejects_no_quote() {
-        let memo = test_memo(
-            1,
-            "2026-03-25T08:00:00Z",
-            &[],
-            "hello world\nno quotes here",
-        );
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("hello world"));
         let query = MemoSearchQuery {
             has_markdown_quote: Some(true),
             ..MemoSearchQuery::default()
@@ -722,7 +789,7 @@ mod tests {
 
     #[test]
     fn test_has_markdown_quote_none_matches_all() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "no quotes");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("no quotes"));
         let query = MemoSearchQuery {
             has_markdown_quote: None,
             ..MemoSearchQuery::default()
@@ -731,18 +798,8 @@ mod tests {
     }
 
     #[test]
-    fn test_has_markdown_quote_bare_gt_matches() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "line1\n>\nline3");
-        let query = MemoSearchQuery {
-            has_markdown_quote: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_markdown_quote_gt_without_space_does_not_match() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], ">nospace");
+    fn test_has_markdown_quote_rejects_heading_only() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &block_doc("heading", "title"));
         let query = MemoSearchQuery {
             has_markdown_quote: Some(true),
             ..MemoSearchQuery::default()
@@ -751,8 +808,8 @@ mod tests {
     }
 
     #[test]
-    fn test_has_heading_matches_atx_heading() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "body\n# Title\nend");
+    fn test_has_heading_matches_heading_block() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &block_doc("heading", "Title"));
         let query = MemoSearchQuery {
             has_heading: Some(true),
             ..MemoSearchQuery::default()
@@ -761,18 +818,8 @@ mod tests {
     }
 
     #[test]
-    fn test_has_heading_matches_multi_level() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "### Section\nbody");
-        let query = MemoSearchQuery {
-            has_heading: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_heading_rejects_more_than_six_hashes() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "####### too many");
+    fn test_has_heading_rejects_plain_paragraph() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("plain text"));
         let query = MemoSearchQuery {
             has_heading: Some(true),
             ..MemoSearchQuery::default()
@@ -781,73 +828,18 @@ mod tests {
     }
 
     #[test]
-    fn test_has_heading_rejects_hash_without_space() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "#tag\nbody");
-        let query = MemoSearchQuery {
-            has_heading: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(!query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_heading_rejects_when_none() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "plain text");
-        let query = MemoSearchQuery {
-            has_heading: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(!query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_unordered_list_matches_dash() {
-        let memo = test_memo(
-            1,
-            "2026-03-25T08:00:00Z",
-            &[],
-            "intro\n- item one\n- item two",
-        );
+    fn test_has_unordered_list_matches_bullet_list() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &block_doc("bullet_list", "item one"));
         let query = MemoSearchQuery {
             has_unordered_list: Some(true),
             ..MemoSearchQuery::default()
         };
         assert!(query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_unordered_list_matches_asterisk() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "* item");
-        let query = MemoSearchQuery {
-            has_unordered_list: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_unordered_list_matches_plus() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "+ item");
-        let query = MemoSearchQuery {
-            has_unordered_list: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(query.matches(&memo));
-    }
-
-    #[test]
-    fn test_has_unordered_list_rejects_horizontal_rule() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "before\n---\nafter");
-        let query = MemoSearchQuery {
-            has_unordered_list: Some(true),
-            ..MemoSearchQuery::default()
-        };
-        assert!(!query.matches(&memo));
     }
 
     #[test]
     fn test_has_unordered_list_rejects_ordered_list() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "1. item");
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &block_doc("ordered_list", "item"));
         let query = MemoSearchQuery {
             has_unordered_list: Some(true),
             ..MemoSearchQuery::default()
@@ -856,10 +848,35 @@ mod tests {
     }
 
     #[test]
-    fn test_has_unordered_list_rejects_dash_without_space() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], "-nodash");
+    fn test_has_unordered_list_rejects_paragraph() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("no list here"));
         let query = MemoSearchQuery {
             has_unordered_list: Some(true),
+            ..MemoSearchQuery::default()
+        };
+        assert!(!query.matches(&memo));
+    }
+
+    #[test]
+    fn test_has_annotation_never_matches_in_wdf_v01() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("annotated?"));
+        let query = MemoSearchQuery {
+            has_annotation: Some(true),
+            ..MemoSearchQuery::default()
+        };
+        // WDF v0.1 没有批注标记,该过滤暂无可命中内容
+        assert!(!query.matches(&memo));
+    }
+
+    #[test]
+    fn test_corrupted_content_never_matches_structural_filters() {
+        let stored = "---\nid: 1\nct: 2026-03-25T08:00:00Z\nmt: 2026-03-25T08:00:00Z\ntags: []\n---\n\n不是 JSON";
+        let memo = Memo::parse_stored(stored).expect("frontmatter 应能解析");
+        let query = MemoSearchQuery {
+            text: Some(MemoTextFilter {
+                contains: "不是".to_string(),
+            }),
+            has_heading: Some(true),
             ..MemoSearchQuery::default()
         };
         assert!(!query.matches(&memo));

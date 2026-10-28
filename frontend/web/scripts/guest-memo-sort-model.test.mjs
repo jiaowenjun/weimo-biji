@@ -4,10 +4,21 @@ const { filterGuestMemos } = await import(
   '../src/features/workspace/guest-workspace-data.ts'
 )
 
+function wdfDocument(text) {
+  return {
+    schema: 'weimo.document',
+    version: 1,
+    root: {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    },
+  }
+}
+
 function memo(id, createdAt, tags = []) {
   return {
     id,
-    content: `memo-${id}`,
+    content: wdfDocument(`memo-${id}`),
     createdAt,
     updatedAt: createdAt,
     tags,

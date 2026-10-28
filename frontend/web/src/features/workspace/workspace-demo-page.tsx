@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
+import { isWdfDocumentEmpty } from 'weimo-ui-editor/components/card-composer'
+import { toMarkdown } from 'weimo-wdf/markdown'
 import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
 import { TagBread } from 'weimo-ui/components/tag-bread'
 import { TagPicker } from 'weimo-ui/components/tag-picker'
 import { useInfiniteListSentinel } from 'weimo-ui/lib/use-infinite-list-sentinel'
 
-import type { CardDraft } from '@/components/card'
+import type { CardDraft } from '@/components/note-card'
 import { RefCard } from '@/components/ref-card'
 import { SideBar } from '@/components/sidebar'
 import { Button } from '@/components/ui/button'
@@ -202,8 +204,8 @@ export function WorkspaceDemoPage() {
   ])
 
   const handleMemoSave = useCallback((memo: Memo, draft: CardDraft) => {
-    const content = draft.content.trim()
-    if (!content) return
+    const content = draft.content
+    if (isWdfDocumentEmpty(content)) return
     const tags = [...draft.tags]
 
     void trackMemoDisplayOverride(
@@ -239,7 +241,7 @@ export function WorkspaceDemoPage() {
   }, [])
 
   const handleMemoCopy = useCallback((memo: Memo) => {
-    void copyMemoContentToClipboard(memo.content).catch(() => {
+    void copyMemoContentToClipboard(toMarkdown(memo.content)).catch(() => {
       window.alert('复制失败')
     })
   }, [])
@@ -251,8 +253,8 @@ export function WorkspaceDemoPage() {
   }, [])
 
   const handleMemoQuoteSave = useCallback((memo: Memo, draft: CardDraft) => {
-    const content = draft.content.trim()
-    if (!content) return
+    const content = draft.content
+    if (isWdfDocumentEmpty(content)) return
     const tags = [...draft.tags]
 
     void createWorkspaceMemo({ content, tags, refs: [String(memo.id)] }).then(

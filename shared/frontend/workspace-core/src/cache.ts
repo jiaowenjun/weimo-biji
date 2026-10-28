@@ -20,7 +20,8 @@ export type WorkspaceListFilters = {
 
 export type WorkspaceListItem = {
   id: number
-  content: string
+  /** 内容载荷不限定形状(markdown 文本 / WDF 文档等),内容级过滤由消费方注入 */
+  content: unknown
   createdAt: string
   updatedAt: string
   tags: string[]
@@ -99,57 +100,10 @@ function matchesDateFilter(item: WorkspaceListItem, filter?: WorkspaceDateFilter
   return year === filter.year
 }
 
-function matchesMarkdownQuote(item: WorkspaceListItem, enabled?: boolean) {
-  if (!enabled) return true
-
-  return item.content.split('\n').some((line) => {
-    const text = line.trimStart()
-    return text === '>' || text.startsWith('> ') || text === '>=' || text.startsWith('>= ')
-  })
-}
-
-function matchesHeading(item: WorkspaceListItem, enabled?: boolean) {
-  if (!enabled) return true
-
-  return item.content.split('\n').some((line) => {
-    const text = line.trimStart()
-    let hashes = 0
-    while (hashes < text.length && text[hashes] === '#') hashes += 1
-    if (hashes < 1 || hashes > 6) return false
-
-    const after = text.slice(hashes)
-    return after.length === 0 || after.startsWith(' ')
-  })
-}
-
-function isHorizontalRule(line: string, marker: string) {
-  if (marker !== '*' && marker !== '-') return false
-
-  let count = 0
-  for (const char of line) {
-    if (char === marker) count += 1
-    else if (char !== ' ' && char !== '\t') return false
-  }
-
-  return count >= 3
-}
-
-function matchesUnorderedList(item: WorkspaceListItem, enabled?: boolean) {
-  if (!enabled) return true
-
-  return item.content.split('\n').some((line) => {
-    const text = line.trimStart()
-    if (text.length < 2) return false
-
-    const marker = text[0]
-    const next = text[1]
-    if (marker !== '*' && marker !== '+' && marker !== '-') return false
-    if (next !== ' ' && next !== '\t') return false
-
-    return !isHorizontalRule(text, marker)
-  })
-}
-
+/**
+ * 标签/日期/未标签过滤之外的内容级过滤(正文检索、块类型、批注等)
+ * 一律由 matchesAdditionalFilters 注入;核心不再假设内容形状。
+ */
 export function workspaceItemMatchesFilters<
   Item extends WorkspaceListItem,
   Filters extends WorkspaceListFilters,
@@ -159,15 +113,10 @@ export function workspaceItemMatchesFilters<
   matchesAdditionalFilters: (item: Item, filters: Filters) => boolean = () => true,
 ) {
   const tag = filters.tag?.trim()
-  const text = filters.text?.contains?.trim()
 
   return (
     (!tag || item.tags.some((itemTag) => itemTag === tag || itemTag.startsWith(`${tag}/`))) &&
-    (!text || item.content.includes(text)) &&
     matchesDateFilter(item, filters.created_at) &&
-    matchesMarkdownQuote(item, filters.has_markdown_quote) &&
-    matchesHeading(item, filters.has_heading) &&
-    matchesUnorderedList(item, filters.has_unordered_list) &&
     (!filters.has_no_tag || item.tags.length === 0) &&
     matchesAdditionalFilters(item, filters)
   )

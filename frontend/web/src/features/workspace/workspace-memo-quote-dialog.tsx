@@ -2,10 +2,11 @@ import { useMemo } from 'react'
 import { ActionDialog } from 'weimo-ui/components/action-dialog'
 import { DialogPanel } from 'weimo-ui/components/coss/dialog'
 
-import type { CardDraft } from '@/components/card'
+import type { CardDraft } from '@/components/note-card'
 import { RefCard } from '@/components/ref-card'
 import {
   buildMemoReferenceDisplayText,
+  createEmptyCardNote,
   formatMemoTimestamp,
 } from '@/features/workspace/memo-data'
 import type { Memo } from './workspace-types'
@@ -28,10 +29,9 @@ export function WorkspaceMemoQuoteDialog({
   tagOptions,
 }: WorkspaceMemoQuoteDialogProps) {
   const quoteNote = useMemo(
-    () => ({
-      content: '',
-      createdAtText: memo ? formatMemoTimestamp(new Date().toISOString()) : '',
-    }),
+    () => createEmptyCardNote(
+      memo ? formatMemoTimestamp(new Date().toISOString()) : '',
+    ),
     [memo],
   )
   const sourcePreview = useMemo(
@@ -73,7 +73,7 @@ export function WorkspaceMemoQuoteDialog({
         {memo ? (
           <div className="workspace-memo-quote-dialog__editor">
             <RefCard
-              initialMode="edit"
+              defaultMode="edit"
               key={memo.id}
               note={quoteNote}
               onCancel={handleCancel}

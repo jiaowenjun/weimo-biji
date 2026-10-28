@@ -3,9 +3,11 @@ import { buildGuestWorkspaceTagTree } from '@weimo/workspace-core/guest-workspac
 import { Plus, Search } from 'lucide-react'
 import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
 import { TagBread } from 'weimo-ui/components/tag-bread'
+import { isWdfDocumentEmpty } from 'weimo-ui-editor/components/card-composer'
+import { toMarkdown } from 'weimo-wdf/markdown'
 import { TagPicker } from 'weimo-ui/components/tag-picker'
 
-import type { CardDraft } from '@/components/card'
+import type { CardDraft } from '@/components/note-card'
 import { RefCard } from '@/components/ref-card'
 import { SideBar } from '@/components/sidebar'
 import { Button } from '@/components/ui/button'
@@ -140,8 +142,8 @@ export function GuestWorkspacePage() {
   }, [setExpandedTagTreeTags])
 
   const handleMemoSave = useCallback((memo: Memo, draft: CardDraft) => {
-    const content = draft.content.trim()
-    if (!content) return
+    const content = draft.content
+    if (isWdfDocumentEmpty(content)) return
     const tags = [...draft.tags]
 
     setMemos((currentMemos) =>
@@ -173,7 +175,7 @@ export function GuestWorkspacePage() {
   }, [])
 
   const handleMemoCopy = useCallback((memo: Memo) => {
-    void copyMemoContentToClipboard(memo.content).catch(() => {
+    void copyMemoContentToClipboard(toMarkdown(memo.content)).catch(() => {
       window.alert('复制失败')
     })
   }, [])
@@ -185,8 +187,8 @@ export function GuestWorkspacePage() {
   }, [])
 
   const handleMemoQuoteSave = useCallback((memo: Memo, draft: CardDraft) => {
-    const content = draft.content.trim()
-    if (!content) return
+    const content = draft.content
+    if (isWdfDocumentEmpty(content)) return
 
     const tags = [...draft.tags]
     const now = new Date().toISOString()

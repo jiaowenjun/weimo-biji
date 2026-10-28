@@ -217,7 +217,7 @@ mod tests {
         fn load(&self, id: MemoId) -> WeimoResult<Memo> {
             self.memos
                 .get(&id)
-                .and_then(|markdown| Memo::parse_markdown(markdown))
+                .and_then(|stored| Memo::parse_stored(stored))
                 .ok_or(WeimoError::MemoNotFound(id))
         }
     }
@@ -281,7 +281,13 @@ mod tests {
         db.create_memo(
             "u",
             MemoCreate {
-                content: "a".into(),
+                content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                 tags: vec![],
                 refs: vec![],
             },
@@ -292,7 +298,13 @@ mod tests {
         db.create_memo(
             "u",
             MemoCreate {
-                content: "b".into(),
+                content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                 tags: vec![],
                 refs: vec![MemoRef(1)],
             },
@@ -303,7 +315,13 @@ mod tests {
         db.create_memo(
             "u",
             MemoCreate {
-                content: "c".into(),
+                content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "c" }] }
+                        ]}
+                    }),
                 tags: vec![],
                 refs: vec![MemoRef(1), MemoRef(2)],
             },
@@ -336,7 +354,13 @@ mod tests {
             db.create_memo(
                 "u",
                 MemoCreate {
-                    content: "a".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![],
                 },
@@ -347,7 +371,13 @@ mod tests {
             db.create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(1)],
                 },
@@ -358,7 +388,13 @@ mod tests {
             db.create_memo(
                 "u",
                 MemoCreate {
-                    content: "c".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "c" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(1), MemoRef(2)],
                 },
@@ -393,7 +429,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "a".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![],
                 },
@@ -405,7 +447,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(*a.id())],
                 },
@@ -428,7 +476,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(999)],
                 },
@@ -447,7 +501,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "a".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![],
                 },
@@ -459,7 +519,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![],
                 },
@@ -492,7 +558,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "a".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![],
                 },
@@ -504,7 +576,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(*a.id())],
                 },
@@ -539,7 +617,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "a".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![],
                 },
@@ -551,7 +635,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(*a.id())],
                 },
@@ -563,7 +653,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "c".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "c" }] }
+                        ]}
+                    }),
                     tags: vec![],
                     refs: vec![MemoRef(*a.id())],
                 },
@@ -595,7 +691,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "a".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "a" }] }
+                        ]}
+                    }),
                     tags: vec!["work/rust".into()],
                     refs: vec![],
                 },
@@ -607,7 +709,13 @@ mod tests {
             .create_memo(
                 "u",
                 MemoCreate {
-                    content: "b".into(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": "b" }] }
+                        ]}
+                    }),
                     tags: vec!["work/rust".into()],
                     refs: vec![MemoRef(*a.id())],
                 },
@@ -634,12 +742,19 @@ mod tests {
         });
         let memo = Memo::create(
             MemoCreate {
-                content: "search body".to_string(),
+                content: serde_json::json!({
+                    "schema": "weimo.document",
+                    "version": 1,
+                    "root": { "type": "doc", "content": [
+                        { "type": "paragraph", "content": [{ "type": "text", "text": "search body" }] }
+                    ]}
+                }),
                 tags: vec!["work/rust".to_string()],
                 refs: vec![],
             },
             1,
-        );
+        )
+        .expect("合法 WDF 内容应能创建笔记");
 
         let (entered_get_many_tx, entered_get_many_rx) = oneshot::channel();
         let (release_get_many_tx, release_get_many_rx) = oneshot::channel();
@@ -652,7 +767,7 @@ mod tests {
         let db = Db::from((
             StaticUserDb { user },
             BlockingMemoDb::new(
-                HashMap::from([(*memo.id(), memo.to_markdown())]),
+                HashMap::from([(*memo.id(), memo.to_stored())]),
                 state.clone(),
             ),
         ));

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const uiRoot = join(root, 'node_modules/weimo-ui')
+const uiRoot = join(root, 'node_modules/weimo-ui-editor/dist/components/card-composer')
 
 function readProjectFile(relativePath) {
   const absolutePath = join(root, relativePath)
@@ -17,7 +17,7 @@ function readProjectFile(relativePath) {
 function readUiFile(relativePath) {
   const absolutePath = join(uiRoot, relativePath)
 
-  assert.ok(existsSync(absolutePath), `installed weimo-ui/${relativePath} must exist.`)
+  assert.ok(existsSync(absolutePath), `installed weimo-ui-editor/${relativePath} must exist.`)
 
   return readFileSync(absolutePath, 'utf8')
 }
@@ -33,15 +33,9 @@ const pendingCreateCardSource = readProjectFile(
   'src/features/workspace/pending-create-card.tsx',
 )
 const indexCss = readProjectFile('src/index.css')
-const sharedCardSource = readUiFile('src/components/card.tsx')
-const sharedCardEditTransitionSource = readUiFile('src/components/use-card-edit-transition.ts')
-const sharedCardRuntimeSource = [
-  sharedCardSource,
-  sharedCardEditTransitionSource,
-].join('\n')
-const sharedCardComposerSource = readUiFile('src/components/card-composer.tsx')
-const sharedComposerShellSource = readUiFile('src/components/composer-shell.tsx')
-const sharedCardComposerCss = readUiFile('src/components/card-composer.css')
+const sharedCardComposerSource = readUiFile('card-composer.js')
+const sharedComposerShellSource = readUiFile('composer-shell.js')
+const sharedCardComposerCss = readUiFile('card-composer.css')
 
 assert.ok(
   packageJson.scripts?.test?.includes(
@@ -78,7 +72,7 @@ assert.ok(
 for (const snippet of [
   '.weimo-site-template__content > * + * {',
   'margin-top: var(--space-gutter);',
-  '.weimo-site-template__content > .weimo-card-composer + * {',
+  '.weimo-site-template__content > .wdf-card-composer + * {',
 ]) {
   assert.ok(
     indexCss.includes(snippet),
@@ -87,60 +81,54 @@ for (const snippet of [
 }
 
 for (const snippet of [
-  '.weimo-card-composer {',
+  '.wdf-card-composer {',
   'display: grid;',
   'grid-template-rows: 1fr;',
-  'margin-bottom: var(--space-gutter);',
+  'margin-bottom: var(--wdf-card-composer-gutter, var(--space-gutter));',
   'overflow: hidden;',
-  'animation: weimo-card-composer-enter 180ms cubic-bezier(0.2, 0, 0, 1) both;',
-  ".weimo-card-composer[data-state='closing'] {",
-  'animation: weimo-card-composer-exit',
-  'pointer-events: none;',
-  '.weimo-card-composer__frame {',
+  'animation: wdf-card-composer-enter 180ms cubic-bezier(0.2, 0, 0, 1) both;',
+  ".wdf-card-composer[data-state='closing'] {",
+  'animation: wdf-card-composer-exit',
+  '.wdf-card-composer__frame {',
   'min-height: 0;',
   'overflow: hidden;',
-  '@keyframes weimo-card-composer-enter',
+  '@keyframes wdf-card-composer-enter',
   'grid-template-rows: 0fr;',
   'margin-bottom: 0;',
-  'opacity: 0;',
-  'transform: translateY(-8px);',
-  'grid-template-rows: 1fr;',
-  'margin-bottom: var(--space-gutter);',
-  'opacity: 1;',
-  'transform: translateY(0);',
-  '@keyframes weimo-card-composer-exit',
+  '@keyframes wdf-card-composer-exit',
   'grid-template-rows: 0fr;',
   'margin-bottom: 0;',
-  'opacity: 0;',
-  'transform: translateY(-8px);',
   '@media (prefers-reduced-motion: reduce)',
-  '.weimo-card-composer {',
-  'animation: none;',
-  'margin-bottom: var(--space-gutter);',
-  ".weimo-card-composer[data-state='closing'] {",
-  'margin-bottom: 0;',
 ]) {
   assert.ok(
     sharedCardComposerCss.includes(snippet),
-    `shared CardComposer animation CSS must include: ${snippet}`,
+    `editor CardComposer animation CSS must include: ${snippet}`,
   )
 }
 
 for (const snippet of [
-  "import { CardComposer, type CardComposerProps } from 'weimo-ui/components/card-composer'",
-  "import type { CardProps } from '@/components/card'",
-  "import { RefCard } from '@/components/ref-card'",
-  'type PendingCreateCardProps = CardComposerProps',
-  'function renderPendingRefCard(cardProps: CardProps)',
-  'return <RefCard {...cardProps} />',
-  'export function PendingCreateCard(props: PendingCreateCardProps) {',
+  "import { CardComposer } from 'weimo-ui-editor/components/card-composer'",
+  "import { TagBar } from 'weimo-ui/components/tag-bar'",
+  "import type { CardDraft, CardNote } from '@/components/note-card'",
+  'type PendingCreateCardProps = {',
+  'const [sessionTags, setSessionTags] = useState(() => note.tags ?? [])',
   '<CardComposer',
-  '{...props}',
-  'renderCard={renderPendingRefCard}',
+  'autoEnterEdit={initialMode !== \'view\'}',
+  'bottomBar={',
+  '<TagBar',
+  'editable',
+  'onTagsChange={setSessionTags}',
+  'clientId={clientId}',
+  'isClosing={isClosing}',
+  'onCancel={onCancel}',
+  'onExitAnimationEnd={onExitAnimationEnd}',
+  'if (mode === \'view\') onViewTransitionEnd?.()',
+  'onSave={(document) => onSave?.({ content: document, tags: [...sessionTags] })}',
+  'title={note.createdAtText}',
 ]) {
   assert.ok(
     pendingCreateCardSource.includes(snippet),
-    `PendingCreateCard must delegate to the shared CardComposer: ${snippet}`,
+    `PendingCreateCard must delegate to the editor CardComposer with a tag-editing bottom bar: ${snippet}`,
   )
 }
 
@@ -168,54 +156,37 @@ for (const forbiddenSnippet of [
 }
 
 for (const snippet of [
-  'export type CardComposerRenderCard = (props: CardProps) => ReactNode',
-  'export type CardComposerProps = CardProps & {',
-  'renderCard?: CardComposerRenderCard',
-  'const externalCancel = editBehavior?.onCancel ?? onCancel',
-  'disabled: disabled || isClosing',
-  'actionSlot: editBehavior?.actionSlot ?? composerEditActionSlot',
-  'onCancel: handleComposerClose',
-  'const ComposerCard = renderCard ?? Card',
-  '<ComposerShell',
-  '<ComposerCard {...composerCardProps} />',
+  'export function CardComposer',
+  '"data-client-id": clientId',
+  'bottomBar: bottomBar',
+  'actionSlot: actionSlot',
+  'onModeChange: handleModeChange',
+  'value: cardDocument',
 ]) {
   assert.ok(
     sharedCardComposerSource.includes(snippet),
-    `Shared CardComposer must preserve Card/RefCard composition boundaries: ${snippet}`,
+    `editor CardComposer must keep its shell/composer boundaries and slot pass-through: ${snippet}`,
   )
 }
 
 for (const snippet of [
-  'export type ComposerShellProps = Omit<',
-  'isClosing?: boolean',
-  'onExitAnimationEnd?: () => void',
-  'onViewTransitionEnd?: () => void',
-  'export const ComposerShell = forwardRef<HTMLDivElement, ComposerShellProps>(',
-  'className={cn(\'weimo-card-composer\', className)}',
-  "data-state={isClosing ? 'closing' : undefined}",
-  'onTransitionEnd={handleTransitionEnd}',
-  '<div className="weimo-card-composer__frame">',
+  'export const ComposerShell = forwardRef',
+  'isClosing = false',
+  'onExitAnimationEnd',
+  "\"data-state\": isClosing ? 'closing' : undefined",
+  'wdf-card-composer',
+  'wdf-card-composer__frame',
 ]) {
   assert.ok(
     sharedComposerShellSource.includes(snippet),
-    `Shared ComposerShell must preserve shared composer animation frame boundaries: ${snippet}`,
+    `editor ComposerShell must preserve shared composer animation frame boundaries: ${snippet}`,
   )
 }
 
-for (const snippet of [
-  'initialEditAutoFocus?: boolean',
-  'initialEditAutoFocus = true',
-  'const initialEditAutoFocusCompletedRef = useRef(initialMode !== \'edit\')',
-  'function focusInitialEditEditor()',
-  'initialEditAutoFocusCompletedRef.current = true',
-  "editorInstance.commands.focus('end')",
-  'if (initialEditAutoFocus) focusInitialEditEditor()',
-  'if (!initialEditAutoFocus) return',
-  'if (!initialEditLayoutResolvedRef.current) return',
-  'if (initialEditAutoFocusCompletedRef.current) return',
-]) {
-  assert.ok(
-    sharedCardRuntimeSource.includes(snippet),
-    `shared Card must allow pending create to delay initial edit focus: ${snippet}`,
-  )
-}
+// 编辑器版 CardComposer 有意不自动聚焦:编辑器亮着等用户点进去
+// (旧卡的 initialEditAutoFocus 机制随 monolith Card 退役)
+assert.ok(
+  !pendingCreateCardSource.includes('initialEditAutoFocus'),
+  'PendingCreateCard must not revive the retired initialEditAutoFocus mechanics.',
+)
+

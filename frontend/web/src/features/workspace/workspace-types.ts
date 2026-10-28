@@ -1,3 +1,7 @@
+import type { WdfDocument } from 'weimo-wdf'
+
+export type WdfMemoContent = WdfDocument
+
 export type DailyNoteCount = Array<[number, number]>
 
 export interface WorkspaceStats {
@@ -34,7 +38,7 @@ export interface MemoDto {
   ct_utc: MemoUtcArray
   mt_utc: MemoUtcArray
   tags: string[]
-  content: string
+  content: WdfDocument
   refs?: MemoRefId[]
   referenced_by?: MemoRefId[]
 }
@@ -51,7 +55,7 @@ export interface Memo {
   createdAt: string
   updatedAt: string
   tags: string[]
-  content: string
+  content: WdfDocument
   refs: MemoRefId[]
   referencedBy: MemoRefId[]
 }
@@ -64,7 +68,7 @@ export interface MemoSearchPage {
 }
 
 export interface MemoWriteRequest {
-  content: string
+  content: WdfDocument
   tags: string[]
   refs?: MemoRefId[]
 }

@@ -99,7 +99,7 @@ for (const snippet of [
   'hasMore: boolean',
   'totalCount: number',
   'export interface MemoWriteRequest',
-  'content: string',
+  'content: WdfDocument',
   'refs?: MemoRefId[]',
   'export interface MemoSearchQuery',
   "created_at_sort?: 'asc' | 'desc'",
@@ -213,7 +213,7 @@ for (const snippet of [
 
 for (const snippet of [
   "import { Button } from '@/components/ui/button'",
-  "import type { CardDraft } from '@/components/card'",
+  "import type { CardDraft } from '@/components/note-card'",
   'buildMemoReferencePreviews,',
   'createMemoReferencePreviewResolver,',
   'toCardNote,',
@@ -263,8 +263,8 @@ for (const snippet of [
   'void memoListQuery.refetch()',
   'resetWorkspaceNavigation()',
   'const handleMemoSave = useCallback((memo: Memo, draft: CardDraft) => {',
-  'const content = draft.content.trim()',
-  'if (!content) return',
+  'const content = draft.content',
+  'if (isWdfDocumentEmpty(content)) return',
   'const tags = [...draft.tags]',
   'trackMemoDisplayOverride(',
   '() => updateMemoMutation.mutateAsync(',

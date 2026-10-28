@@ -1,4 +1,7 @@
-import type { CardNote } from '@/components/card'
+import type { CardNote } from '@/components/note-card'
+
+import { WdfDocument, renderPlain } from 'weimo-wdf'
+import type { WdfDocument as WdfDocumentType } from 'weimo-wdf'
 
 import type {
   Memo,
@@ -184,8 +187,8 @@ export function formatMemoTimestamp(input: string) {
   return `${year}-${month}-${day} ${hour}:${minute}`
 }
 
-export function summarizeMemoContent(content: string): string {
-  const oneLine = content.replace(/\s+/g, ' ').trim()
+export function summarizeMemoContent(content: WdfDocumentType): string {
+  const oneLine = renderPlain(content).replace(/\s+/g, ' ').trim()
   if (oneLine.length <= REFERENCE_SUMMARY_MAX_LENGTH) return oneLine
 
   return `${oneLine.slice(0, REFERENCE_SUMMARY_MAX_LENGTH)}...`
@@ -201,7 +204,7 @@ function toReferenceDateText(dateText: string): string {
 
 export function buildMemoReferenceDisplayText(
   dateText: string,
-  content: string,
+  content: WdfDocumentType,
 ): string {
   const dateOnlyText = toReferenceDateText(dateText)
   const summary = summarizeMemoContent(content)
@@ -287,5 +290,12 @@ export function toCardNote(memo: Memo): CardNote {
     content: memo.content,
     createdAtText: formatMemoTimestamp(memo.createdAt),
     tags: tags.length > 0 ? tags : undefined,
+  }
+}
+
+export function createEmptyCardNote(createdAtText: string): CardNote {
+  return {
+    content: WdfDocument.empty(),
+    createdAtText,
   }
 }

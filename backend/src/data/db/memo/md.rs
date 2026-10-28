@@ -52,7 +52,7 @@ impl MdMemos {
         }
 
         // 将笔记写入文件
-        fs::write(path, memo.to_markdown())
+        fs::write(path, memo.to_stored())
             .await
             .map_err(WeimoError::WriteError)
     }
@@ -82,14 +82,14 @@ impl MdMemos {
         let content = fs::read_to_string(&path)
             .await
             .map_err(WeimoError::ReadError)?;
-        Memo::parse_markdown(&content).ok_or(WeimoError::MemoNotFound(*id))
+        Memo::parse_stored(&content).ok_or(WeimoError::MemoNotFound(*id))
     }
 }
 
 #[async_trait]
 impl MemoDb for MdMemos {
     async fn create(&mut self, user: &str, info: MemoCreate, id: MemoId) -> WeimoResult<Memo> {
-        let memo = Memo::create(info, id);
+        let memo = Memo::create(info, id)?;
         self.save_memo(user, &memo).await?;
         Ok(memo)
     }
@@ -104,7 +104,7 @@ impl MemoDb for MdMemos {
         let mut memo = self.load_memo(user, id).await?;
 
         if let Some(content) = info.content {
-            memo.set_content(&content);
+            memo.set_content(&content)?;
         }
 
         if let Some(tags) = info.tags {
@@ -163,7 +163,24 @@ impl MemoDb for MdMemos {
 mod tests {
     use super::*;
     use crate::data::{MemoDateFilter, MemoSearchQuery, MemoTextFilter};
+    use serde_json::json;
     use tempfile::tempdir;
+
+    /// 单段纯文本的 WDF 文档 JSON
+    fn wdf_value(text: &str) -> serde_json::Value {
+        json!({
+            "schema": "weimo.document",
+            "version": 1,
+            "root": { "type": "doc", "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": text }] }
+            ]}
+        })
+    }
+
+    /// 单段纯文本的 WDF 存储文本
+    fn wdf_body(text: &str) -> String {
+        wdf_value(text).to_string()
+    }
 
     /// 用于测试的辅助函数，创建临时目录和AsyncMemoFile实例
     async fn setup() -> (tempfile::TempDir, MdMemos) {
@@ -191,8 +208,8 @@ mod tests {
             format!("tags:\n{items}")
         };
 
-        let markdown = format!("---\nid: {id}\nct: {ct}\nmt: {ct}\n{tags}\n---\n\n{content}");
-        let memo = Memo::parse_markdown(&markdown).expect("测试 Memo 应该可以正常解析");
+        let stored = format!("---\nid: {id}\nct: {ct}\nmt: {ct}\n{tags}\n---\n\n{}", wdf_body(content));
+        let memo = Memo::parse_stored(&stored).expect("测试 Memo 应该可以正常解析");
         memo_file
             .save_memo(user, &memo)
             .await
@@ -236,7 +253,7 @@ mod tests {
         let user = "test_user";
 
         let create_info = MemoCreate {
-            content: "测试内容".to_string(),
+            content: wdf_value("测试内容"),
             tags: vec!["标签1".to_string(), "标签2".to_string()],
             refs: vec![],
         };
@@ -257,7 +274,7 @@ mod tests {
 
         // 创建一个笔记
         let create_info = MemoCreate {
-            content: "测试获取笔记".to_string(),
+            content: wdf_value("测试获取笔记"),
             tags: vec!["测试".to_string()],
             refs: vec![],
         };
@@ -293,7 +310,7 @@ mod tests {
 
         // 创建一个笔记
         let create_info = MemoCreate {
-            content: "测试存在性".to_string(),
+            content: wdf_value("测试存在性"),
             tags: vec![],
             refs: vec![],
         };
@@ -314,7 +331,7 @@ mod tests {
 
         // 创建一个笔记
         let create_info = MemoCreate {
-            content: "原始内容".to_string(),
+            content: wdf_value("原始内容"),
             tags: vec!["原始标签".to_string()],
             refs: vec![],
         };
@@ -324,7 +341,7 @@ mod tests {
 
         // 更新笔记内容
         let update_info = MemoUpdate {
-            content: Some("更新后的内容".to_string()),
+            content: Some(wdf_value("更新后的内容")),
             tags: None,
             refs: None,
         };
@@ -347,7 +364,7 @@ mod tests {
 
         // 创建一个笔记
         let create_info = MemoCreate {
-            content: "测试内容".to_string(),
+            content: wdf_value("测试内容"),
             tags: vec!["标签1".to_string()],
             refs: vec![],
         };
@@ -386,7 +403,7 @@ mod tests {
 
         // 创建一个笔记
         let create_info = MemoCreate {
-            content: "要删除的内容".to_string(),
+            content: wdf_value("要删除的内容"),
             tags: vec![],
             refs: vec![],
         };
@@ -431,17 +448,17 @@ mod tests {
 
         // 创建多个笔记
         let create_info1 = MemoCreate {
-            content: "笔记1".to_string(),
+            content: wdf_value("笔记1"),
             tags: vec![],
             refs: vec![],
         };
         let create_info2 = MemoCreate {
-            content: "笔记2".to_string(),
+            content: wdf_value("笔记2"),
             tags: vec![],
             refs: vec![],
         };
         let create_info3 = MemoCreate {
-            content: "笔记3".to_string(),
+            content: wdf_value("笔记3"),
             tags: vec![],
             refs: vec![],
         };
@@ -464,7 +481,7 @@ mod tests {
         // 为不同用户创建笔记
         let other_user = "other_user";
         let create_info4 = MemoCreate {
-            content: "其他用户的笔记".to_string(),
+            content: wdf_value("其他用户的笔记"),
             tags: vec![],
             refs: vec![],
         };
@@ -487,12 +504,12 @@ mod tests {
 
         // 为两个用户创建笔记
         let create_info1 = MemoCreate {
-            content: "用户1的笔记".to_string(),
+            content: wdf_value("用户1的笔记"),
             tags: vec![],
             refs: vec![],
         };
         let create_info2 = MemoCreate {
-            content: "用户2的笔记".to_string(),
+            content: wdf_value("用户2的笔记"),
             tags: vec![],
             refs: vec![],
         };

@@ -43,6 +43,9 @@ pub enum WeimoError {
     #[error("搜索条件不合法: {0}")]
     InvalidSearchQuery(String),
 
+    #[error("笔记内容不是合法的 WDF 文档: {0}")]
+    InvalidMemoContent(String),
+
     #[error("引用不合法: {0}")]
     InvalidRefs(String),
 
@@ -119,6 +122,10 @@ impl IntoResponse for WeimoError {
             WeimoError::InvalidSearchQuery(msg) => {
                 (StatusCode::BAD_REQUEST, format!("无效的搜索条件: {msg}"))
             }
+            WeimoError::InvalidMemoContent(reason) => (
+                StatusCode::BAD_REQUEST,
+                format!("笔记内容不是合法的 WDF 文档: {reason}"),
+            ),
             WeimoError::InvalidRefs(reason) => {
                 (StatusCode::BAD_REQUEST, format!("引用不合法: {reason}"))
             }

@@ -47,10 +47,21 @@ function memoListKey(scope, filters) {
   ]
 }
 
+function wdfDocument(text) {
+  return {
+    schema: 'weimo.document',
+    version: 1,
+    root: {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    },
+  }
+}
+
 function makeMemo(id, tags, content = `memo-${id}`) {
   return {
     id,
-    content,
+    content: wdfDocument(content),
     tags,
     createdAt: '2026-06-20T02:00:00.000Z',
     updatedAt: '2026-06-20T02:00:00.000Z',
@@ -88,7 +99,7 @@ assert.equal(
     {
       ...makeMemo(1, ['开发']),
       createdAt: '2026-06-19T16:30:00.000Z',
-      content: 'React Query 缓存记录',
+      content: wdfDocument('React Query 缓存记录'),
     },
     {
       created_at: { kind: 'day', year: 2026, month: 6, day: 20 },
@@ -192,9 +203,9 @@ assert.deepEqual(
 )
 
 const memoCacheIndex = createWorkspaceMemoCacheIndex(queryClient, selfOwner)
-assert.equal(
+assert.deepEqual(
   memoCacheIndex.getMemoById(100)?.content,
-  '缓存里的被引用正文',
+  wdfDocument('缓存里的被引用正文'),
   'memo-id lookup should resolve memos from cached lists outside the current tag.',
 )
 

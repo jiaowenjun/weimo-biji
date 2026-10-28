@@ -89,7 +89,7 @@ for (const snippet of [
   'onCopySelect?: () => void',
   'onCopySelect,',
   'onCopySelect,',
-  'const displayMenuItems = buildWorkspaceMemoCardMenuItems({',
+  'const menuItems = buildWorkspaceMemoCardMenuItems({',
 ]) {
   assert.ok(
     refCardSource.includes(snippet),
@@ -138,26 +138,28 @@ await assert.rejects(
 
 for (const snippet of [
   "import { copyMemoContentToClipboard } from './workspace-memo-copy'",
+  "import { toMarkdown } from 'weimo-wdf/markdown'",
   'const handleMemoCopy = useCallback((memo: Memo) => {',
-  'void copyMemoContentToClipboard(memo.content).catch(() => {',
+  'void copyMemoContentToClipboard(toMarkdown(memo.content)).catch(() => {',
   "window.alert('复制失败')",
   'onCopySelect={() => handleMemoCopy(memo)}',
 ]) {
   assert.ok(
     workspacePageSource.includes(snippet),
-    `workspace page must copy the raw memo content from the 复制 menu: ${snippet}`,
+    `workspace page must copy the memo content as markdown from the 复制 menu: ${snippet}`,
   )
 }
 
 for (const snippet of [
   "import { copyMemoContentToClipboard } from './workspace-memo-copy'",
+  "import { toMarkdown } from 'weimo-wdf/markdown'",
   'const handleMemoCopy = useCallback((memo: Memo) => {',
-  'void copyMemoContentToClipboard(memo.content).catch(() => {',
+  'void copyMemoContentToClipboard(toMarkdown(memo.content)).catch(() => {',
   "window.alert('复制失败')",
   'onCopySelect={() => handleMemoCopy(memo)}',
 ]) {
   assert.ok(
     guestPageSource.includes(snippet),
-    `guest page must copy the raw memo content from the 复制 menu: ${snippet}`,
+    `guest page must copy the memo content as markdown from the 复制 menu: ${snippet}`,
   )
 }

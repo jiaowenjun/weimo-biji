@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const uiRoot = join(root, 'node_modules/weimo-ui')
+const editorRoot = join(root, 'node_modules/weimo-ui-editor')
 
 function readProjectFile(relativePath) {
   const absolutePath = join(root, relativePath)
@@ -14,23 +14,16 @@ function readProjectFile(relativePath) {
   return readFileSync(absolutePath, 'utf8')
 }
 
-function readUiFile(relativePath) {
-  const absolutePath = join(uiRoot, relativePath)
-
-  assert.ok(existsSync(absolutePath), `installed weimo-ui/${relativePath} must exist.`)
-
-  return readFileSync(absolutePath, 'utf8')
-}
-
 const packageJson = JSON.parse(readProjectFile('package.json'))
-const localCardSource = readProjectFile('src/components/card.tsx')
-const sharedCardSource = readUiFile('src/components/card.tsx')
-const sharedCardEditTransitionSource = readUiFile('src/components/use-card-edit-transition.ts')
-const sharedCardRuntimeSource = [
-  sharedCardSource,
-  sharedCardEditTransitionSource,
-].join('\n')
-const sharedCardResolversSource = readUiFile('src/components/card-resolvers.tsx')
+const noteCardSource = readProjectFile('src/components/note-card.tsx')
+const editorWdfCardSource = readFileSync(
+  join(editorRoot, 'dist/components/wdf-card/wdf-card.js'),
+  'utf8',
+)
+const editorWdfCardStyles = readFileSync(
+  join(editorRoot, 'dist/components/wdf-card/wdf-card.css'),
+  'utf8',
+)
 
 assert.ok(
   packageJson.scripts?.test?.includes(
@@ -39,42 +32,53 @@ assert.ok(
   'package test script must run the workspace card transition contract.',
 )
 
+assert.ok(
+  !existsSync(join(root, 'src/components/card.tsx')),
+  'the old monolith Card adapter must be removed once WdfCard lands.',
+)
+
+// 编辑样式与过渡时长由编辑器包统一编排;biji 侧不再覆盖任何时长
+assert.ok(
+  packageJson.dependencies['weimo-ui-editor']?.startsWith('file:vendor/'),
+  'weimo-ui-editor must be vendored until the npm publish completes.',
+)
+assert.ok(
+  packageJson.dependencies['weimo-wdf']?.startsWith('^'),
+  'weimo-wdf must be a registry dependency for WDF documents.',
+)
+
 for (const snippet of [
-  'Card as UiCard,',
-  'type CardProps,',
-  "from 'weimo-ui/components/card'",
-  'const BIJI_CARD_TRANSITION_MS = 180',
-  'export function Card({',
-  'transitionDurationMs = BIJI_CARD_TRANSITION_MS',
-  '}: CardProps) {',
-  'return <UiCard transitionDurationMs={transitionDurationMs} {...props} />',
+  "import { WdfCard, type WdfCardHandle, type WdfCardMode } from 'weimo-ui-editor/components/wdf-card'",
+  'value={note.content}',
+  'defaultMode={defaultMode}',
+  'onModeChange={handleModeChange}',
+  'bottomBar={bottomBar}',
+  'actionSlot={actionMenu}',
+  'title={note.createdAtText}',
 ]) {
   assert.ok(
-    localCardSource.includes(snippet),
-    `biji-react Card wrapper must default note card transitions to 180ms: ${snippet}`,
+    noteCardSource.includes(snippet),
+    `NoteCard must drive WdfCard through its public API: ${snippet}`,
   )
 }
 
+assert.ok(
+  !noteCardSource.includes('transitionDurationMs'),
+  'biji-react must not override editor-managed card transition timings.',
+)
+
+// 编辑器包的过渡编排契约(内联 48px 工具栏带 + 200ms 收高)不被本地覆盖
 for (const snippet of [
-  'transitionDurationMs?: number',
-  'transitionDurationMs = CARD_TRANSITION_MS',
-  'const cardTransitionMs = transitionDurationMs',
-  'durationMs: transitionDurationMs',
-  'useHeightTransition(',
-  'cardTransitionMs',
+  "height: 48px",
+  'transition: height 200ms ease',
 ]) {
   assert.ok(
-    sharedCardRuntimeSource.includes(snippet),
-    `shared Card must use the configurable transition duration consistently: ${snippet}`,
+    editorWdfCardStyles.includes(snippet),
+    `the editor card must keep choreographing its own toolbar transitions: ${snippet}`,
   )
 }
 
-for (const snippet of [
-  'export function resolveCardStyle(',
-  "'--weimo-card-transition-duration': `${cardTransitionMs}ms`",
-]) {
-  assert.ok(
-    sharedCardResolversSource.includes(snippet),
-    `shared Card resolvers must apply the configurable transition duration consistently: ${snippet}`,
-  )
-}
+assert.ok(
+  editorWdfCardSource.includes('bottomBar'),
+  'the vendored editor build must include the bottomBar slot.',
+)

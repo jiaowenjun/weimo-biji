@@ -50,6 +50,18 @@ pub fn app_router<U: UserDb + 'static, M: MemoDb + 'static>(state: AppState<U, M
 mod tests {
     use std::{path::Path, sync::Arc};
 
+
+    /// 单段纯文本的 WDF 文档 JSON(测试夹具)
+    fn wdf_value(text: &str) -> serde_json::Value {
+        serde_json::json!({
+            "schema": "weimo.document",
+            "version": 1,
+            "root": { "type": "doc", "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": text }] }
+            ]}
+        })
+    }
+
     use async_trait::async_trait;
     use axum::{
         body::{Body, to_bytes},
@@ -85,7 +97,7 @@ mod tests {
         ct_utc: serde_json::Value,
         mt_utc: serde_json::Value,
         tags: Vec<String>,
-        content: String,
+        content: serde_json::Value,
         refs: Vec<String>,
         referenced_by: Vec<String>,
     }
@@ -311,7 +323,7 @@ mod tests {
                 None,
                 Some(
                     serde_json::to_vec(&MemoCreate {
-                        content: content.to_string(),
+                        content: wdf_value(content),
                         tags: tags.iter().map(|tag| (*tag).to_string()).collect(),
                         refs: vec![],
                     })
@@ -1074,7 +1086,7 @@ mod tests {
                 None,
                 Some(
                     serde_json::to_vec(&MemoCreate {
-                        content: "B".to_string(),
+                        content: wdf_value("B"),
                         tags: vec!["work".to_string()],
                         refs: vec![MemoRef(memo_a)],
                     })
@@ -1088,7 +1100,7 @@ mod tests {
 
         let b_view = get_memo(&test_app.app, &session.access_token, memo_b).await;
         assert_eq!(b_view.id, memo_b);
-        assert_eq!(b_view.content, "B");
+        assert_eq!(b_view.content, wdf_value("B"));
         assert!(!b_view.ct_utc.is_null());
         assert!(!b_view.mt_utc.is_null());
         assert_eq!(b_view.refs, vec![memo_a.to_string()]);
@@ -1096,7 +1108,7 @@ mod tests {
 
         let a_view = get_memo(&test_app.app, &session.access_token, memo_a).await;
         assert_eq!(a_view.id, memo_a);
-        assert_eq!(a_view.content, "A");
+        assert_eq!(a_view.content, wdf_value("A"));
         assert!(!a_view.ct_utc.is_null());
         assert!(!a_view.mt_utc.is_null());
         assert_eq!(a_view.refs, Vec::<String>::new());
@@ -1120,7 +1132,7 @@ mod tests {
                 None,
                 Some(
                     serde_json::to_vec(&MemoCreate {
-                        content: "B".to_string(),
+                        content: wdf_value("B"),
                         tags: vec!["work/ref".to_string()],
                         refs: vec![MemoRef(memo_a)],
                     })
@@ -1136,7 +1148,7 @@ mod tests {
         assert_eq!(views.len(), 2);
 
         let a_view = views.iter().find(|view| view.id == memo_a).unwrap();
-        assert_eq!(a_view.content, "A");
+        assert_eq!(a_view.content, wdf_value("A"));
         assert_eq!(a_view.tags, vec!["work".to_string()]);
         assert!(!a_view.ct_utc.is_null());
         assert!(!a_view.mt_utc.is_null());
@@ -1144,7 +1156,7 @@ mod tests {
         assert_eq!(a_view.referenced_by, vec![memo_b.to_string()]);
 
         let b_view = views.iter().find(|view| view.id == memo_b).unwrap();
-        assert_eq!(b_view.content, "B");
+        assert_eq!(b_view.content, wdf_value("B"));
         assert_eq!(b_view.tags, vec!["work/ref".to_string()]);
         assert!(!b_view.ct_utc.is_null());
         assert!(!b_view.mt_utc.is_null());
@@ -1166,7 +1178,7 @@ mod tests {
                 None,
                 Some(
                     serde_json::to_vec(&MemoCreate {
-                        content: "bad refs".to_string(),
+                        content: wdf_value("bad refs"),
                         tags: vec!["work".to_string()],
                         refs: vec![MemoRef(999)],
                     })

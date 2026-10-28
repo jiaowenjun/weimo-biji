@@ -45,10 +45,21 @@ const {
   toCardNote,
 } = await import('../src/features/workspace/memo-data.ts')
 
+function wdfDocument(text) {
+  return {
+    schema: 'weimo.document',
+    version: 1,
+    root: {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    },
+  }
+}
+
 function makeMemo(id, overrides = {}) {
   return {
     id,
-    content: `memo-${id}`,
+    content: wdfDocument(`memo-${id}`),
     createdAt: '2026-06-20T02:00:00.000Z',
     updatedAt: '2026-06-20T02:00:00.000Z',
     tags: [],
@@ -66,32 +77,37 @@ assert.ok(
 )
 
 for (const snippet of [
-  "import { CircleArrowDown, CircleArrowUp } from 'lucide-react'",
-  "import { buildWorkspaceMemoCardMenuItems } from '@/features/workspace/workspace-memo-card-menu'",
-  "import { Card } from '@/components/card'",
-  "import type { CardProps } from '@/components/card'",
+  "import { CircleArrowDown, CircleArrowUp, Trash2 } from 'lucide-react'",
+  "} from '@/features/workspace/workspace-memo-card-menu'",
+  'buildWorkspaceMemoCardMenuItems,',
+  "import { NoteCard, type CardDraft, type CardNote } from './note-card'",
   "import { getCardSurfaceClassName } from 'weimo-ui/components/card-surface'",
   "import './ref-card.css'",
   'export interface RefCardReferencePreview',
-  'export type RefCardProps = CardProps &',
+  'export type RefCardProps = {',
   'referencePreview?: RefCardReferencePreview | null',
   'referencedByPreviews?: RefCardReferencePreview[]',
   'referenceDisabled?: boolean',
   'onReferenceClick?: () => void',
+  'onDelete?: () => void',
   'showReferenceBar?: boolean',
-  'const displayMenuItems = buildWorkspaceMemoCardMenuItems({',
+  'const menuItems = buildWorkspaceMemoCardMenuItems({',
   'showMemoDetailPage: hasVisibleReferenceBar,',
-  'extraDisplayMenuItems: cardProps.displayMenuItems,',
+  'extraDisplayMenuItems: noteCardProps.displayMenuItems,',
   'displayMenuItems={displayMenuItems}',
-  '<Card',
-  '{...cardProps}',
+  '<NoteCard',
+  '{...noteCardProps}',
+  'bottomBarExtra={referenceBar}',
+  "key: 'delete'",
+  "label: '删除'",
+  'icon: <Trash2 aria-hidden="true" />',
+  'onSelect: onDelete',
   'const hasReferenceBar = referencePreview !== null || referencedByPreviews.length > 0',
   'const hasVisibleReferenceBar = showReferenceBar && hasReferenceBar',
   'const refCardClassName = hasVisibleReferenceBar',
   "getCardSurfaceClassName('ref-card')",
   'data-has-reference={hasVisibleReferenceBar ? \'true\' : undefined}',
   'const referenceBar = hasVisibleReferenceBar ? (',
-  'afterTagsSlot={referenceBar}',
   'className="ref-card__reference"',
   'className="ref-card__reference-line"',
   '<CircleArrowUp',
@@ -101,7 +117,7 @@ for (const snippet of [
 ]) {
   assert.ok(
     refCardSource.includes(snippet),
-    `RefCard must inherit Card behavior and render the Skyline-style reference bar: ${snippet}`,
+    `RefCard must inherit NoteCard behavior and render the Skyline-style reference bar: ${snippet}`,
   )
 }
 
@@ -216,7 +232,7 @@ assert.deepEqual(
 
 for (const snippet of [
   '.ref-card[data-has-reference="true"] {',
-  '.ref-card[data-has-reference="true"] > .weimo-card {',
+  '.ref-card[data-has-reference="true"] > .note-card > .wdf-card > .wdf-card__card {',
   'border: 0;',
   'background: transparent;',
   'box-shadow: none;',
@@ -270,7 +286,7 @@ for (const snippet of [
   'onMemoDetailSelect: onReferenceClick',
   'const hasVisibleReferenceBar = showReferenceBar && hasReferenceBar',
   'showMemoDetailPage: hasVisibleReferenceBar,',
-  'afterTagsSlot={referenceBar}',
+  'bottomBarExtra={referenceBar}',
 ]) {
   assert.ok(
     refCardSource.includes(snippet),
@@ -355,11 +371,11 @@ const detailProjection = buildWorkspaceMemoDetailProjection(
   detailRoot,
   [
     detailRoot,
-    makeMemo(2, { content: 'referenced memo' }),
-    makeMemo(3, { content: 'referencing memo' }),
+    makeMemo(2, { content: wdfDocument('referenced memo') }),
+    makeMemo(3, { content: wdfDocument('referencing memo') }),
   ],
   createMemoReferencePreviewResolver({
-    getMemoById: (id) => (id === 2 ? makeMemo(2, { content: 'referenced memo' }) : undefined),
+    getMemoById: (id) => (id === 2 ? makeMemo(2, { content: wdfDocument('referenced memo') }) : undefined),
   }),
 )
 assert.equal(
@@ -372,7 +388,7 @@ assert.deepEqual(
     item.kind === 'memo' ? toCardNote(item.memo) : item,
   ),
   [
-    toCardNote(makeMemo(2, { content: 'referenced memo' })),
+    toCardNote(makeMemo(2, { content: wdfDocument('referenced memo') })),
   ],
   'workspace memo detail projection must preserve root refs order in the 引用 section.',
 )
@@ -437,16 +453,16 @@ for (const snippet of [
 }
 
 assert.equal(
-  summarizeMemoContent('春'.repeat(60)),
+  summarizeMemoContent(wdfDocument('春'.repeat(60))),
   `${'春'.repeat(52)}...`,
 )
 
 const referencedMemo = makeMemo(7, {
-  content: '被引用笔记的第一行\n第二行会折叠进摘要',
+  content: wdfDocument('被引用笔记的第一行\n第二行会折叠进摘要'),
   createdAt: '2026-06-19T10:30:00.000Z',
 })
 const childMemo = makeMemo(9, {
-  content: '这条笔记引用了当前笔记',
+  content: wdfDocument('这条笔记引用了当前笔记'),
   createdAt: '2026-06-21T08:15:00.000Z',
 })
 const memo = makeMemo(5, {
@@ -473,7 +489,7 @@ assert.deepEqual(previews.referencedByPreviews, [
 ])
 
 const cachedReferencedMemo = makeMemo(11, {
-  content: '来自缓存的引用正文\n应该在切换标签后继续展示',
+  content: wdfDocument('来自缓存的引用正文\n应该在切换标签后继续展示'),
   createdAt: '2026-06-18T06:00:00.000Z',
 })
 const summaryCache = new Map()
@@ -583,8 +599,9 @@ for (const forbiddenSnippet of [
 }
 
 assert.ok(
-  guestPageSource.includes("from '@/components/card'") &&
-    !workspacePageSource.includes("import { Card } from '@/components/card'") &&
-    !guestPageSource.includes("import { Card } from '@/components/card'"),
-  'memo list pages must stop importing the bare Card component while keeping CardDraft type imports.',
+  guestPageSource.includes("from '@/components/note-card'") &&
+    workspacePageSource.includes("from '@/components/note-card'") &&
+    !workspacePageSource.includes("from '@/components/card'") &&
+    !guestPageSource.includes("from '@/components/card'"),
+  'memo list pages must import card types from note-card after the WdfCard migration.',
 )

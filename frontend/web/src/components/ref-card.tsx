@@ -1,9 +1,12 @@
-import { CircleArrowDown, CircleArrowUp } from 'lucide-react'
+import { CircleArrowDown, CircleArrowUp, Trash2 } from 'lucide-react'
 
-import { Card } from '@/components/card'
-import type { CardProps } from '@/components/card'
-import { buildWorkspaceMemoCardMenuItems } from '@/features/workspace/workspace-memo-card-menu'
+import {
+  buildWorkspaceMemoCardMenuItems,
+} from '@/features/workspace/workspace-memo-card-menu'
 import { getCardSurfaceClassName } from 'weimo-ui/components/card-surface'
+
+import { NoteCard, type CardDraft, type CardNote } from './note-card'
+import type { ActionMenuItem } from 'weimo-ui/components/menu'
 
 import './ref-card.css'
 
@@ -12,13 +15,22 @@ export interface RefCardReferencePreview {
   displayText: string
 }
 
-export type RefCardProps = CardProps & {
+export type RefCardProps = {
+  note: CardNote
+  defaultMode?: 'view' | 'edit'
+  disabled?: boolean
+  displayMenuItems?: ActionMenuItem[]
   referencePreview?: RefCardReferencePreview | null
   referencedByPreviews?: RefCardReferencePreview[]
   referenceDisabled?: boolean
   onCopySelect?: () => void
+  onDelete?: () => void
   onReferenceClick?: () => void
   onQuoteSelect?: () => void
+  onSave?: (draft: CardDraft) => void
+  onCancel?: () => void
+  onTagClick?: (tag: string) => void
+  tagOptions?: string[]
   showReferenceBar?: boolean
 }
 
@@ -48,20 +60,33 @@ export function RefCard({
   referencePreview = null,
   referencedByPreviews = [],
   onCopySelect,
+  onDelete,
   onReferenceClick,
   onQuoteSelect,
   showReferenceBar = true,
-  ...cardProps
+  ...noteCardProps
 }: RefCardProps) {
   const hasReferenceBar = referencePreview !== null || referencedByPreviews.length > 0
   const hasVisibleReferenceBar = showReferenceBar && hasReferenceBar
-  const displayMenuItems = buildWorkspaceMemoCardMenuItems({
+  const menuItems = buildWorkspaceMemoCardMenuItems({
     showMemoDetailPage: hasVisibleReferenceBar,
-    extraDisplayMenuItems: cardProps.displayMenuItems,
+    extraDisplayMenuItems: noteCardProps.displayMenuItems,
     onCopySelect,
     onMemoDetailSelect: onReferenceClick,
     onQuoteSelect,
   })
+  // 删除入口沿旧卡惯例固定挂在菜单末尾(旧 Card 内部追加)
+  const displayMenuItems = onDelete
+    ? [
+        ...menuItems,
+        {
+          key: 'delete',
+          label: '删除',
+          icon: <Trash2 aria-hidden="true" />,
+          onSelect: onDelete,
+        },
+      ]
+    : menuItems
   const refCardClassName = hasVisibleReferenceBar
     ? getCardSurfaceClassName('ref-card')
     : 'ref-card'
@@ -94,9 +119,9 @@ export function RefCard({
       className={refCardClassName}
       data-has-reference={hasVisibleReferenceBar ? 'true' : undefined}
     >
-      <Card
-        {...cardProps}
-        afterTagsSlot={referenceBar}
+      <NoteCard
+        {...noteCardProps}
+        bottomBarExtra={referenceBar}
         displayMenuItems={displayMenuItems}
       />
     </div>

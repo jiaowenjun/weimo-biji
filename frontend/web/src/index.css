@@ -71,7 +71,7 @@ body {
   margin-top: var(--space-gutter);
 }
 
-.weimo-site-template__content > .weimo-card-composer + * {
+.weimo-site-template__content > .wdf-card-composer + * {
   margin-top: 0;
 }
 

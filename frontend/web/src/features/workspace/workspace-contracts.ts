@@ -1,4 +1,5 @@
 import * as z from 'zod/mini'
+import type { WdfDocument } from 'weimo-wdf'
 
 import type {
   MemoDto,
@@ -41,12 +42,25 @@ export const tagTreeMetaSchema: z.ZodMiniType<TagTreeMeta> = z.lazy(() =>
   }),
 )
 
+/**
+ * WDF 文档信封校验:仅断言外层结构,块级合法性由后端 weimo-wdf
+ * (validate_and_canonicalize)在写入时把关;读取侧数据即存储的规范形态。
+ */
+const wdfDocumentSchema: z.ZodMiniType<WdfDocument> = z.object({
+  schema: z.string(),
+  version: z.number(),
+  root: z.object({
+    type: z.string(),
+    content: z.array(z.unknown()),
+  }),
+}) as unknown as z.ZodMiniType<WdfDocument>
+
 export const memoDtoSchema: z.ZodMiniType<MemoDto> = z.object({
   id: nonnegativeIntegerSchema,
   ct_utc: utcArraySchema,
   mt_utc: utcArraySchema,
   tags: z.array(z.string()),
-  content: z.string(),
+  content: wdfDocumentSchema,
   refs: z.optional(z.array(z.string())),
   referenced_by: z.optional(z.array(z.string())),
 })

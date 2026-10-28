@@ -1,3 +1,4 @@
+import { renderPlain } from 'weimo-wdf'
 import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import {
   createWorkspaceListCacheCore,
@@ -41,7 +42,8 @@ function isMemo(value: unknown): value is Memo {
   const item = value as Partial<Memo>
   return (
     typeof item.id === 'number' &&
-    typeof item.content === 'string' &&
+    typeof item.content === 'object' &&
+    item.content !== null &&
     typeof item.createdAt === 'string' &&
     typeof item.updatedAt === 'string' &&
     Array.isArray(item.tags) &&
@@ -50,14 +52,44 @@ function isMemo(value: unknown): value is Memo {
   )
 }
 
+/** WDF 内容级过滤:与后端 memo_search 语义对齐(大小写不敏感、块类型判断) */
+function memoContentMatchesFilters(
+  content: Memo['content'],
+  filters: MemoSearchQuery,
+) {
+  const text = filters.text?.contains?.trim()
+  if (
+    text &&
+    !renderPlain(content).toLowerCase().includes(text.toLowerCase())
+  ) {
+    return false
+  }
+
+  // WDF v0.1 没有批注标记,该过滤无可命中内容(与后端语义一致)
+  if (filters.has_annotation) return false
+
+  if (
+    !filters.has_markdown_quote &&
+    !filters.has_heading &&
+    !filters.has_unordered_list
+  ) {
+    return true
+  }
+
+  const blockTypes = new Set(content.root.content.map((block) => block.type))
+  if (filters.has_markdown_quote && !blockTypes.has('blockquote')) return false
+  if (filters.has_heading && !blockTypes.has('heading')) return false
+  if (filters.has_unordered_list && !blockTypes.has('bullet_list')) return false
+
+  return true
+}
+
 export function memoMatchesFilters(memo: Memo, filters: MemoSearchQuery) {
   return workspaceItemMatchesFilters(
     memo,
     filters,
     (item, activeFilters) =>
-      !activeFilters.has_annotation ||
-      item.refs.length > 0 ||
-      item.referencedBy.length > 0,
+      memoContentMatchesFilters(item.content, activeFilters),
   )
 }
 

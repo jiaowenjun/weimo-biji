@@ -8,7 +8,7 @@
   .ref-card[data-has-reference="true"] {
   }
 
-  .ref-card[data-has-reference="true"] > .weimo-card {
+  .ref-card[data-has-reference="true"] > .note-card > .wdf-card > .wdf-card__card {
     border: 0;
     background: transparent;
     box-shadow: none;

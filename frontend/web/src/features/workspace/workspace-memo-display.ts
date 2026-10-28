@@ -13,7 +13,7 @@ import {
   type ScopedDisplayOverridesAction,
 } from '@weimo/workspace-core/display-overrides'
 
-import type { CardDraft } from '@/components/card'
+import type { CardDraft } from '@/components/note-card'
 
 import type { Memo } from './workspace-types'
 

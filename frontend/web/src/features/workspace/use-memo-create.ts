@@ -1,20 +1,23 @@
 import { useCallback, useMemo } from 'react'
 import { usePendingCreate } from '@weimo/workspace-core/use-pending-create'
 
-import type { CardDraft } from '@/components/card'
+import type { CardDraft } from '@/components/note-card'
+import { isWdfDocumentEmpty } from 'weimo-ui-editor/components/card-composer'
+import { WdfDocument } from 'weimo-wdf'
+
 import { formatMemoTimestamp } from './memo-data'
 import { toInitialCreateTags } from './sidebar-data'
 import type { Memo } from './workspace-types'
 
 type PendingMemoDraft = {
-  content: string
+  content: WdfDocument
   createdAt: string
   createdMemo: Memo | null
   tags: string[]
 }
 
 export type MemoCreateInput = {
-  content: string
+  content: WdfDocument
   tags: string[]
 }
 
@@ -42,15 +45,15 @@ export function useMemoCreate({
   selectedTag,
 }: UseMemoCreateOptions) {
   const createDraft = useCallback((): PendingMemoDraft => ({
-    content: '',
+    content: WdfDocument.empty(),
     createdAt: new Date().toISOString(),
     createdMemo: null,
     tags: toInitialCreateTags(selectedTag),
   }), [selectedTag])
   const prepareSubmission = useCallback((draft: CardDraft) => {
-    const content = draft.content.trim()
-    if (!content) return null
+    if (isWdfDocumentEmpty(draft.content)) return null
 
+    const content = draft.content
     const tags = [...draft.tags]
 
     return {

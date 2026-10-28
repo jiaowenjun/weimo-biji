@@ -102,7 +102,7 @@ for (const snippet of [
   'onQuoteSelect?: () => void',
   'onQuoteSelect,',
   'onQuoteSelect,',
-  'const displayMenuItems = buildWorkspaceMemoCardMenuItems({',
+  'const menuItems = buildWorkspaceMemoCardMenuItems({',
 ]) {
   assert.ok(
     refCardSource.includes(snippet),
@@ -113,7 +113,7 @@ for (const snippet of [
 for (const snippet of [
   "import { ActionDialog } from 'weimo-ui/components/action-dialog'",
   "import { DialogPanel } from 'weimo-ui/components/coss/dialog'",
-  "import type { CardDraft } from '@/components/card'",
+  "import type { CardDraft } from '@/components/note-card'",
   "import { RefCard } from '@/components/ref-card'",
   'buildMemoReferenceDisplayText',
   'formatMemoTimestamp',
@@ -128,7 +128,7 @@ for (const snippet of [
   'aria-label="批注编辑内容"',
   'role="region"',
   'note={quoteNote}',
-  'initialMode="edit"',
+  'defaultMode="edit"',
   'key={memo.id}',
   'onCancel={handleCancel}',
   'onSave={handleSave}',
@@ -137,6 +137,7 @@ for (const snippet of [
   'formatMemoTimestamp(memo.createdAt)',
   'memo.content',
   'formatMemoTimestamp(new Date().toISOString())',
+  'createEmptyCardNote',
 ]) {
   assert.ok(
     quoteDialogSource.includes(snippet),

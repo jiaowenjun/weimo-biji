@@ -9,7 +9,7 @@ pub struct MemoView {
     pub ct_utc: OffsetDateTime,
     pub mt_utc: OffsetDateTime,
     pub tags: Vec<String>,
-    pub content: String,
+    pub content: serde_json::Value,
     pub refs: Vec<String>,
     pub referenced_by: Vec<String>,
 }
@@ -25,7 +25,10 @@ impl MemoView {
             ct_utc: memo.create_t_utc(),
             mt_utc: memo.modify_t_utc(),
             tags: memo.tags().to_vec(),
-            content: memo.content().to_string(),
+            content: memo
+                .wdf_document()
+                .and_then(|document| serde_json::to_value(&document).ok())
+                .unwrap_or(serde_json::Value::Null),
             refs: stringify_refs(memo.refs()),
             referenced_by,
         }

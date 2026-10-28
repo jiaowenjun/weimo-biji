@@ -82,7 +82,7 @@ function collectCssFiles(directory) {
 const demoIndexCss = readProjectFile(root, 'src/index.css')
 const appSource = readProjectFile(root, 'src/features/workspace/workspace-demo-page.tsx')
 const routerSource = readProjectFile(root, 'src/App.tsx')
-const demoCardSource = readProjectFile(root, 'src/components/card.tsx')
+const demoCardSource = readProjectFile(root, 'src/components/note-card.tsx')
 const bijiSideBarSource = readProjectFile(
   root,
   'src/components/biji-side-bar.tsx',
@@ -396,7 +396,6 @@ const componentTokenReferences = new Map()
 const componentInlineStyleTokenNames = new Set()
 
 for (const inlineStyleSourcePath of [
-  'src/components/card.tsx',
   'src/components/card-resolvers.tsx',
 ]) {
   for (const [, token] of readProjectFile(uiRoot, inlineStyleSourcePath).matchAll(
@@ -466,16 +465,16 @@ assert.ok(
   'demo note list cards must render backend memo data through the internal RefCard component.',
 )
 assert.ok(
-  /import\s+type\s+\{[\s\S]*\bCardDraft\b[\s\S]*\}\s+from\s+['"]@\/components\/card['"]/.test(appSource) &&
+  /import\s+type\s+\{[\s\S]*\bCardDraft\b[\s\S]*\}\s+from\s+['"]@\/components\/note-card['"]/.test(appSource) &&
     appSource.includes('const handleMemoSave = useCallback((memo: Memo, draft: CardDraft) => {') &&
-    appSource.includes('const content = draft.content.trim()') &&
+    appSource.includes('const content = draft.content') &&
+    appSource.includes('if (isWdfDocumentEmpty(content)) return') &&
     appSource.includes('const tags = [...draft.tags]') &&
     appSource.includes('payload: { content, tags, refs: [...memo.refs] }') &&
-    !appSource.includes('<Card\n                    disabled') &&
     !appSource.includes('saveMemo') &&
     !appSource.includes('createdAtText: memo.timestampText') &&
     !appSource.includes('const memoCards: MemoCard[]'),
-  'demo note list must persist Card edits to the backend memo mutation.',
+  'demo note list must persist WdfCard edits to the backend memo mutation.',
 )
 assert.ok(
   !appSource.includes('EditableCard') &&
@@ -490,29 +489,30 @@ assert.ok(
 )
 
 assert.ok(
-  demoCardSource.includes('Card as UiCard,') &&
-    demoCardSource.includes('type CardProps,') &&
-    demoCardSource.includes('export type {') &&
-    demoCardSource.includes('CardDraft,') &&
-    demoCardSource.includes('CardNote,') &&
-    demoCardSource.includes('CardLabels,') &&
-    demoCardSource.includes('CardEditorOptions,') &&
-    demoCardSource.includes('const BIJI_CARD_TRANSITION_MS = 180') &&
-    demoCardSource.includes('return <UiCard transitionDurationMs={transitionDurationMs} {...props} />') &&
-    demoCardSource.includes("from 'weimo-ui/components/card'"),
-  'demo Card adapter must wrap the shared UI Card API while applying the biji-react transition duration.',
+  demoCardSource.includes("from 'weimo-ui-editor/components/wdf-card'") &&
+    demoCardSource.includes('export type CardNote = {') &&
+    demoCardSource.includes('export type CardDraft = {') &&
+    demoCardSource.includes('content: WdfDocument') &&
+    demoCardSource.includes('<WdfCard') &&
+    demoCardSource.includes('bottomBar={bottomBar}') &&
+    demoCardSource.includes('actionSlot={actionMenu}') &&
+    demoCardSource.includes("from 'weimo-ui/components/tag-bar'") &&
+    demoCardSource.includes("from 'weimo-ui/components/menu'"),
+  'NoteCard must wrap the registry WdfCard with biji tag bar and card menu chrome.',
 )
 assert.ok(
   !demoCardSource.includes('CardHeader') &&
     !demoCardSource.includes('CardContent') &&
     !demoCardSource.includes('CardFooter') &&
-    !demoCardSource.includes('EditableCard'),
-  'demo Card adapter must not re-export removed Card composition or EditableCard APIs.',
+    !demoCardSource.includes('EditableCard') &&
+    !demoCardSource.includes("from 'weimo-ui/components/card'"),
+  'NoteCard must not re-export removed monolith Card composition APIs.',
 )
 
 assert.ok(
-  !existsSync(join(root, 'src/components/editable-card.tsx')),
-  'demo must not keep a local EditableCard adapter; it should use ui/components/card through the local Card re-export.',
+  !existsSync(join(root, 'src/components/editable-card.tsx')) &&
+    !existsSync(join(root, 'src/components/card.tsx')),
+  'demo must not keep a local card adapter; note-card wraps the registry WdfCard.',
 )
 assert.ok(
   !existsSync(join(root, 'src/components/icon-button.tsx')),
@@ -550,7 +550,7 @@ assert.ok(
   demoIndexCss.includes('.weimo-site-template__content > * + * {') &&
     demoIndexCss.includes('margin-top: var(--space-gutter);') &&
     demoIndexCss.includes(
-      '.weimo-site-template__content > .weimo-card-composer + * {',
+      '.weimo-site-template__content > .wdf-card-composer + * {',
     ),
   'demo must own the note list vertical rhythm inside the SiteTemplate content column.',
 )

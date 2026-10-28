@@ -18,6 +18,18 @@ mod tests {
     use crate::error::WeimoError;
     use tokio::fs;
 
+
+    /// 单段纯文本的 WDF 文档 JSON(测试夹具)
+    fn wdf_value(text: &str) -> serde_json::Value {
+        serde_json::json!({
+            "schema": "weimo.document",
+            "version": 1,
+            "root": { "type": "doc", "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": text }] }
+            ]}
+        })
+    }
+
     async fn setup_temp_dir() -> tempfile::TempDir {
         let temp_dir = tempfile::tempdir().unwrap();
         fs::create_dir_all(temp_dir.path()).await.unwrap();
@@ -165,7 +177,7 @@ mod tests {
 
         // 创建笔记
         let memo_info = MemoCreate {
-            content: "Test content".to_string(),
+            content: wdf_value("Test content"),
             tags: vec!["tag1".to_string(), "tag2".to_string()],
             refs: vec![],
         };
@@ -186,7 +198,7 @@ mod tests {
 
         // 尝试为不存在的用户创建笔记
         let memo_info = MemoCreate {
-            content: "Test content".to_string(),
+            content: wdf_value("Test content"),
             tags: vec!["tag1".to_string()],
             refs: vec![],
         };
@@ -210,7 +222,7 @@ mod tests {
         db.create_user(user_info).await.unwrap();
 
         let memo_info = MemoCreate {
-            content: "Original content".to_string(),
+            content: wdf_value("Original content"),
             tags: vec!["tag1".to_string()],
             refs: vec![],
         };
@@ -220,7 +232,7 @@ mod tests {
 
         // 更新笔记内容
         let update_info = MemoUpdate {
-            content: Some("Updated content".to_string()),
+            content: Some(wdf_value("Updated content")),
             tags: None,
             refs: None,
         };
@@ -265,7 +277,7 @@ mod tests {
 
         // 尝试更新不存在的笔记
         let update_info = MemoUpdate {
-            content: Some("Updated content".to_string()),
+            content: Some(wdf_value("Updated content")),
             tags: None,
             refs: None,
         };
@@ -289,7 +301,7 @@ mod tests {
         db.create_user(user_info).await.unwrap();
 
         let memo_info = MemoCreate {
-            content: "Test content".to_string(),
+            content: wdf_value("Test content"),
             tags: vec!["tag1".to_string()],
             refs: vec![],
         };
@@ -362,7 +374,7 @@ mod tests {
         db.create_user(user_info).await.unwrap();
 
         let memo_info = MemoCreate {
-            content: "Test content".to_string(),
+            content: wdf_value("Test content"),
             tags: vec!["tag1".to_string(), "tag2".to_string()],
             refs: vec![],
         };
@@ -394,19 +406,19 @@ mod tests {
 
         // 创建多个笔记
         let memo_info1 = MemoCreate {
-            content: "Memo 1".to_string(),
+            content: wdf_value("Memo 1"),
             tags: vec!["tag1".to_string(), "common".to_string()],
             refs: vec![],
         };
 
         let memo_info2 = MemoCreate {
-            content: "Memo 2".to_string(),
+            content: wdf_value("Memo 2"),
             tags: vec!["tag2".to_string(), "common".to_string()],
             refs: vec![],
         };
 
         let memo_info3 = MemoCreate {
-            content: "Memo 3".to_string(),
+            content: wdf_value("Memo 3"),
             tags: vec!["tag3".to_string()],
             refs: vec![],
         };
@@ -474,13 +486,13 @@ mod tests {
 
         // 创建多个笔记
         let memo_info1 = MemoCreate {
-            content: "Memo 1".to_string(),
+            content: wdf_value("Memo 1"),
             tags: vec!["tag1".to_string()],
             refs: vec![],
         };
 
         let memo_info2 = MemoCreate {
-            content: "Memo 2".to_string(),
+            content: wdf_value("Memo 2"),
             tags: vec!["tag2".to_string()],
             refs: vec![],
         };
@@ -517,7 +529,7 @@ mod tests {
 
             // 创建笔记
             let memo_info = MemoCreate {
-                content: "Test content".to_string(),
+                content: wdf_value("Test content"),
                 tags: vec!["tag1".to_string()],
                 refs: vec![],
             };

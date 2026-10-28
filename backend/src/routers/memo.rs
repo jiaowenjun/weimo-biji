@@ -84,7 +84,7 @@ async fn create_memo<U: UserDb, M: MemoDb>(
     tracing::debug!(
         "收到笔记创建请求: username={}, content={}字节",
         claims.sub,
-        info.content.len(),
+        info.content.to_string().len(),
     );
     let user = state.data_manager().get_user(&claims.sub).await?;
     let memo = state
@@ -156,7 +156,13 @@ mod tests {
             db.create_memo(
                 "test_user",
                 MemoCreate {
-                    content: content.to_string(),
+                    content: serde_json::json!({
+                        "schema": "weimo.document",
+                        "version": 1,
+                        "root": { "type": "doc", "content": [
+                            { "type": "paragraph", "content": [{ "type": "text", "text": content }] }
+                        ]}
+                    }),
                     tags,
                     refs: vec![],
                 },

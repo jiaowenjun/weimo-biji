@@ -6,6 +6,17 @@ import {
   searchMemos,
 } from '@/features/workspace/workspace-api'
 
+import type { WdfDocument } from 'weimo-wdf'
+
+const wdfDocument = (text: string): WdfDocument => ({
+  schema: 'weimo.document',
+  version: 1,
+  root: {
+    type: 'doc',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+  },
+})
+
 import { API_ORIGIN, server } from './test-server'
 
 const utc = [2026, 200, 12, 30, 0, 0, 0, 0, 0]
@@ -31,7 +42,7 @@ describe('Biji workspace API', () => {
             ct_utc: utc,
             mt_utc: utc,
             tags: ['工作'],
-            content: '计划内容',
+            content: wdfDocument('计划内容'),
             refs: [],
             referenced_by: [],
             future_field: 'ignored',
@@ -57,14 +68,14 @@ describe('Biji workspace API', () => {
       20,
     )
 
-    expect(result.data.items[0]).toMatchObject({ id: 1, content: '计划内容' })
+    expect(result.data.items[0]).toMatchObject({ id: 1, content: wdfDocument('计划内容') })
     expect(result.data).not.toHaveProperty('future_field')
     expect(result.data.items[0]).not.toHaveProperty('future_field')
   })
 
   it('sends a create mutation and returns the validated identifier', async () => {
     const payload = {
-      content: '新笔记',
+      content: wdfDocument('新笔记'),
       tags: ['工作'],
       refs: ['1'],
     }
