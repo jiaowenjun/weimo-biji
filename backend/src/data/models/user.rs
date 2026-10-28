@@ -98,6 +98,7 @@ impl User {
         &self.login_name
     }
 
+    #[allow(dead_code)] // 模型访问器:驱动查询走 SQL 列,保留供领域层使用
     pub fn wechat_openid(&self) -> Option<&str> {
         self.wechat_openid.as_deref()
     }

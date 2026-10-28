@@ -115,9 +115,9 @@ mod tests {
         assert_eq!(out, vec![1]);
     }
 
-    async fn setup() -> (tempfile::TempDir, MdDb) {
+    async fn setup() -> (tempfile::TempDir, SqliteDb) {
         let dir = tempdir().unwrap();
-        let mut db = MdDb::new(dir.path()).await;
+        let mut db = SqliteDb::new(dir.path()).await.unwrap();
         db.create_user(UserCreate {
             username: "u".to_string(),
             password: "p".to_string(),
@@ -202,12 +202,12 @@ mod tests {
 
     #[derive(Debug, Clone)]
     struct BlockingMemoDb {
-        memos: Arc<HashMap<MemoId, String>>,
+        memos: Arc<HashMap<MemoId, Memo>>,
         state: Arc<BlockingMemoDbState>,
     }
 
     impl BlockingMemoDb {
-        fn new(memos: HashMap<MemoId, String>, state: Arc<BlockingMemoDbState>) -> Self {
+        fn new(memos: HashMap<MemoId, Memo>, state: Arc<BlockingMemoDbState>) -> Self {
             Self {
                 memos: Arc::new(memos),
                 state,
@@ -217,7 +217,7 @@ mod tests {
         fn load(&self, id: MemoId) -> WeimoResult<Memo> {
             self.memos
                 .get(&id)
-                .and_then(|stored| Memo::parse_stored(stored))
+                .cloned()
                 .ok_or(WeimoError::MemoNotFound(id))
         }
     }
@@ -342,7 +342,7 @@ mod tests {
         let dir = tempdir().unwrap();
 
         {
-            let mut db = MdDb::new(dir.path()).await;
+            let mut db = SqliteDb::new(dir.path()).await.unwrap();
             db.create_user(UserCreate {
                 username: "u".to_string(),
                 password: "p".to_string(),
@@ -408,7 +408,7 @@ mod tests {
             assert_eq!(a_view.referenced_by, vec!["3", "2"]);
         }
 
-        let reopened_db = MdDb::new(dir.path()).await;
+        let reopened_db = SqliteDb::new(dir.path()).await.unwrap();
         let reopened_manager = DataManager::new(reopened_db).await.unwrap();
 
         let a_view = reopened_manager.get_memo_view("u", &1).await.unwrap();
@@ -767,7 +767,7 @@ mod tests {
         let db = Db::from((
             StaticUserDb { user },
             BlockingMemoDb::new(
-                HashMap::from([(*memo.id(), memo.to_stored())]),
+                HashMap::from([(*memo.id(), memo)]),
                 state.clone(),
             ),
         ));

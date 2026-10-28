@@ -12,6 +12,15 @@ pub struct Db<U: UserDb, M: MemoDb> {
 }
 
 impl<U: UserDb, M: MemoDb> Db<U, M> {
+    /// 供组合驱动(如 SqliteDb)访问内部 halves
+    pub(crate) fn user_db(&self) -> &U {
+        &self.user_db
+    }
+
+    pub(crate) fn memo_db(&self) -> &M {
+        &self.memo_db
+    }
+
     #[inline]
     async fn check_user_exists(&self, username: &str) -> Result<(), WeimoError> {
         if self.user_db.exists(username).await {

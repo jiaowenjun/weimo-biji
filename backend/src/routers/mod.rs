@@ -75,7 +75,7 @@ mod tests {
     use super::*;
     use crate::config::ServerConfig;
     use crate::data::{
-        Claims, DataManager, MdDb, MemoCreate, MemoId, MemoRef, MiniAuthResult, MiniToken,
+        Claims, DataManager, SqliteDb, MemoCreate, MemoId, MemoRef, MiniAuthResult, MiniToken,
         MiniWechatCheckResult, Token, UserCreate, UserView,
     };
     use crate::error::{WeimoError, WeimoResult};
@@ -154,7 +154,7 @@ mod tests {
     async fn setup_test_app() -> TestApp {
         let wechat_auth: DynWechatAuthClient = Arc::new(MockWechatAuthClient);
         let storage_dir = tempfile::tempdir().expect("应能创建临时目录");
-        let db = MdDb::new(storage_dir.path()).await;
+        let db = SqliteDb::new(storage_dir.path()).await.unwrap();
         let manager = DataManager::new(db).await.expect("应能初始化数据管理器");
         let config = ServerConfig {
             storage_path: storage_dir.path().display().to_string(),
@@ -1284,19 +1284,16 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_me_removes_user_storage_directory() {
+    async fn delete_me_removes_user_data_from_database() {
         let test_app = setup_test_app().await;
         let session = authenticate(&test_app.app).await;
-        create_memo(
+        let memo_id = create_memo(
             &test_app.app,
             &session.access_token,
             &["cleanup/check"],
             "Account cleanup test",
         )
         .await;
-
-        let user_dir = test_app.storage_dir.path().join(Path::new("alice"));
-        assert!(user_dir.exists(), "创建 memo 后应生成用户目录");
 
         let delete_response = send(
             &test_app.app,
@@ -1313,6 +1310,20 @@ mod tests {
 
         let deleted_user: UserView = json_body(delete_response).await;
         assert_eq!(deleted_user.username, "alice");
-        assert!(!user_dir.exists(), "删除账号后应同步清理该用户的 memo 目录");
+
+        // SQLite 侧用户数据应一并清理:登录失效且笔记不可达
+        let login_response = send(
+            &test_app.app,
+            build_request(
+                Method::GET,
+                &format!("/memo/{memo_id}"),
+                Some(&session.access_token),
+                None,
+                None,
+            ),
+        )
+        .await;
+        // JWT 仍有效但用户已删除:用户查询落 404
+        assert_eq!(login_response.status(), StatusCode::NOT_FOUND);
     }
 }

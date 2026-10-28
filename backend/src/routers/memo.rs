@@ -130,14 +130,14 @@ async fn delete_memo<U: UserDb, M: MemoDb>(
 mod tests {
     use super::*;
     use crate::config::ServerConfig;
-    use crate::data::{DataManager, MdDb, MemoRef, MemoSearchQuery, MemoTextFilter, UserCreate};
+    use crate::data::{DataManager, SqliteDb, SqliteMemos, SqliteUsers, MemoRef, MemoSearchQuery, MemoTextFilter, UserCreate};
     use crate::error::WeimoError;
     use time::OffsetDateTime;
     use tokio::time::{Duration, sleep};
 
-    async fn setup_state() -> AppState<crate::data::JsonUsers, crate::data::MdMemos> {
+    async fn setup_state() -> AppState<crate::data::SqliteUsers, crate::data::SqliteMemos> {
         let temp_dir = tempfile::tempdir().expect("应能创建临时目录");
-        let mut db = MdDb::new(temp_dir.path()).await;
+        let mut db = SqliteDb::new(temp_dir.path()).await.unwrap();
 
         db.create_user(UserCreate {
             username: "test_user".to_string(),

@@ -1,4 +1,4 @@
-use crate::utils::markdown::{deserialize_string_list, render_front_matter, split_front_matter};
+use crate::utils::markdown::{deserialize_string_list, split_front_matter};
 use serde::{Deserialize, Serialize};
 use time::{OffsetDateTime, UtcOffset};
 use weimo_wdf::WdfDocument;
@@ -57,7 +57,7 @@ pub struct MemoUpdate {
 }
 
 /// 笔记结构体，表示一条备忘记录
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Memo {
     /// 唯一标识符
     id: MemoId,
@@ -180,21 +180,24 @@ impl Memo {
         self.refs = refs.to_owned();
     }
 
-    /// 创建 YAML FrontMatter
-    fn to_front_matter(&self) -> String {
-        noyalib::to_string(&MemoFrontMatter {
-            id: self.id,
-            ct: self.ct_utc,
-            mt: self.mt_utc,
-            tags: self.tags.clone(),
-            refs: self.refs.clone(),
-        })
-        .expect("serializing Memo front matter should not fail")
-    }
-
-    /// 保存为 YAML FrontMatter + WDF JSON 体格式
-    pub fn to_stored(&self) -> String {
-        render_front_matter(&self.to_front_matter(), &self.content)
+    /// 由持久化字段原样重建笔记(存储驱动/迁移专用;content 须为已
+    /// 规范化的 WDF JSON 文本,不做二次校验)
+    pub fn from_parts(
+        id: MemoId,
+        ct_utc: OffsetDateTime,
+        mt_utc: OffsetDateTime,
+        tags: Vec<String>,
+        refs: Vec<MemoRef>,
+        content: String,
+    ) -> Self {
+        Self {
+            id,
+            ct_utc,
+            mt_utc,
+            tags,
+            refs,
+            content,
+        }
     }
 
     /// 从 YAML FrontMatter + WDF JSON 体格式解析笔记
@@ -530,44 +533,6 @@ mod tests {
         assert_eq!(partial_upd_info.tags, deserialized_partial.tags);
     }
 
-    /// 测试 YAML FrontMatter 生成（包含标签）
-    #[test]
-    fn test_to_stored_with_tags() {
-        let memo = Memo {
-            id: 42,
-            ct_utc: OffsetDateTime::parse("2021-01-01T00:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2021-01-02T12:34:56Z", &Rfc3339).unwrap(),
-            tags: vec!["tag1".to_string(), "tag2".to_string()],
-            content: wdf_stored("内容正文"),
-            refs: vec![],
-        };
-
-        let expected = format!(
-            "---\nid: 42\nct: 2021-01-01T00:00:00Z\nmt: 2021-01-02T12:34:56Z\ntags:\n  - tag1\n  - tag2\nrefs: []\n---\n\n{}",
-            memo.content
-        );
-        assert_eq!(memo.to_stored(), expected);
-    }
-
-    /// 测试 YAML FrontMatter 生成（无标签）
-    #[test]
-    fn test_to_stored_without_tags() {
-        let memo = Memo {
-            id: 7,
-            ct_utc: OffsetDateTime::parse("2022-05-01T08:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2022-05-01T08:00:00Z", &Rfc3339).unwrap(),
-            tags: vec![],
-            content: wdf_stored("无标签内容"),
-            refs: vec![],
-        };
-
-        let expected = format!(
-            "---\nid: 7\nct: 2022-05-01T08:00:00Z\nmt: 2022-05-01T08:00:00Z\ntags: []\nrefs: []\n---\n\n{}",
-            memo.content
-        );
-        assert_eq!(memo.to_stored(), expected);
-    }
-
     /// 测试从存储文本解析（包含标签）
     #[test]
     fn test_parse_stored_with_tags() {
@@ -611,50 +576,6 @@ mod tests {
         assert_eq!(memo.content, wdf_stored("无标签内容"));
     }
 
-    /// 测试存储文本往返转换（有标签）
-    #[test]
-    fn test_stored_roundtrip_with_tags() {
-        let original = Memo {
-            id: 123,
-            ct_utc: OffsetDateTime::parse("2023-01-01T12:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2023-01-01T13:00:00Z", &Rfc3339).unwrap(),
-            tags: vec!["测试".to_string(), "标签".to_string()],
-            content: wdf_stored("这是测试内容"),
-            refs: vec![],
-        };
-
-        let stored = original.to_stored();
-        let parsed = Memo::parse_stored(&stored).unwrap();
-
-        assert_eq!(original.id, parsed.id);
-        assert_eq!(original.ct_utc, parsed.ct_utc);
-        assert_eq!(original.mt_utc, parsed.mt_utc);
-        assert_eq!(original.tags, parsed.tags);
-        assert_eq!(original.content, parsed.content);
-    }
-
-    /// 测试存储文本往返转换（无标签）
-    #[test]
-    fn test_stored_roundtrip_without_tags() {
-        let original = Memo {
-            id: 456,
-            ct_utc: OffsetDateTime::parse("2023-02-01T10:30:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2023-02-01T10:30:00Z", &Rfc3339).unwrap(),
-            tags: vec![],
-            content: wdf_stored("单行内容"),
-            refs: vec![],
-        };
-
-        let stored = original.to_stored();
-        let parsed = Memo::parse_stored(&stored).unwrap();
-
-        assert_eq!(original.id, parsed.id);
-        assert_eq!(original.ct_utc, parsed.ct_utc);
-        assert_eq!(original.mt_utc, parsed.mt_utc);
-        assert_eq!(original.tags, parsed.tags);
-        assert_eq!(original.content, parsed.content);
-    }
-
     /// 测试解析无效的存储文本
     #[test]
     fn test_parse_invalid_stored() {
@@ -673,42 +594,6 @@ mod tests {
             wdf_stored("内容")
         );
         assert!(Memo::parse_stored(&invalid_date).is_none());
-    }
-
-    /// frontmatter 写出含 refs 列表
-    #[test]
-    fn test_to_stored_with_refs() {
-        let memo = Memo {
-            id: 42,
-            ct_utc: OffsetDateTime::parse("2026-01-01T00:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2026-01-02T00:00:00Z", &Rfc3339).unwrap(),
-            tags: vec!["t1".to_string()],
-            refs: vec![MemoRef(7), MemoRef(12)],
-            content: wdf_stored("正文"),
-        };
-        let expected = format!(
-            "---\nid: 42\nct: 2026-01-01T00:00:00Z\nmt: 2026-01-02T00:00:00Z\ntags:\n  - t1\nrefs:\n  - \"7\"\n  - \"12\"\n---\n\n{}",
-            memo.content
-        );
-        assert_eq!(memo.to_stored(), expected);
-    }
-
-    /// frontmatter 写出空 refs 仍为 refs: []
-    #[test]
-    fn test_to_stored_empty_refs() {
-        let memo = Memo {
-            id: 7,
-            ct_utc: OffsetDateTime::parse("2026-01-01T00:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2026-01-01T00:00:00Z", &Rfc3339).unwrap(),
-            tags: vec![],
-            refs: vec![],
-            content: wdf_stored("x"),
-        };
-        let expected = format!(
-            "---\nid: 7\nct: 2026-01-01T00:00:00Z\nmt: 2026-01-01T00:00:00Z\ntags: []\nrefs: []\n---\n\n{}",
-            memo.content
-        );
-        assert_eq!(memo.to_stored(), expected);
     }
 
     /// 解析含多行 refs 的 frontmatter
@@ -778,30 +663,6 @@ mod tests {
         );
         let memo = Memo::parse_stored(&stored).unwrap();
         assert_eq!(memo.refs, Vec::<MemoRef>::new());
-    }
-
-    #[test]
-    fn test_front_matter_serde_escapes_special_tags() {
-        let memo = Memo {
-            id: 3,
-            ct_utc: OffsetDateTime::parse("2026-01-02T00:00:00Z", &Rfc3339).unwrap(),
-            mt_utc: OffsetDateTime::parse("2026-01-02T00:00:00Z", &Rfc3339).unwrap(),
-            tags: vec![
-                "true".to_string(),
-                "7".to_string(),
-                "a: b".to_string(),
-                "#hash".to_string(),
-                "line\nbreak".to_string(),
-            ],
-            refs: vec![],
-            content: wdf_stored("body"),
-        };
-
-        let stored = memo.to_stored();
-        let parsed = Memo::parse_stored(&stored).expect("特殊 YAML 字符串应能往返");
-
-        assert_eq!(parsed.tags, memo.tags);
-        assert_eq!(parsed.content, memo.content);
     }
 
     #[test]

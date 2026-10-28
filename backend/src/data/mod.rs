@@ -5,7 +5,7 @@ mod refindex;
 mod tagtree;
 
 #[allow(unused_imports)]
-pub use db::{Db, JsonUsers, MdDb, MdMemos, MemoDb, UserDb};
+pub use db::{Db, MemoDb, MigrationReport, SqliteConn, SqliteDb, SqliteMemos, SqliteUsers, UserDb, markdown_body_to_wdf_json, migrate_md_storage_to_sqlite, sanitize_markdown_for_wdf};
 pub use dm::DataManager;
 #[allow(unused_imports)]
 pub use models::{

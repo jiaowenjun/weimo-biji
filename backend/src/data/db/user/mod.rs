@@ -1,5 +1,5 @@
 mod interface;
-mod json;
+mod sqlite;
 
 pub use interface::UserDb;
-pub use json::JsonUsers;
+pub use sqlite::SqliteUsers;

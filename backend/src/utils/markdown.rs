@@ -13,14 +13,6 @@ pub fn split_front_matter(markdown: &str) -> Option<(String, String)> {
     Some((front_matter.to_string(), body.to_string()))
 }
 
-/// Render YAML front matter and a Markdown body using the persisted envelope.
-pub fn render_front_matter(front_matter: &str, body: &str) -> String {
-    format!(
-        "---\n{}\n---\n\n{body}",
-        front_matter.trim_end_matches('\n')
-    )
-}
-
 /// Deserialize a legacy YAML scalar using the string semantics of the old
 /// line-based front matter reader.
 pub fn deserialize_scalar_string<'de, D>(deserializer: D) -> Result<String, D::Error>
@@ -85,13 +77,6 @@ mod tests {
     }
 
     #[test]
-    fn renders_canonical_envelope() {
-        assert_eq!(
-            render_front_matter("id: 7\n", "body"),
-            "---\nid: 7\n---\n\nbody"
-        );
-    }
-
     #[test]
     fn deserializes_legacy_scalar_strings() {
         #[derive(Debug, Deserialize, PartialEq)]
