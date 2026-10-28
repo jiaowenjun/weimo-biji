@@ -125,8 +125,8 @@ for (const snippet of [
 }
 
 for (const snippet of [
-  "from 'weimo-ui/components/heatmap'",
-  "from 'weimo-ui/components/stat-group'",
+  "from 'weimo-ui-stats/components/heatmap'",
+  "from 'weimo-ui-stats/components/stat-group'",
   "from 'weimo-ui/components/tag-tree'",
   'export function formatDateInt',
   'export function toHeatmapDailyCounts',
@@ -206,8 +206,8 @@ assert.ok(
 )
 
 for (const snippet of [
-  "import type { HeatmapDailyCount } from 'weimo-ui/components/heatmap'",
-  "import type { StatGroupItem } from 'weimo-ui/components/stat-group'",
+  "import type { HeatmapDailyCount } from 'weimo-ui-stats/components/heatmap'",
+  "import type { StatGroupItem } from 'weimo-ui-stats/components/stat-group'",
   "import type { TagTreeNode } from 'weimo-ui/components/tag-tree'",
   'activeDate: string',
   'onSelectDate: (date: string) => void',

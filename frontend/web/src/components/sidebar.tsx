@@ -1,5 +1,5 @@
-import type { HeatmapDailyCount } from 'weimo-ui/components/heatmap'
-import type { StatGroupItem } from 'weimo-ui/components/stat-group'
+import type { HeatmapDailyCount } from 'weimo-ui-stats/components/heatmap'
+import type { StatGroupItem } from 'weimo-ui-stats/components/stat-group'
 import type { TagTreeNode } from 'weimo-ui/components/tag-tree'
 
 import { BijiSideBar } from '@/components/biji-side-bar'

@@ -12,3 +12,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - weimo-ui-core@0.2.2
   - weimo-ui-template@0.4.2 || 0.4.3
+  - weimo-ui-stats@0.1.0

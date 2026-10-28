@@ -598,8 +598,8 @@ assert.ok(
 )
 
 for (const snippet of [
-  "from 'weimo-ui/components/stat-group'",
-  "from 'weimo-ui/components/heatmap'",
+  "from 'weimo-ui-stats/components/stat-group'",
+  "from 'weimo-ui-stats/components/heatmap'",
   "from 'weimo-ui/components/tag-tree'",
   "from 'weimo-ui/components/ghost-icon-button'",
 ]) {

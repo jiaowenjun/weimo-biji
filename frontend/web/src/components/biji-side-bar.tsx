@@ -11,9 +11,9 @@ import {
   Settings,
 } from 'lucide-react'
 
+import { Heatmap, type HeatmapDailyCount } from 'weimo-ui-stats/components/heatmap'
+import { StatGroup, type StatGroupItem } from 'weimo-ui-stats/components/stat-group'
 import { GhostIconButton } from 'weimo-ui/components/ghost-icon-button'
-import { Heatmap, type HeatmapDailyCount } from 'weimo-ui/components/heatmap'
-import { StatGroup, type StatGroupItem } from 'weimo-ui/components/stat-group'
 import { TagTree, type TagTreeMenuAction, type TagTreeNode } from 'weimo-ui/components/tag-tree'
 
 import './biji-side-bar.css'
