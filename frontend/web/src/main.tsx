@@ -4,25 +4,18 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import App from './App.tsx'
 import { queryClient } from './query-client'
-import { readStoredTheme } from './lib/site-theme'
 
-function syncDocumentTheme() {
-  const storedTheme = readStoredTheme()
-
+function syncSystemTheme() {
   document.documentElement.classList.toggle(
     'dark',
-    storedTheme === 'dark' ||
-      (storedTheme === 'system' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches),
+    window.matchMedia('(prefers-color-scheme: dark)').matches,
   )
 }
 
-syncDocumentTheme()
+syncSystemTheme()
 window
   .matchMedia('(prefers-color-scheme: dark)')
-  .addEventListener('change', () => {
-    if (readStoredTheme() === 'system') syncDocumentTheme()
-  })
+  .addEventListener('change', syncSystemTheme)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

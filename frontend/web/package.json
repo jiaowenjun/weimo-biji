@@ -24,7 +24,7 @@
     "tailwindcss": "^4.3.0",
     "weimo-ui": "github:jiaowenjun/weimo-ui#18e6da6b4ab1ef3eb83cb8273712cf7b3d8c566b",
     "weimo-ui-core": "~0.2.2",
-    "weimo-ui-template": "file:vendor/weimo-ui-template-0.4.1.tgz",
+    "weimo-ui-template": "^0.4.2",
     "zod": "4.6.7",
     "zustand": "^5.0.14"
   },

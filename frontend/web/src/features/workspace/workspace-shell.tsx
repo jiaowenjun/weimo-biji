@@ -5,8 +5,6 @@ import {
   type SiteTemplateSidebar,
 } from 'weimo-ui-template/components/site-template'
 
-import { useSiteTheme } from '@/lib/site-theme'
-
 type WorkspaceShellProps = {
   children: ReactNode
   pageTitle: string
@@ -15,7 +13,8 @@ type WorkspaceShellProps = {
   topBarLeading?: ReactNode
 }
 
-/** 工作区站点框架：SiteTemplate 提供顶栏、侧边栏抽屉与主题切换，页面只注入内容。 */
+/** 工作区站点框架：SiteTemplate 提供顶栏、侧边栏抽屉与布局占位，页面只注入内容。
+ * 主题跟随系统（showThemeToggle 隐藏切换按钮，html.dark 仍由模板同步）。 */
 export function WorkspaceShell({
   children,
   pageTitle,
@@ -23,15 +22,12 @@ export function WorkspaceShell({
   topBarActions,
   topBarLeading,
 }: WorkspaceShellProps) {
-  const { onThemeChange, theme } = useSiteTheme()
-
   return (
     <SiteTemplate
-      onThemeChange={onThemeChange}
       pageTitle={pageTitle}
+      showThemeToggle={false}
       sidebar={sidebar}
       siteName="微墨笔记"
-      theme={theme}
       topBarActions={topBarActions}
       topBarLeading={topBarLeading}
     >
