@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { MoreHorizontal } from 'lucide-react'
-import { WdfCard, type WdfCardHandle, type WdfCardMode } from 'weimo-ui-editor/components/wdf-card'
+import { MoreHorizontal, Pencil } from 'lucide-react'
+import { WdfCard, type WdfCardMode } from 'weimo-ui-editor/components/wdf-card'
 import { WdfCardBridgeContext } from 'weimo-ui-editor/components/wdf-card'
 import { GhostIconButton } from 'weimo-ui-core/components/ghost-icon-button'
 import { ActionMenu, type ActionMenuItem } from 'weimo-ui/components/menu'
@@ -58,8 +58,7 @@ export function NoteCard({
   onSave,
   tagOptions = [],
 }: NoteCardProps) {
-  const cardRef = useRef<WdfCardHandle>(null)
-  // 模式镜像:onModeChange 在用户请求时同步;view 落定即一次会话结束
+  // 受控模式:编辑入口(菜单/双击)置 edit,收起由 onModeChange 落定回 view
   const [cardMode, setCardMode] = useState<WdfCardMode>(defaultMode)
   // 会话标签草稿:进入编辑时取 note.tags,保存时随文档一起上抛
   const [sessionTags, setSessionTags] = useState(() => note.tags ?? [])
@@ -107,7 +106,7 @@ export function NoteCard({
       ) {
         return
       }
-      cardRef.current?.open()
+      setCardMode('edit')
     },
     [cardMode, disabled],
   )
@@ -129,11 +128,28 @@ export function NoteCard({
     [disabled],
   )
 
+  const openEditor = useCallback(() => {
+    setCardMode('edit')
+  }, [])
+
+  // 编辑入口收进菜单顶部(铅笔按钮经 hideEditEntry 隐藏;双击正文仍可进编辑)
+  const menuItems = disabled
+    ? displayMenuItems
+    : [
+        {
+          key: 'edit',
+          label: '编辑',
+          icon: <Pencil aria-hidden="true" />,
+          onSelect: openEditor,
+        },
+        ...displayMenuItems,
+      ]
+
   const actionMenu =
-    displayMenuItems.length > 0 ? (
+    menuItems.length > 0 ? (
       <ActionMenu
         ariaLabel="笔记操作"
-        items={displayMenuItems}
+        items={menuItems}
         triggerProps={{
           render: <GhostIconButton aria-label="笔记操作" size="sm" />,
         }}
@@ -161,10 +177,10 @@ export function NoteCard({
         <WdfCard
           actionSlot={actionMenu}
           bottomBar={bottomBar}
-          defaultMode={defaultMode}
+          hideEditEntry
+          mode={cardMode}
           onChange={disabled ? undefined : handleChange}
           onModeChange={handleModeChange}
-          ref={cardRef}
           title={<span className="note-card__time">{note.createdAtText}</span>}
           value={note.content}
         />
