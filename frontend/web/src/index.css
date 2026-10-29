@@ -78,6 +78,11 @@ body {
   font-weight: 400;
 }
 
+/* three-dot 菜单入口前景与时间戳同款次要字色,顶栏信息层级统一 */
+.note-card__menu-trigger {
+  color: var(--color-text-placeholder);
+}
+
 .weimo-site-template__content > .wdf-card-composer + * {
   margin-top: 0;
 }

@@ -151,7 +151,7 @@ export function NoteCard({
         ariaLabel="笔记操作"
         items={menuItems}
         triggerProps={{
-          render: <GhostIconButton aria-label="笔记操作" size="sm" />,
+          render: <GhostIconButton aria-label="笔记操作" className="note-card__menu-trigger" size="sm" />,
         }}
         triggerIcon={<MoreHorizontal />}
       />
