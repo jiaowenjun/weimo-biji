@@ -10,7 +10,7 @@ import { useInfiniteListSentinel } from 'weimo-ui/lib/use-infinite-list-sentinel
 import type { CardDraft } from '@/components/note-card'
 import { RefCard } from '@/components/ref-card'
 import { SideBar } from '@/components/sidebar'
-import { TagBread } from '@/components/tag-bread'
+import { TagBread } from 'weimo-ui-tagtree/components/tag-bread'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/use-auth'
 import {

@@ -98,18 +98,6 @@ body {
   max-width: 100%;
 }
 
-.tag-bread {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 4px;
-}
-
-.tag-bread__separator {
-  flex: none;
-  color: var(--color-secondary);
-}
-
 .memo-list-state {
   display: grid;
   gap: 8px;
