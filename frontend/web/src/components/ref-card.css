@@ -35,6 +35,18 @@
     cursor: default;
   }
 
+  /* 悬停反馈:可点时指针光标 + 文字/图标由 placeholder 色加深 */
+  .ref-card__reference:not(:disabled) {
+    cursor: pointer;
+    transition: color 180ms ease;
+  }
+
+  .ref-card__reference:not(:disabled):hover,
+  .ref-card__reference:not(:disabled):hover .ref-card__reference-text,
+  .ref-card__reference:not(:disabled):hover .ref-card__icon {
+    color: var(--color-text-secondary);
+  }
+
   .ref-card__reference-inner {
     display: flex;
     min-width: 0;
