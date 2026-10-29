@@ -81,6 +81,13 @@ body {
   font-weight: 400;
 }
 
+/* 弹窗底色改用页面底色 token(上游 popup-surface 默认 --color-bg-card):
+   仅覆盖对话框表面本身,弹窗内的笔记卡仍取 --color-bg-card 保持层次。
+   非分层规则恒压 core 的 @layer components。 */
+.coss-dialog__popup {
+  background: var(--color-bg-page);
+}
+
 /* three-dot 菜单入口前景与时间戳同款次要字色,顶栏信息层级统一 */
 .note-card__menu-trigger {
   color: var(--color-text-placeholder);
