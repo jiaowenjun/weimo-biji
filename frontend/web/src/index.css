@@ -71,6 +71,13 @@ body {
   margin-top: var(--space-gutter);
 }
 
+/* 笔记卡时间戳降噪:WdfCard 的 title 槽是标题语义(主文字色+650),
+   时间戳应为次要信息,对齐旧卡观感(placeholder 色+常规字重)。 */
+.note-card__time {
+  color: var(--color-text-placeholder);
+  font-weight: 400;
+}
+
 .weimo-site-template__content > .wdf-card-composer + * {
   margin-top: 0;
 }

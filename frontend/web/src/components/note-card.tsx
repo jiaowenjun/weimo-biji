@@ -165,7 +165,7 @@ export function NoteCard({
           onChange={disabled ? undefined : handleChange}
           onModeChange={handleModeChange}
           ref={cardRef}
-          title={note.createdAtText}
+          title={<span className="note-card__time">{note.createdAtText}</span>}
           value={note.content}
         />
       </WdfCardBridgeContext.Provider>
