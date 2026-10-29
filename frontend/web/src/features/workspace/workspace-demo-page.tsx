@@ -4,7 +4,7 @@ import { Plus, Search } from 'lucide-react'
 import { isWdfDocumentEmpty } from 'weimo-ui-editor/components/card-composer'
 import { toMarkdown } from 'weimo-wdf/markdown'
 import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
-import { TagPicker } from 'weimo-ui/components/tag-picker'
+import { TagPicker } from '@/components/tag-picker'
 import { useInfiniteListSentinel } from 'weimo-ui/lib/use-infinite-list-sentinel'
 
 import type { CardDraft } from '@/components/note-card'

@@ -1,0 +1,144 @@
+@layer components {
+  .tag-picker {
+    position: relative;
+    width: min(100%, 480px);
+  }
+
+  .tag-picker__title {
+    max-width: min(100%, 280px);
+  }
+
+  .tag-picker__bottom-float-bar .float-bar__frame {
+    grid-template-columns: 1fr;
+  }
+
+  .tag-picker__bottom-float-bar .float-bar__slot--left {
+    width: 100%;
+    grid-column: 1 / -1;
+  }
+
+  .tag-picker__clear svg,
+  .tag-picker__confirm svg,
+  .tag-picker__option-check svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .tag-picker__panel {
+    padding: 8px;
+    overflow: hidden;
+  }
+
+  .tag-picker__scroll {
+    height: min(460px, 68vh);
+    max-height: 68vh;
+    min-width: 0;
+  }
+
+  .tag-picker__list {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    padding: 4px;
+    padding-top: 52px;
+    padding-bottom: 72px;
+  }
+
+  .tag-picker__option {
+    display: grid;
+    min-width: 0;
+    min-height: 42px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    color: var(--color-text-primary);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+  }
+
+  .tag-picker__option:hover,
+  .tag-picker__option:focus-visible,
+  .tag-picker__option--active {
+    background: var(--color-bg-hover);
+    outline: none;
+  }
+
+  .tag-picker__option:disabled {
+    cursor: default;
+    opacity: 0.58;
+  }
+
+  .tag-picker__option-prefix {
+    color: var(--color-text-placeholder);
+    font-weight: 620;
+  }
+
+  .tag-picker__option-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tag-picker__option-badge {
+    padding: 2px 6px;
+    color: var(--color-text-placeholder);
+    font-size: var(--font-size-xs);
+    line-height: 1.2;
+    border-radius: var(--radius-round);
+    background: color-mix(in srgb, var(--color-border) 72%, transparent);
+  }
+
+  .tag-picker__option-check {
+    display: inline-grid;
+    width: 22px;
+    height: 22px;
+    place-items: center;
+    color: var(--color-primary);
+  }
+
+  .tag-picker__empty {
+    margin: 0;
+    padding: 28px 12px;
+    color: var(--color-text-placeholder);
+    font-size: var(--font-size-sm);
+    text-align: center;
+  }
+
+  .tag-picker__input-row {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tag-picker__clear {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    place-items: center;
+    color: var(--color-text-placeholder);
+    cursor: pointer;
+    border: 0;
+    border-radius: var(--radius-round);
+    background: transparent;
+  }
+
+  .tag-picker__clear:hover,
+  .tag-picker__clear:focus-visible {
+    color: var(--color-text-primary);
+    background: var(--color-bg-hover);
+    outline: none;
+  }
+
+  .tag-picker__confirm {
+    flex: none;
+  }
+}
