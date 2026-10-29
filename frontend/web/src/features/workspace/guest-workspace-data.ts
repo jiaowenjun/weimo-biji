@@ -215,8 +215,13 @@ export function filterGuestMemos(
       return false
     }
 
-    // WDF v0.1 没有批注标记,该过滤无可命中内容(与后端语义一致)
-    if (filters.has_annotation) {
+    // 批注(引用)近似:有引用或被引用 ⇔ 卡片展示引用栏;annotation 标记
+    // 本体属 WDF 模型扩展范围,此处按引用关系命中(服务端不下推此过滤)
+    if (
+      filters.has_annotation &&
+      memo.refs.length === 0 &&
+      memo.referencedBy.length === 0
+    ) {
       return false
     }
 

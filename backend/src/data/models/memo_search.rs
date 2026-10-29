@@ -49,7 +49,6 @@ impl MemoSearchQuery {
             && self.matches_no_tag(memo)
             && self.matches_created_at(memo)
             && self.matches_text(memo)
-            && self.matches_annotation(memo)
             && self.matches_markdown_quote(memo)
             && self.matches_heading(memo)
             && self.matches_unordered_list(memo)
@@ -140,10 +139,6 @@ impl MemoSearchQuery {
             .unwrap_or(false)
     }
 
-    /// WDF v0.1 没有批注标记,该过滤暂无可命中内容;保留管线待模型扩展
-    fn matches_annotation(&self, _memo: &Memo) -> bool {
-        self.has_annotation != Some(true)
-    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -858,14 +853,14 @@ mod tests {
     }
 
     #[test]
-    fn test_has_annotation_never_matches_in_wdf_v01() {
-        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("annotated?"));
+    fn test_has_annotation_is_ignored_server_side() {
+        let memo = test_memo(1, "2026-03-25T08:00:00Z", &[], &paragraph_doc("plain"));
         let query = MemoSearchQuery {
             has_annotation: Some(true),
             ..MemoSearchQuery::default()
         };
-        // WDF v0.1 没有批注标记,该过滤暂无可命中内容
-        assert!(!query.matches(&memo));
+        // 批注(引用)过滤由客户端按引用关系近似判定,服务端不下推
+        assert!(query.matches(&memo));
     }
 
     #[test]

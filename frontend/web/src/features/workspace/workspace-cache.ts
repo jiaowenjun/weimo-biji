@@ -65,9 +65,6 @@ function memoContentMatchesFilters(
     return false
   }
 
-  // WDF v0.1 没有批注标记,该过滤无可命中内容(与后端语义一致)
-  if (filters.has_annotation) return false
-
   if (
     !filters.has_markdown_quote &&
     !filters.has_heading &&
@@ -89,7 +86,11 @@ export function memoMatchesFilters(memo: Memo, filters: MemoSearchQuery) {
     memo,
     filters,
     (item, activeFilters) =>
-      memoContentMatchesFilters(item.content, activeFilters),
+      memoContentMatchesFilters(item.content, activeFilters) &&
+      // 批注(引用)近似:服务端不下推此过滤,本地按引用关系命中
+      (!activeFilters.has_annotation ||
+        item.refs.length > 0 ||
+        item.referencedBy.length > 0),
   )
 }
 
