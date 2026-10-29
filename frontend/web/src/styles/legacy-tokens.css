@@ -1,4 +1,8 @@
-:root {
+/* biji legacy token 接管(monolith weimo-ui 退役后自持):
+   选择器用 :root:root/.dark.dark((0,2,0))恒压 core/editor tokens 的 (0,1,0)——
+   weimo-ui-editor 0.4.2 起组件 JS 自动加载 tokens.css(内含 core tokens),
+   该懒加载 CSS 晚于本文件注入,同 specificity 顺序决胜会打回 core 值。 */
+:root:root {
   /* === 新 HSL 语义 token（shadcn/ui 兼容） === */
   --background: 40 16% 96%;
   --foreground: 0 0% 9%;
@@ -111,7 +115,7 @@
   --color-text-danger: #b42318;
 }
 
-.dark {
+.dark.dark {
   color-scheme: dark;
 
   /* === 新 HSL 暗色 === */
@@ -192,7 +196,7 @@
 }
 
 @media (min-width: 700px) {
-  :root {
+  :root:root {
     --space-gutter: var(--space-gutter-normal);
   }
 }
