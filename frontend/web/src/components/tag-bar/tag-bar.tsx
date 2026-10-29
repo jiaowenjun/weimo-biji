@@ -1,11 +1,14 @@
-// 移植自 weimo-ui 的 TagBar(含 chip-button/chip-surface 小闭包):
-// 交互状态机按原语义保留,涉及 prop 驱动的 setState-in-effect 处按调用点窄域豁免。
+// 移植自 weimo-ui 的 TagBar:交互状态机按原语义保留,涉及 prop 驱动的
+// setState-in-effect 处按调用点窄域豁免;胶囊改用 weimo-ui-core 的
+// CapsuleButton(原 chip-button/chip-surface 闭包随之退役)。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
 
+import { Plus } from 'lucide-react'
+
+import { CapsuleButton } from 'weimo-ui-core/components/capsule-button'
 import { FloatBar } from 'weimo-ui-core/components/float-bar'
 import { cn } from 'weimo-ui-core/lib/utils'
-import { ChipButton } from './chip-button'
 import {
   TagPicker,
   type TagPickerApplyPayload,
@@ -243,46 +246,46 @@ export function TagBar({
                 key={isEmpty ? 'empty' : `${tag}-${index}`}
                 style={isEmpty ? emptyChipWidthStyle : undefined}
               >
-                <ChipButton
+                <CapsuleButton
                   disabled={
                     editable
                       ? !canEdit
                       : !isEmpty && !isTagClickEnabled(tag)
                   }
                   onClick={getChipClickHandler(tag)}
-                  prefix={editable && isEmpty ? '+' : '#'}
-                  state={editable ? 'glass' : 'default'}
+                  prefix={editable && isEmpty ? <Plus aria-hidden="true" /> : undefined}
+                  state={editable ? 'frosted' : 'default'}
                 >
                   {tag}
-                </ChipButton>
+                </CapsuleButton>
               </span>
             ))}
             {isEmpty ? (
               <span className="tag-bar__morph-measure" aria-hidden="true">
                 <span ref={emptyChipMeasureRef}>
-                  <ChipButton
+                  <CapsuleButton
                     disabled={editable && !canEdit}
-                    prefix={emptyChipPrefix}
-                    state={editable ? 'glass' : 'default'}
+                    prefix={emptyChipPrefix === '+' ? <Plus aria-hidden="true" /> : undefined}
+                    state={editable ? 'frosted' : 'default'}
                   >
                     {emptyChipLabel}
-                  </ChipButton>
+                  </CapsuleButton>
                 </span>
               </span>
             ) : null}
             {showAddChip ? (
-              <ChipButton
+              <CapsuleButton
                 aria-label={`新增${addLabel}`}
                 className="tag-bar__add-chip"
                 data-exiting={!editable && addChipExiting ? 'true' : undefined}
                 disabled={!canEdit}
                 onAnimationEnd={handleAddChipAnimationEnd}
                 onClick={openInsert}
-                prefix="+"
-                state="glass"
+                prefix={<Plus aria-hidden="true" />}
+                state="frosted"
               >
                 {addLabel}
-              </ChipButton>
+              </CapsuleButton>
             ) : null}
           </div>
         }

@@ -45,7 +45,7 @@
     transition: inline-size var(--tag-bar-empty-chip-width-transition-duration) cubic-bezier(0.2, 0, 0, 1);
   }
 
-  .tag-bar__morph-slot .chip-button {
+  .tag-bar__morph-slot .capsule-button {
     width: 100%;
   }
 
@@ -58,7 +58,7 @@
     pointer-events: none;
   }
 
-  .tag-bar__morph-measure .chip-button {
+  .tag-bar__morph-measure .capsule-button {
     width: max-content;
     max-width: none;
   }
