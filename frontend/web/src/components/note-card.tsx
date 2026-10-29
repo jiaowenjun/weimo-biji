@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { MoreHorizontal } from 'lucide-react'
 import { WdfCard, type WdfCardHandle, type WdfCardMode } from 'weimo-ui-editor/components/wdf-card'
 import { WdfCardBridgeContext } from 'weimo-ui-editor/components/wdf-card'
-import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
+import { GhostIconButton } from 'weimo-ui-core/components/ghost-icon-button'
 import { ActionMenu, type ActionMenuItem } from 'weimo-ui/components/menu'
 import { TagBar } from 'weimo-ui/components/tag-bar'
 import type { WdfDocument } from 'weimo-wdf'
@@ -135,7 +135,7 @@ export function NoteCard({
         ariaLabel="笔记操作"
         items={displayMenuItems}
         triggerProps={{
-          render: <GlassIconButton aria-label="笔记操作" />,
+          render: <GhostIconButton aria-label="笔记操作" size="sm" />,
         }}
         triggerIcon={<MoreHorizontal />}
       />
