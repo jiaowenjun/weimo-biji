@@ -8,12 +8,6 @@
   .ref-card[data-has-reference="true"] {
   }
 
-  .ref-card[data-has-reference="true"] > .note-card > .wdf-card > .wdf-card__card {
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
   .ref-card__reference {
     box-sizing: border-box;
     display: block;
@@ -84,4 +78,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+
+/* 有引用条的卡由外壳 .card-surface 统一提供材质,须剥掉内层 WdfCard
+ * 自带的边框/底色/投影。weimo-ui-editor 的 wdf-card.css 是非分层样式,
+ * 凡在 @layer 内声明恒被其压过(与特异性无关,a6a5c66 起的双层边框回归
+ * 即此因),故本条必须留在 @layer 之外,以 (0,5,0) 特异性直接取胜。 */
+.ref-card[data-has-reference="true"] > .note-card > .wdf-card > .wdf-card__card {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }

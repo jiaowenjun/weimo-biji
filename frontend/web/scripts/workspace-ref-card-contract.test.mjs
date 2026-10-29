@@ -247,6 +247,33 @@ for (const snippet of [
   assert.ok(refCardCss.includes(snippet), `RefCard CSS must include ${snippet}`)
 }
 
+function cssBlockEnd(source, openBraceIndex) {
+  let depth = 0
+  for (let i = openBraceIndex; i < source.length; i += 1) {
+    if (source[i] === '{') depth += 1
+    if (source[i] === '}') {
+      depth -= 1
+      if (depth === 0) return i
+    }
+  }
+  return -1
+}
+
+const componentsLayerOpen = refCardCss.indexOf('@layer components {')
+assert.ok(
+  componentsLayerOpen >= 0,
+  'RefCard CSS must keep its component styles inside @layer components.',
+)
+const componentsLayerClose = cssBlockEnd(refCardCss, componentsLayerOpen)
+assert.ok(
+  !refCardCss
+    .slice(componentsLayerOpen, componentsLayerClose)
+    .includes(
+      '.ref-card[data-has-reference="true"] > .note-card > .wdf-card > .wdf-card__card',
+    ),
+  'the WdfCard surface strip must stay OUTSIDE @layer components: weimo-ui-editor wdf-card.css is unlayered and any layered declaration loses to it regardless of specificity (double-border regression).',
+)
+
 assert.ok(
   !refCardCss.includes('background: var(--color-bg-card);') &&
     !refCardCss.includes('box-shadow: var(--shadow-card);'),
