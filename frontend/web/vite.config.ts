@@ -22,31 +22,6 @@ export default defineConfig({
   // weimo-ui 以 .tsx 源码形态发布（exports 指向 src），vite 不预构建它而是原样下发，
   // 因此它和 @base-ui/react 源码里引用的 CJS 包不会被自动优化，裸 CJS 进浏览器会报
   // "Importing binding name 'xxx' is not found"，必须显式 include。
-  optimizeDeps: {
-    include: [
-      'weimo-ui > use-sync-external-store/shim',
-      'weimo-ui > use-sync-external-store/shim/with-selector',
-      // @tiptap/react 用带扩展名的说明符导入（shim/index.js），
-      // 与上面的条目匹配不上，必须单独列出
-      'weimo-ui > use-sync-external-store/shim/index.js',
-      'weimo-ui > use-sync-external-store/shim/with-selector.js',
-      'weimo-ui > debug',
-      'weimo-ui > extend',
-      'weimo-ui > style-to-js',
-      'weimo-ui > katex',
-      'weimo-ui > lunar-javascript',
-      'weimo-ui > unified',
-      'weimo-ui > remark-parse',
-      'weimo-ui > remark-stringify',
-      'weimo-ui > react-markdown',
-      'weimo-ui > rehype-katex',
-      'weimo-ui > rehype-raw',
-      'weimo-ui > rehype-sanitize',
-      'weimo-ui > remark-breaks',
-      'weimo-ui > remark-gfm',
-      'weimo-ui > remark-math',
-    ],
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

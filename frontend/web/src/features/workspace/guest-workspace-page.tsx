@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { buildGuestWorkspaceTagTree } from '@weimo/workspace-core/guest-workspace'
 import { Plus, Search } from 'lucide-react'
-import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
+import { FrostedIconButton } from 'weimo-ui-core/components/frosted-icon-button'
 import { isWdfDocumentEmpty } from 'weimo-ui-editor/components/card-composer'
 import { toMarkdown } from 'weimo-wdf/markdown'
 import { TagPicker } from '@/components/tag-picker'
@@ -278,16 +278,16 @@ export function GuestWorkspacePage() {
         )}
         topBarActions={
           <>
-            <GlassIconButton aria-label="搜索">
+            <FrostedIconButton aria-label="搜索">
               <Search />
-            </GlassIconButton>
-            <GlassIconButton
+            </FrostedIconButton>
+            <FrostedIconButton
               aria-label="新建笔记"
               disabled={Boolean(memoCreate.pendingCreate)}
               onClick={memoCreate.start}
             >
               <Plus />
-            </GlassIconButton>
+            </FrostedIconButton>
             <WorkspaceTitleMenu
               memoCreatedAtSort={navigation.memoCreatedAtSort}
               onMemoCreatedAtSortChange={navigation.setMemoCreatedAtSort}

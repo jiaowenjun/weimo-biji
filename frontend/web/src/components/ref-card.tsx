@@ -3,10 +3,10 @@ import { CircleArrowDown, CircleArrowUp, Trash2 } from 'lucide-react'
 import {
   buildWorkspaceMemoCardMenuItems,
 } from '@/features/workspace/workspace-memo-card-menu'
-import { getCardSurfaceClassName } from 'weimo-ui/components/card-surface'
+import { getCardSurfaceClassName } from 'weimo-ui-core/components/card-surface'
 
 import { NoteCard, type CardDraft, type CardNote } from './note-card'
-import type { ActionMenuItem } from 'weimo-ui/components/menu'
+import type { ActionMenuItem } from 'weimo-ui-core/components/menu'
 
 import './ref-card.css'
 
@@ -83,6 +83,7 @@ export function RefCard({
           key: 'delete',
           label: '删除',
           icon: <Trash2 aria-hidden="true" />,
+          variant: 'destructive' as const,
           onSelect: onDelete,
         },
       ]

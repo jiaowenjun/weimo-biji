@@ -111,8 +111,8 @@ for (const snippet of [
 }
 
 for (const snippet of [
-  "import { ActionDialog } from 'weimo-ui/components/action-dialog'",
-  "import { DialogPanel } from 'weimo-ui/components/coss/dialog'",
+  "import { ActionDialog } from 'weimo-ui-core/components/action-dialog'",
+  "import { DialogPanel } from 'weimo-ui-core/components/coss/dialog'",
   "import type { CardDraft } from '@/components/note-card'",
   "import { RefCard } from '@/components/ref-card'",
   'buildMemoReferenceDisplayText',

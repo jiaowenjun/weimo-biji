@@ -7,7 +7,7 @@ import { workspaceTagUiReducer } from '../../../shared/frontend/workspace-core/s
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const uiRoot = fileURLToPath(
-  new URL('../node_modules/weimo-ui', import.meta.url),
+  new URL('../node_modules/weimo-ui-tagtree/dist', import.meta.url),
 )
 const read = (base, path) => readFileSync(join(base, path), 'utf8')
 const project = (path) => read(root, path)
@@ -52,9 +52,9 @@ assert.ok(workspacePage.includes('onDeleteTag={handleDeleteTag}'))
 assert.ok(guestPage.includes('onDeleteTag={handleDeleteTag}'))
 
 for (const [path, snippets] of [
-  ['src/components/tag-tree/tag-tree-model.ts', ['menuEnabled?: boolean']],
-  ['src/components/tag-tree/tag-tree.tsx', ['rowMenuEnabled={showMenu && row.node.menuEnabled !== false}']],
-  ['src/components/tag-tree/tag-tree-row.tsx', ['rowMenuEnabled: boolean', '{rowMenuEnabled ? (']],
+  ['components/tag-tree/tag-tree-model.d.ts', ['menuEnabled?: boolean']],
+  ['components/tag-tree/tag-tree.js', ['rowMenuEnabled: showMenu && row.node.menuEnabled !== false']],
+  ['components/tag-tree/tag-tree-row.d.ts', ['rowMenuEnabled']],
 ]) {
   const source = read(uiRoot, path)
   for (const snippet of snippets) assert.ok(source.includes(snippet), `${path} must include ${snippet}`)

@@ -3,9 +3,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
 import { isWdfDocumentEmpty } from 'weimo-ui-editor/components/card-composer'
 import { toMarkdown } from 'weimo-wdf/markdown'
-import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
+import { FrostedIconButton } from 'weimo-ui-core/components/frosted-icon-button'
 import { TagPicker } from '@/components/tag-picker'
-import { useInfiniteListSentinel } from 'weimo-ui/lib/use-infinite-list-sentinel'
+import { useInfiniteListSentinel } from 'weimo-ui-core/lib/use-infinite-list-sentinel'
 
 import type { CardDraft } from '@/components/note-card'
 import { RefCard } from '@/components/ref-card'
@@ -328,16 +328,16 @@ export function WorkspaceDemoPage() {
         )}
         topBarActions={
           <>
-            <GlassIconButton aria-label="搜索">
+            <FrostedIconButton aria-label="搜索">
               <Search />
-            </GlassIconButton>
-            <GlassIconButton
+            </FrostedIconButton>
+            <FrostedIconButton
               aria-label="新建笔记"
               disabled={Boolean(memoCreate.pendingCreate) || memoCreate.isPending}
               onClick={memoCreate.start}
             >
               <Plus />
-            </GlassIconButton>
+            </FrostedIconButton>
             <WorkspaceTitleMenu
               memoCreatedAtSort={navigation.memoCreatedAtSort}
               onMemoCreatedAtSortChange={navigation.setMemoCreatedAtSort}

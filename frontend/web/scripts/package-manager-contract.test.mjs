@@ -25,6 +25,6 @@ assert.equal(
 
 assert.equal(
   packageJson.dependencies['weimo-ui'],
-  'github:jiaowenjun/weimo-ui#18e6da6b4ab1ef3eb83cb8273712cf7b3d8c566b',
-  'biji-react must consume the reviewed immutable weimo-ui commit.',
+  undefined,
+  'the monolith weimo-ui dependency must stay retired; new UI comes from weimo-ui-core and local ports.',
 )

@@ -1,0 +1,107 @@
+@layer components {
+  .tag-bar {
+    position: relative;
+    min-width: 0;
+  }
+
+  .tag-bar[data-position-animating="true"] {
+    will-change: transform;
+  }
+
+  .tag-bar__float-bar {
+    position: static;
+    justify-content: flex-start;
+  }
+
+  .tag-bar__float-bar .float-bar__frame {
+    display: block;
+  }
+
+  .tag-bar__float-bar .float-bar__slot--left {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .tag-bar__float-bar .float-bar__slot--center,
+  .tag-bar__float-bar .float-bar__slot--right {
+    display: none;
+  }
+
+  .tag-bar__chips {
+    display: flex;
+    position: relative;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-tag-gap);
+  }
+
+  .tag-bar__morph-slot {
+    --tag-bar-empty-chip-width-transition-duration: 180ms;
+
+    display: inline-block;
+    max-width: 100%;
+    overflow: visible;
+    transition: inline-size var(--tag-bar-empty-chip-width-transition-duration) cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .tag-bar__morph-slot .chip-button {
+    width: 100%;
+  }
+
+  .tag-bar__morph-measure {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: max-content;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .tag-bar__morph-measure .chip-button {
+    width: max-content;
+    max-width: none;
+  }
+
+  .tag-bar__add-chip {
+    transform-origin: center;
+    animation: tag-bar-add-chip-in var(--weimo-card-transition-duration, 180ms) cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .tag-bar__add-chip[data-exiting="true"] {
+    pointer-events: none;
+    animation: tag-bar-add-chip-out var(--weimo-card-transition-duration, 160ms) cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tag-bar__morph-slot,
+    .tag-bar__add-chip {
+      animation-duration: 1ms;
+      transition-duration: 1ms;
+    }
+  }
+
+  @keyframes tag-bar-add-chip-in {
+    from {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes tag-bar-add-chip-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    to {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+  }
+}

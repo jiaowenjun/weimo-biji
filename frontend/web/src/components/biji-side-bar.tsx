@@ -14,7 +14,7 @@ import {
 import { Heatmap, type HeatmapDailyCount } from 'weimo-ui-stats/components/heatmap'
 import { StatGroup, type StatGroupItem } from 'weimo-ui-stats/components/stat-group'
 import { TagTree, type TagTreeMenuAction, type TagTreeNode } from 'weimo-ui-tagtree/components/tag-tree'
-import { GhostIconButton } from 'weimo-ui/components/ghost-icon-button'
+import { GhostIconButton } from 'weimo-ui-core/components/ghost-icon-button'
 
 import './biji-side-bar.css'
 

@@ -1,15 +1,15 @@
 import { Check, Search, X } from 'lucide-react'
 import type { KeyboardEvent, ReactNode } from 'react'
 
-import { DialogPanel } from 'weimo-ui/components/coss/dialog'
+import { DialogPanel } from 'weimo-ui-core/components/coss/dialog'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from 'weimo-ui-tagtree/components/coss/input-group'
 import { ScrollArea } from 'weimo-ui-tagtree/components/coss/scroll-area'
-import { ActionDialog } from 'weimo-ui/components/action-dialog'
-import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'
+import { ActionDialog } from 'weimo-ui-core/components/action-dialog'
+import { FrostedIconButton } from 'weimo-ui-core/components/frosted-icon-button'
 import { cn } from 'weimo-ui-core/lib/utils'
 import { useTagPicker } from './use-tag-picker'
 import type {
@@ -169,14 +169,14 @@ export function TagPicker({
               </InputGroupAddon>
             ) : null}
           </InputGroup>
-          <GlassIconButton
+          <FrostedIconButton
             aria-label="确认"
             className="tag-picker__confirm"
             disabled={state.confirmDisabled}
             onClick={() => applyDraft()}
           >
             <Check />
-          </GlassIconButton>
+          </FrostedIconButton>
         </div>
       }
     >

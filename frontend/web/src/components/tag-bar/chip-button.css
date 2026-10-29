@@ -1,0 +1,20 @@
+@layer components {
+  .chip-button__prefix {
+    flex: none;
+  }
+
+  .chip-button__text {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+}
+
+button.chip-button {
+  gap: 1px;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}

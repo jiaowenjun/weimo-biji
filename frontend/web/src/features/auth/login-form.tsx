@@ -1,6 +1,6 @@
 import { useId, useState, type FormEvent } from 'react'
 
-import { TextButton } from 'weimo-ui/components/text-button'
+import { TextButton } from 'weimo-ui-core/components/text-button'
 import {
   Field,
   FieldError,

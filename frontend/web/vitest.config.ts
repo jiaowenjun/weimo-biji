@@ -16,6 +16,12 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['tests/**/*.test.{ts,tsx}'],
     setupFiles: ['./tests/setup.ts'],
+    // registry 包 dist 自带 CSS 副作用导入,须走 vite 转换管线而非 node 直跑
+    server: {
+      deps: {
+        inline: ['weimo-ui-core'],
+      },
+    },
   },
 })
 

@@ -5,24 +5,13 @@ import { fileURLToPath } from 'node:url'
 import { QueryClient } from '@tanstack/react-query'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const uiRoot = fileURLToPath(
-  new URL('../node_modules/weimo-ui', import.meta.url),
-)
 
-function readFile(rootDir, relativePath) {
-  const absolutePath = join(rootDir, relativePath)
+function readProjectFile(relativePath) {
+  const absolutePath = join(root, relativePath)
 
   assert.ok(existsSync(absolutePath), `${relativePath} must exist.`)
 
   return readFileSync(absolutePath, 'utf8')
-}
-
-function readProjectFile(relativePath) {
-  return readFile(root, relativePath)
-}
-
-function readUiFile(relativePath) {
-  return readFile(uiRoot, relativePath)
 }
 
 const packageJson = JSON.parse(readProjectFile('package.json'))
@@ -42,10 +31,7 @@ const workspacePageSource = readProjectFile(
 const guestPageSource = readProjectFile(
   'src/features/workspace/guest-workspace-page.tsx',
 )
-const uiCardSource = readUiFile('src/components/card.tsx')
-const uiCardResolversSource = readUiFile('src/components/card-resolvers.tsx')
-const uiCardTopBarSource = readUiFile('src/components/card-top-bar.tsx')
-const uiModeButtonSource = readUiFile('src/components/mode-button.tsx')
+const refCardSource = readProjectFile('src/components/ref-card.tsx')
 
 const {
   removeMemoFromWorkspaceCache,
@@ -161,48 +147,17 @@ assert.deepEqual(
   'memo delete cache sync must stay inside the authenticated workspace scope.',
 )
 
+// 删除入口随 monolith Card 退役移至 biji 的 RefCard 菜单末项
 for (const snippet of [
-  'delete?: string',
-  'onDelete?: () => void',
-  'function handleDelete()',
-  'const displayMenuItems = resolveCardDisplayMenuItems(',
-  'const topBarProps = resolveCardTopBarProps(',
-  'handleDelete,',
+  "key: 'delete'",
+  "label: '删除'",
+  '<Trash2 aria-hidden="true" />',
+  "variant: 'destructive'",
+  'onSelect: onDelete',
 ]) {
   assert.ok(
-    uiCardSource.includes(snippet),
-    `shared Card must expose a destructive delete menu item: ${snippet}`,
-  )
-}
-
-for (const snippet of [
-  "delete: '删除'",
-  'function resolveCardDisplayMenuItems(',
-  'function resolveCardTopBarProps(',
-  'displayMenuItems: ActionMenuItem[] | undefined',
-  'displayMenuItems,',
-  'variant: \'destructive\'',
-  'onSelect: onDeleteSelect',
-  '<Trash2 />',
-]) {
-  assert.ok(
-    uiCardResolversSource.includes(snippet),
-    `shared Card resolvers must expose a destructive delete menu item: ${snippet}`,
-  )
-}
-
-for (const [source, name] of [
-  [uiCardTopBarSource, 'CardTopBar'],
-  [uiModeButtonSource, 'ModeButton'],
-]) {
-  assert.ok(
-    source.includes('displayMenuItems?: ActionMenuItem[]'),
-    `${name} must accept extra display menu items from Card.`,
-  )
-  assert.ok(
-    source.includes('displayMenuItems={displayMenuItems}') ||
-      source.includes('...displayMenuItems'),
-    `${name} must pass extra display menu items through to ActionMenu.`,
+    refCardSource.includes(snippet),
+    `RefCard must append a destructive delete menu item: ${snippet}`,
   )
 }
 

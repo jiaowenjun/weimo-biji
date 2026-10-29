@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router'
-import { getCardSurfaceClassName } from 'weimo-ui/components/card-surface'
+import { getCardSurfaceClassName } from 'weimo-ui-core/components/card-surface'
 
 import { preloadGuestWorkspacePage } from '@/app-route-loaders'
 import { LoginForm } from './login-form'

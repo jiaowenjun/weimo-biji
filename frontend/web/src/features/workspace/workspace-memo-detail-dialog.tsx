@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { ActionDialog } from 'weimo-ui/components/action-dialog'
-import { DialogPanel } from 'weimo-ui/components/coss/dialog'
+import { ActionDialog } from 'weimo-ui-core/components/action-dialog'
+import { DialogPanel } from 'weimo-ui-core/components/coss/dialog'
 
 import { RefCard } from '@/components/ref-card'
 import {

@@ -40,8 +40,8 @@ assert.ok(
 
 for (const snippet of [
   "import { ArrowUpDown, Check, Grid2X2, LogIn, RefreshCw, Undo2 } from 'lucide-react'",
-  "import { ActionMenu, type ActionMenuItem } from 'weimo-ui/components/menu'",
-  "import { GlassIconButton } from 'weimo-ui/components/glass-icon-button'",
+  "import { ActionMenu, type ActionMenuItem } from 'weimo-ui-core/components/menu'",
+  "import { FrostedIconButton } from 'weimo-ui-core/components/frosted-icon-button'",
   "import type { MemoSearchQuery } from './workspace-types'",
   "type MemoCreatedAtSort = NonNullable<MemoSearchQuery['created_at_sort']>",
   'type WorkspaceTitleMenuProps = {',
@@ -93,7 +93,7 @@ for (const snippet of [
   'ariaLabel="更多"',
   'items={items}',
   'triggerProps={{',
-  'render: <GlassIconButton aria-label="更多" />,',
+  'render: <FrostedIconButton aria-label="更多" />,',
 ]) {
   assert.ok(
     titleMenuSource.includes(snippet),

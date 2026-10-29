@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const uiRoot = join(root, 'node_modules/weimo-ui')
+const uiRoot = join(root, 'node_modules/weimo-ui-core/dist')
 
 function readProjectFile(base, relativePath) {
   const absolutePath = join(base, relativePath)
@@ -111,17 +111,15 @@ assert.ok(
   'BijiSideBar note range shortcuts must not keep a parallel hand-written tree implementation.',
 )
 
-const uiPackageJson = JSON.parse(readProjectFile(uiRoot, 'package.json'))
-const sharedTokenCssPath = uiPackageJson.exports?.['./styles/tokens.css']
-const sharedTokenCssAbsolutePath = join(uiRoot, sharedTokenCssPath ?? '')
-
-assert.equal(
-  sharedTokenCssPath,
-  './src/styles/tokens.css',
-  'ui package must export the shared component token stylesheet for workspace consumers.',
+// monolith 退役后,biji 的 token 参照系 = core tokens ∪ 本地 legacy 覆盖
+// (与 index.css 的导入级联一致:legacy 在后接管共享 token 的 weimo-ui 值)
+const coreTokenCss = readFileSync(
+  join(root, 'node_modules/weimo-ui-core/dist/styles/tokens.css'),
+  'utf8',
 )
-
-const sharedTokenCss = readProjectFile(uiRoot, sharedTokenCssPath)
+const legacyTokenCss = readProjectFile(root, 'src/styles/legacy-tokens.css')
+const sharedTokenCss = `${coreTokenCss}\n${legacyTokenCss}`
+const sharedTokenCssAbsolutePath = join(root, 'src/styles/legacy-tokens.css')
 const demoPackageJson = JSON.parse(readProjectFile(root, 'package.json'))
 const demoRootBlock = blockFor(demoIndexCss, ':root')
 const demoDarkBlock = blockFor(demoIndexCss, '.dark')
@@ -147,8 +145,8 @@ for (const cssFile of collectCssFiles(join(root, 'src'))) {
 
 assert.match(
   demoIndexCss,
-  /@import\s+["']weimo-ui\/styles\/tokens\.css["'];/,
-  'demo must consume shared UI component tokens instead of copying the token snapshot.',
+  /@import\s+["']\.\/styles\/legacy-tokens\.css["'];/,
+  'demo must consume core tokens plus the local legacy override instead of copying the token snapshot.',
 )
 assert.ok(
   sharedTokenCss.includes(
@@ -395,17 +393,12 @@ const componentLocalTokenNames = new Set()
 const componentTokenReferences = new Map()
 const componentInlineStyleTokenNames = new Set()
 
-for (const inlineStyleSourcePath of [
-  'src/components/card-resolvers.tsx',
-]) {
-  for (const [, token] of readProjectFile(uiRoot, inlineStyleSourcePath).matchAll(
-    /'--([A-Za-z0-9-]+)'/g,
-  )) {
-    componentInlineStyleTokenNames.add(token)
-  }
-}
+// monolith card 的行内 token 引用随组件退役;本地移植件无行内 token 引用
 
-for (const cssFile of collectCssFiles(join(uiRoot, 'src/components'))) {
+for (const cssFile of [
+  ...collectCssFiles(join(root, 'node_modules/weimo-ui-core/dist/styles')),
+  ...collectCssFiles(join(root, 'src/components')),
+]) {
   const cssSource = readFileSync(cssFile, 'utf8')
 
   for (const [, token] of cssSource.matchAll(/--([A-Za-z0-9-]+)\s*:/g)) {
@@ -496,8 +489,8 @@ assert.ok(
     demoCardSource.includes('<WdfCard') &&
     demoCardSource.includes('bottomBar={bottomBar}') &&
     demoCardSource.includes('actionSlot={actionMenu}') &&
-    demoCardSource.includes("from 'weimo-ui/components/tag-bar'") &&
-    demoCardSource.includes("from 'weimo-ui/components/menu'"),
+    demoCardSource.includes("from '@/components/tag-bar'") &&
+    demoCardSource.includes("from 'weimo-ui-core/components/menu'"),
   'NoteCard must wrap the registry WdfCard with biji tag bar and card menu chrome.',
 )
 assert.ok(
@@ -601,7 +594,7 @@ for (const snippet of [
   "from 'weimo-ui-stats/components/stat-group'",
   "from 'weimo-ui-stats/components/heatmap'",
   "from 'weimo-ui-tagtree/components/tag-tree'",
-  "from 'weimo-ui/components/ghost-icon-button'",
+  "from 'weimo-ui-core/components/ghost-icon-button'",
 ]) {
   assert.ok(
     bijiSideBarSource.includes(snippet),

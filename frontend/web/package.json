@@ -13,7 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base-ui/react": "1.5.0",
+    "@base-ui/react": "1.9.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/react-query": "^5.101.0",
     "@weimo/workspace-core": "workspace:*",
@@ -22,7 +22,6 @@
     "react-dom": "^19.2.7",
     "react-router": "^8.5.0",
     "tailwindcss": "^4.3.0",
-    "weimo-ui": "github:jiaowenjun/weimo-ui#18e6da6b4ab1ef3eb83cb8273712cf7b3d8c566b",
     "weimo-ui-core": "~0.2.2",
     "weimo-ui-editor": "^0.4.1",
     "weimo-ui-stats": "^0.1.0",

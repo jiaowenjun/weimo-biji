@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { CardComposer } from 'weimo-ui-editor/components/card-composer'
-import { TagBar } from 'weimo-ui/components/tag-bar'
+import { TagBar } from '@/components/tag-bar'
 
 import type { CardDraft, CardNote } from '@/components/note-card'
 

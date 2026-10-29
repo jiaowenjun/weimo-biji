@@ -1,6 +1,6 @@
 import { Copy, Quote, CircleArrowOutUpLeft } from 'lucide-react'
 import { createElement } from 'react'
-import type { ActionMenuItem } from 'weimo-ui/components/menu'
+import type { ActionMenuItem } from 'weimo-ui-core/components/menu'
 
 type BuildWorkspaceMemoCardMenuItemsOptions = {
   showMemoDetailPage?: boolean

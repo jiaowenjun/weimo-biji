@@ -1,0 +1,198 @@
+:root {
+  /* === 新 HSL 语义 token（shadcn/ui 兼容） === */
+  --background: 40 16% 96%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --primary: 0 0% 15%;
+  --primary-foreground: 0 0% 98%;
+  --muted: 40 10% 94%;
+  --muted-foreground: 0 0% 28%;
+  --border: 0 0% 80%;
+  --radius: 16px;
+
+  /* === 字体 === */
+  --font-sans: "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", Menlo, Consolas, monospace;
+
+  /* === 间距 === */
+  --space-gutter-compact: 12px;
+  --space-gutter-normal: 15px;
+  --space-gutter: var(--space-gutter-compact);
+  --space-layout-outline: 2px;
+  --space-card-padding: 13px;
+  --space-card-section-gap: 1em;
+  --space-tag-gap: 4px;
+
+  /* === 尺寸 === */
+  --breakpoint-wide: 700px;
+  --size-sidebar-width: 290px;
+  --size-content-max-width: 700px;
+  --size-layout-max-width: calc(var(--size-sidebar-width) + var(--space-gutter) * 1.6 + var(--size-content-max-width) + var(--space-gutter) * 2);
+  --size-topbar-button: 44px;
+  --size-topbar-icon: 20px;
+  --size-topbar-height: calc(var(--space-layout-outline) * 4 + 4px + var(--size-topbar-button));
+  --size-icon-button: 36px;
+  --size-icon-button-sm: 28px;
+  --space-main-offset-top: calc(var(--space-gutter) + var(--size-topbar-height) + var(--space-gutter));
+
+  /* === 字体尺寸 === */
+  --font-size-2xs: 10px;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-base: 15px;
+  --font-size-lg: 16px;
+  --font-size-xl: 17px;
+  --font-size-stat: 28px;
+  --font-line-height-reading: 1.6;
+
+  /* === 圆角 === */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-round: 999px;
+
+  /* === 玻璃效果 === */
+  --glass-blur: 14px;
+  --backdrop-blur: 4px;
+  --glass-surface-border: hsl(0 0% 80%);
+  --glass-surface-light-border: hsl(0 0% 80%);
+  --glass-surface-dark-border: hsl(0 0% 38%);
+  --glass-surface-fg: rgba(15, 23, 42, 0.9);
+  --glass-surface-muted-fg: rgba(51, 65, 85, 0.68);
+  --glass-surface-light-fg: rgba(15, 23, 42, 0.9);
+  --glass-surface-light-muted-fg: rgba(51, 65, 85, 0.68);
+  --glass-surface-dark-fg: rgba(255, 255, 255, 0.9);
+  --glass-surface-dark-muted-fg: rgba(255, 255, 255, 0.72);
+
+  /* === 阴影 === */
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.035);
+  --shadow-card-interactive: 0 6px 18px rgb(0 0 0 / 0.06);
+  --shadow-overlay: 0 28px 80px rgb(0 0 0 / 0.22);
+  --shadow-tooltip: 0 4px 12px rgb(0 0 0 / 0.1), 0 12px 28px rgb(0 0 0 / 0.12);
+
+  /* === 背景 / 文字 / 边框 token === */
+  --color-bg-page: hsl(var(--background));
+  --color-bg-card: hsl(var(--card));
+  --color-bg-raised: hsl(var(--muted));
+  --color-bg-primary: hsl(var(--primary));
+  --color-bg-selected: hsl(var(--muted));
+  --color-text-primary: hsl(0 0% 9%);
+  --color-text-secondary: hsl(0 0% 28%);
+  --color-text-subtle: hsl(0 0% 28% / 0.72);
+  --color-text-placeholder: rgb(0 0 0 / 0.26);
+  --color-text-disable: hsl(0 0% 56%);
+  --color-text-disable-on-light: hsl(0 0% 56%);
+  --color-text-disable-on-dark: hsl(0 0% 62%);
+  --color-border-divider: hsl(0 0% 88%);
+  --color-border-divider-menu: hsl(0 0% 88%);
+  --color-border-divider-menu-on-light: hsl(0 0% 88%);
+  --color-border-divider-menu-on-dark: hsl(0 0% 28%);
+  --color-border: hsl(0 0% 90%);
+  --color-border-emphasis: hsl(0 0% 68%);
+  --color-border-accent: hsl(0 0% 35%);
+  --color-border-disable: hsl(0 0% 92%);
+  --color-border-disable-on-light: hsl(0 0% 92%);
+  --color-border-disable-on-dark: hsl(0 0% 24%);
+  --color-border-danger: #b42318;
+  --color-bg-chip: hsl(40 12% 96%);
+  --color-bg-selection: hsl(var(--primary) / 0.2);
+  --color-bg-backdrop: rgb(7 10 14 / 0.32);
+  --color-bg-share-card: #eee8e8;
+  --color-bg-share-card-tag-mask: #111816;
+  --color-heat-0: rgba(0, 0, 0, 0.06);
+  --color-heat-1: rgba(202, 84, 33, 0.2);
+  --color-heat-2: rgba(202, 84, 33, 0.4);
+  --color-heat-3: rgba(202, 84, 33, 0.65);
+  --color-heat-4: rgba(202, 84, 33, 0.9);
+  --color-heatmap-today-ring: rgba(202, 84, 33, 0.55);
+  --color-bg-hover: hsl(40 12% 96%);
+  --color-bg-hover-on-hover: hsl(40 12% 88%);
+  --color-text-danger: #b42318;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* === 新 HSL 暗色 === */
+  --background: 0 0% 7%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 98%;
+  --primary: 0 0% 96%;
+  --primary-foreground: 0 0% 9%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 64%;
+  --border: 0 0% 38%;
+
+  /* === 背景 / 文字 / 边框暗色覆盖 === */
+  --color-bg-page: hsl(var(--background));
+  --color-bg-card: hsl(var(--card));
+  --color-bg-raised: hsl(var(--muted));
+  --color-bg-primary: hsl(var(--primary));
+  --color-bg-selected: hsl(var(--muted));
+  --color-text-primary: hsl(0 0% 98%);
+  --color-text-secondary: hsl(0 0% 64%);
+  --color-text-subtle: hsl(0 0% 64% / 0.72);
+  --color-text-placeholder: rgb(255 255 255 / 0.26);
+  --color-text-disable: hsl(0 0% 42%);
+  --color-text-disable-on-light: hsl(0 0% 56%);
+  --color-text-disable-on-dark: hsl(0 0% 62%);
+  --color-border-divider: hsl(0 0% 28%);
+  --color-border-divider-menu: hsl(0 0% 28%);
+  --color-border-divider-menu-on-light: hsl(0 0% 88%);
+  --color-border-divider-menu-on-dark: hsl(0 0% 28%);
+  --color-border: hsl(0 0% 20%);
+  --color-border-emphasis: hsl(0 0% 50%);
+  --color-border-accent: hsl(0 0% 75%);
+  --color-border-disable: hsl(0 0% 24%);
+  --color-border-disable-on-light: hsl(0 0% 92%);
+  --color-border-disable-on-dark: hsl(0 0% 24%);
+  --color-border-danger: #ff8a7a;
+  --color-bg-chip: hsl(0 0% 13%);
+  --color-bg-selection: hsl(var(--primary) / 0.2);
+  --color-bg-share-card: #2e2e29;
+  --color-bg-share-card-tag-mask: #939388;
+  --color-heat-0: rgba(255, 255, 255, 0.08);
+  --color-heat-1: rgba(240, 134, 70, 0.2);
+  --color-heat-2: rgba(240, 134, 70, 0.4);
+  --color-heat-3: rgba(240, 134, 70, 0.65);
+  --color-heat-4: rgba(240, 134, 70, 0.9);
+  --color-heatmap-today-ring: rgba(255, 255, 255, 0.38);
+  --color-bg-hover: hsl(0 0% 20%);
+  --color-bg-hover-on-hover: hsl(0 0% 28%);
+  --color-text-danger: #ff8a7a;
+
+  /* === 玻璃效果暗色 === */
+  --glass-surface-border: hsl(0 0% 38%);
+  --glass-surface-light-border: hsl(0 0% 80%);
+  --glass-surface-dark-border: hsl(0 0% 38%);
+  --glass-surface-fg: rgba(202, 202, 202, 1.0);
+  --glass-surface-muted-fg: rgba(255, 255, 255, 0.68);
+  --glass-surface-light-fg: rgba(15, 23, 42, 0.9);
+  --glass-surface-light-muted-fg: rgba(51, 65, 85, 0.68);
+  --glass-surface-dark-fg: rgba(255, 255, 255, 0.9);
+  --glass-surface-dark-muted-fg: rgba(255, 255, 255, 0.72);
+  --shadow-card: none;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(0 0% 90%);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius: var(--radius);
+}
+
+@media (min-width: 700px) {
+  :root {
+    --space-gutter: var(--space-gutter-normal);
+  }
+}

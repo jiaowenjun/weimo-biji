@@ -4,8 +4,6 @@ packages:
 # weimo-ui-core peer 声明 @base-ui/react ^1.9.0，但 weimo-ui(GitHub pin)内嵌并
 # 锁定 1.5.0；全仓统一收敛到 1.5.0 单实例（core 所用 drawer/toolbar/tooltip 等
 # API 在 1.5.0 均已存在），避免 pnpm 严格布局下的双实例与类型漂移。
-overrides:
-  "@base-ui/react": "1.5.0"
 allowBuilds:
   esbuild: true
   msw: false

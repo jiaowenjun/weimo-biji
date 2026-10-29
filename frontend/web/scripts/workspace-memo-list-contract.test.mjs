@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const uiRoot = join(root, 'node_modules/weimo-ui')
+const uiRoot = join(root, 'node_modules/weimo-ui-core/dist')
 
 function readProjectFile(relativePath) {
   const absolutePath = join(root, relativePath)
@@ -39,7 +39,7 @@ const memoDataSource = readProjectFile('src/features/workspace/memo-data.ts')
 const workspacePageSource = readProjectFile(
   'src/features/workspace/workspace-demo-page.tsx',
 )
-const infiniteListSentinelHookSource = readUiFile('src/lib/use-infinite-list-sentinel.ts')
+const infiniteListSentinelHookSource = readUiFile('lib/infinite-list-sentinel/use-infinite-list-sentinel.d.ts')
 assert.ok(
   workspacePageSource.includes(
     'useMemoDisplayOverrides(rawMemoCards, `self:${workspaceQueryScope}`)',
@@ -223,7 +223,7 @@ for (const snippet of [
   "import { RefCard } from '@/components/ref-card'",
   "import { useMemoDisplayOverrides } from '@/features/workspace/workspace-memo-display'",
   "import { useCallback, useMemo, useState } from 'react'",
-  "import { useInfiniteListSentinel } from 'weimo-ui/lib/use-infinite-list-sentinel'",
+  "import { useInfiniteListSentinel } from 'weimo-ui-core/lib/use-infinite-list-sentinel'",
   "useWorkspacePageNavigation",
   "resetWorkspaceNavigation",
   'getWorkspaceQueryScope',
@@ -296,7 +296,7 @@ for (const snippet of [
 }
 
 assert.ok(
-  infiniteListSentinelHookSource.includes('export function useInfiniteListSentinel({') &&
+  infiniteListSentinelHookSource.includes('export declare function useInfiniteListSentinel({') &&
     !workspacePageSource.includes('new IntersectionObserver'),
   'workspace page must delegate pagination observation to the shared sentinel hook.',
 )

@@ -108,7 +108,7 @@ for (const snippet of [
 
 for (const snippet of [
   "import { CardComposer } from 'weimo-ui-editor/components/card-composer'",
-  "import { TagBar } from 'weimo-ui/components/tag-bar'",
+  "import { TagBar } from '@/components/tag-bar'",
   "import type { CardDraft, CardNote } from '@/components/note-card'",
   'type PendingCreateCardProps = {',
   'const [sessionTags, setSessionTags] = useState(() => note.tags ?? [])',
@@ -136,7 +136,7 @@ for (const forbiddenSnippet of [
   "import { X } from 'lucide-react'",
   "import { useEffect, useRef, useState } from 'react'",
   "import type { TransitionEvent } from 'react'",
-  "import { GhostIconButton } from 'weimo-ui/components/ghost-icon-button'",
+  "import { GhostIconButton } from 'weimo-ui-core/components/ghost-icon-button'",
   'MouseEvent',
   'PENDING_CREATE_CARD_TRANSITION_MS',
   'PendingCreateAutoFocusState',

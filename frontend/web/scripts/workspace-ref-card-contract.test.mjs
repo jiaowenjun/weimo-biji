@@ -81,7 +81,7 @@ for (const snippet of [
   "} from '@/features/workspace/workspace-memo-card-menu'",
   'buildWorkspaceMemoCardMenuItems,',
   "import { NoteCard, type CardDraft, type CardNote } from './note-card'",
-  "import { getCardSurfaceClassName } from 'weimo-ui/components/card-surface'",
+  "import { getCardSurfaceClassName } from 'weimo-ui-core/components/card-surface'",
   "import './ref-card.css'",
   'export interface RefCardReferencePreview',
   'export type RefCardProps = {',
@@ -124,7 +124,7 @@ for (const snippet of [
 for (const snippet of [
   "import { Copy, Quote, CircleArrowOutUpLeft } from 'lucide-react'",
   "import { createElement } from 'react'",
-  "import type { ActionMenuItem } from 'weimo-ui/components/menu'",
+  "import type { ActionMenuItem } from 'weimo-ui-core/components/menu'",
   'type BuildWorkspaceMemoCardMenuItemsOptions = {',
   'showMemoDetailPage?: boolean',
   'extraDisplayMenuItems?: ActionMenuItem[]',
@@ -305,8 +305,8 @@ assert.ok(
 )
 
 for (const snippet of [
-  "import { ActionDialog } from 'weimo-ui/components/action-dialog'",
-  "import { DialogPanel } from 'weimo-ui/components/coss/dialog'",
+  "import { ActionDialog } from 'weimo-ui-core/components/action-dialog'",
+  "import { DialogPanel } from 'weimo-ui-core/components/coss/dialog'",
   "import { RefCard } from '@/components/ref-card'",
   "import './workspace-memo-detail-dialog.css'",
   'export interface WorkspaceMemoDetailDialogProps',
