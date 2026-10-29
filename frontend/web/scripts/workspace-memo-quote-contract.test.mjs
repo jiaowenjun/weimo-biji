@@ -156,7 +156,7 @@ for (const snippet of [
   '.workspace-memo-quote-dialog',
   'width: min(100%, 680px);',
   '.workspace-memo-quote-dialog__panel',
-  'padding: var(--space-gutter);',
+  'padding: calc(53px + var(--space-gutter)) var(--space-gutter) var(--space-gutter);',
   '.workspace-memo-quote-dialog__editor',
   'display: grid;',
   'gap: var(--space-gutter);',

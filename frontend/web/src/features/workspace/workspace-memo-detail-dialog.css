@@ -3,8 +3,16 @@
     width: min(100%, 680px);
   }
 
+  /* 面板与绝对定位顶栏(高约 53px = 10 顶距 + 43 关闭钮)是重叠布局,
+     顶部须让出顶栏区再留一档间距,否则首卡压在标题/关闭钮下 */
   .workspace-memo-detail-dialog__panel {
-    padding: var(--space-gutter);
+    padding: calc(53px + var(--space-gutter)) var(--space-gutter) var(--space-gutter);
+  }
+
+  /* 顶栏压过卡内 z-index:1 的头部(wdf-card__card/__header),保证
+     关闭钮不被卡片菜单钮覆盖 */
+  .workspace-memo-detail-dialog .action-dialog__bar {
+    z-index: 2;
   }
 
   .workspace-memo-detail-dialog__content,
