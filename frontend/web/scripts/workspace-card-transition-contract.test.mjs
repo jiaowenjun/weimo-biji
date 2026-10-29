@@ -38,11 +38,13 @@ assert.ok(
 )
 
 // 编辑样式与过渡时长由编辑器包统一编排;biji 侧不再覆盖任何时长
-// 0.4.1(hideEditEntry)发版前走 vendor tgz;npm 发布后切回 ^0.4.1 并删除 vendor 包
-const editorDep = packageJson.dependencies['weimo-ui-editor']
 assert.ok(
-  editorDep?.startsWith('file:vendor/') || editorDep?.startsWith('^'),
-  'weimo-ui-editor must be either vendored (pre-publish) or a registry dependency.',
+  packageJson.dependencies['weimo-ui-editor']?.startsWith('^'),
+  'weimo-ui-editor must come from the npm registry after 0.4.1 was published.',
+)
+assert.ok(
+  !existsSync(join(root, 'vendor/weimo-ui-editor-0.4.1.tgz')),
+  'the vendored editor tarball must be removed once the registry dependency lands.',
 )
 assert.match(
   noteCardSource,

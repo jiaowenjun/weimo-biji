@@ -47,8 +47,8 @@ importers:
         specifier: ~0.2.2
         version: 0.2.2(@base-ui/react@1.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       weimo-ui-editor:
-        specifier: file:vendor/weimo-ui-editor-0.4.1.tgz
-        version: file:frontend/web/vendor/weimo-ui-editor-0.4.1.tgz(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(weimo-ui-core@0.2.2(@base-ui/react@1.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(weimo-wdf@0.1.0)
+        specifier: ^0.4.1
+        version: 0.4.1(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(weimo-ui-core@0.2.2(@base-ui/react@1.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(weimo-wdf@0.1.0)
       weimo-ui-stats:
         specifier: ^0.1.0
         version: 0.1.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(weimo-ui-core@0.2.2(@base-ui/react@1.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
@@ -2661,9 +2661,8 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  weimo-ui-editor@file:frontend/web/vendor/weimo-ui-editor-0.4.1.tgz:
-    resolution: {integrity: sha512-oqSKKzrMjwJ8s1uQM6zEGMkCY1HO22+yWNLIajw46Vd3Soj8n5SnOsZa5Yt2Khn9kTufO4H4jBoxUFNNq7xIAA==, tarball: file:frontend/web/vendor/weimo-ui-editor-0.4.1.tgz}
-    version: 0.4.1
+  weimo-ui-editor@0.4.1:
+    resolution: {integrity: sha512-RNnqCWNFQc3f9mPHcJpSNqiQSdaLXgP21I1sKCz8xgNyPzaDyb6H9VT/jhj8yTUbUSWWBmf3iAw7iRGaL/U2bg==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
@@ -5548,7 +5547,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  weimo-ui-editor@file:frontend/web/vendor/weimo-ui-editor-0.4.1.tgz(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(weimo-ui-core@0.2.2(@base-ui/react@1.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(weimo-wdf@0.1.0):
+  weimo-ui-editor@0.4.1(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(weimo-ui-core@0.2.2(@base-ui/react@1.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(weimo-wdf@0.1.0):
     dependencies:
       '@tiptap/core': 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/extension-blockquote': 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
