@@ -25,6 +25,8 @@
     appearance: none;
     font: inherit;
     margin: 0;
+    /* 与上方标签栏的纵向间隔(bottomBar 内紧跟 TagBar 之后) */
+    margin-top: 1em;
     padding: 0;
     text-align: start;
   }
