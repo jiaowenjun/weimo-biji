@@ -5,6 +5,7 @@ process.env.TZ = 'Asia/Shanghai'
 const {
   mergeMemoSearchPages,
   formatMemoTimestamp,
+  formatMemoCardDateBarText,
   mapMemo,
   mapMemoSearchPage,
   memoUtcArrayToIso,
@@ -132,6 +133,16 @@ assert.equal(
   '2026-04-09 10:03',
 )
 assert.equal(formatMemoTimestamp('not-a-date'), '')
+
+// 卡片日期栏三级相对格式:与 skyline components/memo-card/date-display.ts 对齐
+const dateBarNow = new Date(2026, 4, 21, 12, 0)
+assert.equal(formatMemoCardDateBarText('2026-05-21 09:05', dateBarNow), '9:05')
+assert.equal(formatMemoCardDateBarText('2026-05-21 09:05', new Date(2026, 4, 22)), '5/21')
+assert.equal(formatMemoCardDateBarText('2026-05-20 09:05', dateBarNow), '5/20')
+assert.equal(formatMemoCardDateBarText('2026-05-20', dateBarNow), '5/20')
+assert.equal(formatMemoCardDateBarText('2025-01-03 09:05', dateBarNow), '2025/1/3')
+assert.equal(formatMemoCardDateBarText('not-a-timestamp', dateBarNow), 'not-a-timestamp')
+assert.equal(formatMemoCardDateBarText('', dateBarNow), '')
 
 assert.deepEqual(mapMemo(looseMemoDto), {
   id: 42,

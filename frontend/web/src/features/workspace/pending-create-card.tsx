@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CardComposer } from 'weimo-ui-editor/components/card-composer'
 import { TagBar } from '@/components/tag-bar'
+import { formatMemoCardDateBarText } from '@/features/workspace/memo-data'
 
 import type { CardDraft, CardNote } from '@/components/note-card'
 
@@ -53,7 +54,7 @@ export function PendingCreateCard({
         if (mode === 'view') onViewTransitionEnd?.()
       }}
       onSave={(document) => onSave?.({ content: document, tags: [...sessionTags] })}
-      title={note.createdAtText}
+      title={formatMemoCardDateBarText(note.createdAtText)}
     />
   )
 }

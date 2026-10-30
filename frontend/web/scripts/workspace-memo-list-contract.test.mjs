@@ -148,6 +148,7 @@ for (const snippet of [
   'const lastPage = pages[pages.length - 1]',
   'items: pages.flatMap((page) => page.items)',
   'export function formatMemoTimestamp',
+  'export function formatMemoCardDateBarText',
   'export function toCardNote',
   'createdAtText: formatMemoTimestamp(memo.createdAt)',
   'tags: tags.length > 0 ? tags : undefined',
@@ -157,6 +158,13 @@ for (const snippet of [
     `memo-data adapter must include ${snippet}`,
   )
 }
+
+const noteCardSource = readProjectFile('src/components/note-card.tsx')
+
+assert.ok(
+  noteCardSource.includes('formatMemoCardDateBarText(note.createdAtText)'),
+  'note card date bar must render the skyline-aligned relative date format.',
+)
 
 for (const snippet of [
   'export type MemoDisplayOverrides',

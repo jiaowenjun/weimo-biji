@@ -109,6 +109,7 @@ for (const snippet of [
 for (const snippet of [
   "import { CardComposer } from 'weimo-ui-editor/components/card-composer'",
   "import { TagBar } from '@/components/tag-bar'",
+  "import { formatMemoCardDateBarText } from '@/features/workspace/memo-data'",
   "import type { CardDraft, CardNote } from '@/components/note-card'",
   'type PendingCreateCardProps = {',
   'const [sessionTags, setSessionTags] = useState(() => note.tags ?? [])',
@@ -124,7 +125,7 @@ for (const snippet of [
   'onExitAnimationEnd={onExitAnimationEnd}',
   'if (mode === \'view\') onViewTransitionEnd?.()',
   'onSave={(document) => onSave?.({ content: document, tags: [...sessionTags] })}',
-  'title={note.createdAtText}',
+  'title={formatMemoCardDateBarText(note.createdAtText)}',
 ]) {
   assert.ok(
     pendingCreateCardSource.includes(snippet),

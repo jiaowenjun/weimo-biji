@@ -5,6 +5,7 @@ import { WdfCardBridgeContext } from 'weimo-ui-editor/components/wdf-card'
 import { GhostIconButton } from 'weimo-ui-core/components/ghost-icon-button'
 import { ActionMenu, type ActionMenuItem } from 'weimo-ui-core/components/menu'
 import { TagBar } from '@/components/tag-bar'
+import { formatMemoCardDateBarText } from '@/features/workspace/memo-data'
 import type { WdfDocument } from 'weimo-wdf'
 
 export type CardNote = {
@@ -132,6 +133,9 @@ export function NoteCard({
     setCardMode('edit')
   }, [])
 
+  // 日期栏三级相对格式(今天 → H:mm;今年 → M/D;往年 → YYYY/M/D),与 skyline 卡片对齐
+  const createdAtDisplayText = formatMemoCardDateBarText(note.createdAtText)
+
   // 编辑入口收进菜单顶部(铅笔按钮经 hideEditEntry 隐藏;双击正文仍可进编辑)
   const menuItems = disabled
     ? displayMenuItems
@@ -181,7 +185,7 @@ export function NoteCard({
           mode={cardMode}
           onChange={disabled ? undefined : handleChange}
           onModeChange={handleModeChange}
-          title={<span className="note-card__time">{note.createdAtText}</span>}
+          title={<span className="note-card__time">{createdAtDisplayText}</span>}
           value={note.content}
         />
       </WdfCardBridgeContext.Provider>
