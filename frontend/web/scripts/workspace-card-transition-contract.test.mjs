@@ -63,7 +63,7 @@ for (const snippet of [
   'onModeChange={handleModeChange}',
   'bottomBar={bottomBar}',
   'actionSlot={actionMenu}',
-  'title={<span className="note-card__time">{note.createdAtText}</span>}',
+  'title={<span className="note-card__time">{createdAtDisplayText}</span>}',
 ]) {
   assert.ok(
     noteCardSource.includes(snippet),
